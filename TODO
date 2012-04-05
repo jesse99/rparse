@@ -1,0 +1,37 @@
+* Add to github
+* Work on parser library:
+	- add tests for the rest of the functions
+	- add test expr
+	- add test parse tree
+	- be sure to check error reporting
+	- whitespace parsers should probably handle unicode whitespace
+	- might want a few more specialized parsers (like C whitespace and ascii whitespace)
+* Make needs to build debug or release.
+* Think about adding support for col numbers (probably via a get_col function).
+* Add an install target
+	- consumers should have an update-libraries target
+* Look at some existing parser libraries.
+* Add to cargo?
+* May want to ask for a code review on mailing list.
+* Issues:
+	- reference manual is way too loose
+
+
+//#[test]
+//fn test_expr()
+//{
+//	// Expr := Mult ('+' | '-' Mult)*
+//	// Mult = Number ('*' | '/' Number)*
+//	let parse_mult = bind(parse_terms, _, _, integer, ["*", "/"], [{|x, y| x*y}, {|x, y| x/y}]);
+//	let parse_add = bind(parse_terms, _, _, parse_mult, ["+", "-"], [{|x, y| x+y}, {|x, y| x-y}]);
+//	let parse = bind(parse_all, _, _, parse_add);
+//
+//	alt parse(text, index)
+//	{
+//		result::ok(answer)	{assert(answer.value = expected); assert(answer.index == len(answer.text))}
+//		result::err(mesg)	{ret result::err(mesg)}
+//	}
+//	
+//	check("2+3*5", 17);
+//}
+
