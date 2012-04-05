@@ -9,7 +9,7 @@ import types::*;
 fn check_ok<T>(inText: str, parser: parser<T>, expected: T, line: int) -> bool
 {
 	let text = chars_with_eot(inText);
-	alt parser({file: "unit test", text: text, index: 0, line: 1})
+	alt parser({file: "unit test", text: text, index: 0u, line: 1})
 	{
 		result::ok(answer)
 		{
@@ -37,7 +37,7 @@ fn check_ok<T>(inText: str, parser: parser<T>, expected: T, line: int) -> bool
 fn check_err<T>(inText: str, parser: parser<T>, expected: str, line: int) -> bool
 {
 	let text = chars_with_eot(inText);
-	alt parser({file: "unit test", text: text, index: 0, line: 1})
+	alt parser({file: "unit test", text: text, index: 0u, line: 1})
 	{
 		result::ok(answer)
 		{

@@ -25,6 +25,39 @@ fn chars_with_eot(s: str) -> [char]
     ret buf;
 }
 
+fn is_alpha(ch: char) -> bool
+{
+	if ch >= 'a' && ch <= 'z'
+	{
+		ret true;
+	}
+	else if ch >= 'A' && ch <= 'Z'
+	{
+		ret true;
+	}
+	else
+	{
+		ret false;
+	}
+}
+
+fn is_digit(ch: char) -> bool
+{
+	if ch >= '0' && ch <= '9'
+	{
+		ret true;
+	}
+	else
+	{
+		ret false;
+	}
+}
+
+fn is_alphanum(ch: char) -> bool
+{
+	ret is_alpha(ch) || is_digit(ch);
+}
+
 // ---- Parse Functions -------------------------------------------------------
 // This (and some of the other functions) handle repetition themselves
 // for efficiency. It also has a very short name because it is a very commonly
@@ -36,10 +69,10 @@ fn s(input: state) -> status<()>
 	let mut line = input.line;
 	while true
 	{
-		if input.text[i] == '\r' && input.text[i+1] == '\n'
+		if input.text[i] == '\r' && input.text[i+1u] == '\n'
 		{
 			line += 1;
-			i += 1
+			i += 1u;
 		}
 		else if input.text[i] == '\n'
 		{
@@ -53,7 +86,7 @@ fn s(input: state) -> status<()>
 		{
 			break;
 		}
-		i += 1;
+		i += 1u;
 	}
 	
 	ret result::ok({output: {index: i, line: line with input}, value: ()});
@@ -75,11 +108,64 @@ fn spaces(input: state) -> status<()>
 	}
 }
 
-#[cfg(unimplemented)]
 #[doc = "literal := <literal> space"]
 fn literal(input: state, literal: str, space: parser<()>) -> status<str>
 {
-	ret result::err({output: input, mesg: "not implemented"});
+	assert str::is_ascii(literal);		// so it's OK to cast literal to char
+	
+	let mut i = 0u;
+	while i < str::len(literal)
+	{
+		if input.text[input.index + i] == literal[i] as char
+		{
+			i += 1u;
+		}
+		else
+		{
+			ret result::err({output: input, mesg: #fmt["expected '%s'", literal]});
+		}
+	}
+	
+	alt space({index: input.index + i with input})
+	{
+		result::ok(answer)
+		{
+			ret result::ok({output: answer.output, value: literal});
+		}
+		result::err(error)
+		{
+			ret result::err(error);
+		}
+	}
+}
+
+#[doc = "identifier := [a-zA-Z_] [a-zA-Z_0-9]* space"]
+fn identifier(input: state, space: parser<()>) -> status<str>
+{
+	let mut ch = input.text[input.index];
+	if !(is_alpha(ch) || ch == '_')
+	{
+		ret result::err({output: input, mesg: "expected identifier"});
+	}
+	
+	let mut i = input.index;
+	while is_alphanum(input.text[i]) || input.text[i] == '_'
+	{
+		i += 1u;
+	}
+	
+	alt space({index: i with input})
+	{
+		result::ok(answer)
+		{
+			let value = vec::slice(input.text, input.index, i - input.index);
+			ret result::ok({output: answer.output, value: str::from_chars(value)});
+		}
+		result::err(error)
+		{
+			ret result::err(error);
+		}
+	}
 }
 
 #[cfg(unimplemented)]
@@ -135,6 +221,6 @@ fn terms<T>(input: state, term: parser<T>, ops: [str], space: parser<()>, evalua
 #[doc = "everything := space e EOT"]
 fn everything<T>(file: str, text: str, space: parser<()>, parser: parser<T>) -> status<[T]>
 {
-	let state = {file: "unit test", text: chars_with_eot(text), index: 0, line: 1};
+	let state = {file: "unit test", text: chars_with_eot(text), index: 0u, line: 1};
 	ret result::err({output: state, mesg: "not implemented"});
 }
