@@ -13,4 +13,7 @@ mod types;
 mod test_helpers;
 
 #[cfg(test)]
+mod test_expr;
+
+#[cfg(test)]
 mod test_primitives;

@@ -6,21 +6,21 @@ import result = result::result;
 import types::*;
 
 #[cfg(test)]
-fn check_ok<T>(inText: str, parser: parser<T>, expected: T, line: int) -> bool
+fn check_ok<T: copy>(inText: str, parser: parser<T>, expected: T, line: int, seed: T) -> bool
 {
 	let text = chars_with_eot(inText);
-	alt parser({file: "unit test", text: text, index: 0u, line: 1})
+	alt parser({file: "unit test", text: text, index: 0u, line: 1, value: seed})
 	{
 		result::ok(answer)
 		{
 			if answer.value != expected
 			{
-				io::stderr().write_line(#fmt["Expected %? but found line %?", expected, answer.value]);
+				io::stderr().write_line(#fmt["Expected %? but found %?", expected, answer.value]);
 				ret false;
 			}
-			if answer.output.line != line
+			if answer.line != line
 			{
-				io::stderr().write_line(#fmt["Expected line %d but found line %d", line, answer.output.line]);
+				io::stderr().write_line(#fmt["Expected line %d but found line %d", line, answer.line]);
 				ret false;
 			}
 			ret true;
@@ -34,10 +34,9 @@ fn check_ok<T>(inText: str, parser: parser<T>, expected: T, line: int) -> bool
 }
 
 #[cfg(test)]
-fn check_err<T>(inText: str, parser: parser<T>, expected: str, line: int) -> bool
+fn check_err_status<T: copy>(x: status<T>, expected: str, line: int) -> bool
 {
-	let text = chars_with_eot(inText);
-	alt parser({file: "unit test", text: text, index: 0u, line: 1})
+	alt x
 	{
 		result::ok(answer)
 		{
@@ -59,4 +58,18 @@ fn check_err<T>(inText: str, parser: parser<T>, expected: str, line: int) -> boo
 			ret true;
 		}
 	}
+}
+
+#[cfg(test)]
+fn check_err_str<T: copy>(text: str, parser: str_parser<T>, expected: str, line: int) -> bool
+{
+	ret check_err_status(parser(text), expected, line);
+}
+
+#[cfg(test)]
+fn check_err<T: copy>(inText: str, parser: parser<T>, expected: str, line: int, seed: T) -> bool
+{
+	let text = chars_with_eot(inText);
+	let x= parser({file: "unit test", text: text, index: 0u, line: 1, value: seed});
+	ret check_err_status(x, expected, line);
 }

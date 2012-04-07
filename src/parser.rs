@@ -1,5 +1,8 @@
 #[doc = "Generic parse functions."];
 
+import io;
+import io::writer_util;
+import chain = result::chain;
 import result = result::result;
 import types::*;
 
@@ -27,30 +30,12 @@ fn chars_with_eot(s: str) -> [char]
 
 fn is_alpha(ch: char) -> bool
 {
-	if ch >= 'a' && ch <= 'z'
-	{
-		ret true;
-	}
-	else if ch >= 'A' && ch <= 'Z'
-	{
-		ret true;
-	}
-	else
-	{
-		ret false;
-	}
+	ret (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
 fn is_digit(ch: char) -> bool
 {
-	if ch >= '0' && ch <= '9'
-	{
-		ret true;
-	}
-	else
-	{
-		ret false;
-	}
+	ret ch >= '0' && ch <= '9';
 }
 
 fn is_alphanum(ch: char) -> bool
@@ -63,7 +48,7 @@ fn is_alphanum(ch: char) -> bool
 // for efficiency. It also has a very short name because it is a very commonly
 // used function.
 #[doc = "s := (' ' | '\t' | '\r' | '\n')*"]
-fn s(input: state) -> status<()>
+fn s<T: copy>(input: state<T>) -> status<T>
 {
 	let mut i = input.index;
 	let mut line = input.line;
@@ -89,16 +74,16 @@ fn s(input: state) -> status<()>
 		i += 1u;
 	}
 	
-	ret result::ok({output: {index: i, line: line with input}, value: ()});
+	ret result::ok({index: i, line: line with input});
 }
 
 #[doc = "spaces := (' ' | '\t' | '\r' | '\n')+"]
-fn spaces(input: state) -> status<()>
+fn spaces<T: copy>(input: state<T>) -> status<T>
 {
 	let result = s(input);
 	let state = result::get(result);
 	
-	if state.output.index > input.index
+	if state.index > input.index
 	{
 		ret result;
 	}
@@ -108,58 +93,37 @@ fn spaces(input: state) -> status<()>
 	}
 }
 
-#[doc = "literal := <literal> space"]
-fn literal(input: state, literal: str, space: parser<()>) -> status<str>
+#[doc = "integer := [+-]? [0-9]+ space"]
+fn integer(input: state<int>, space: parser<int>) -> status<int>
 {
-	assert str::is_ascii(literal);		// so it's OK to cast literal to char
-	
-	let mut i = 0u;
-	while i < str::len(literal)
+	let mut start = input.index;
+	if input.text[start] == '+' || input.text[start] == '-'
 	{
-		if input.text[input.index + i] == literal[i] as char
-		{
-			i += 1u;
-		}
-		else
-		{
-			ret result::err({output: input, mesg: #fmt["expected '%s'", literal]});
-		}
+		start += 1u;
 	}
 	
-	alt space({index: input.index + i with input})
-	{
-		result::ok(answer)
-		{
-			ret result::ok({output: answer.output, value: literal});
-		}
-		result::err(error)
-		{
-			ret result::err(error);
-		}
-	}
-}
-
-#[doc = "identifier := [a-zA-Z_] [a-zA-Z_0-9]* space"]
-fn identifier(input: state, space: parser<()>) -> status<str>
-{
-	let mut ch = input.text[input.index];
-	if !(is_alpha(ch) || ch == '_')
-	{
-		ret result::err({output: input, mesg: "expected identifier"});
-	}
-	
-	let mut i = input.index;
-	while is_alphanum(input.text[i]) || input.text[i] == '_'
+	let mut i = start;
+	while is_digit(input.text[i])
 	{
 		i += 1u;
+	}
+	
+	if i == start
+	{
+		ret result::err({output: input, mesg: "expected an integer"});
 	}
 	
 	alt space({index: i with input})
 	{
 		result::ok(answer)
 		{
-			let value = vec::slice(input.text, input.index, i - input.index);
-			ret result::ok({output: answer.output, value: str::from_chars(value)});
+			let text = str::from_chars(vec::slice(input.text, start, i));
+			let mut value = option::get(int::from_str(text));
+			if input.text[input.index] == '-'
+			{
+				value = -value;
+			}
+			ret result::ok({value: value with answer});
 		}
 		result::err(error)
 		{
@@ -168,59 +132,39 @@ fn identifier(input: state, space: parser<()>) -> status<str>
 	}
 }
 
-#[cfg(unimplemented)]
-#[doc = "integer := [+-]? [0-9]+ space"]
-fn integer(input: state, space: parser<()>) -> status<int>
+#[doc = "just := e"]
+fn just<T: copy>(file: str, text: str, parser: parser<T>, seed: T) -> status<T>
 {
-	ret result::err({output: input, mesg: "not implemented"});
+	ret parser({file: file, text: chars_with_eot(text), index: 0u, line: 1, value: seed});
 }
 
-#[cfg(unimplemented)]
-#[doc = "optional := e?"]
-fn optional<T>(input: state, parser: parser<T>) -> status<T>
+fn eot<T: copy>(answer: state<T>) -> status<T>
 {
-	ret result::err({output: input, mesg: "not implemented"});
+	if answer.text[answer.index] == '\u0003'
+	{
+		ret result::ok(answer);
+	}
+	else
+	{
+		let last = uint::min(answer.index + 16u, vec::len(answer.text) - 1u);
+		let trailer = str::from_chars(vec::slice(answer.text, answer.index, last));
+		ret result::err({output: answer, mesg: #fmt["expected EOT but found '%s'", trailer]});
+	}
 }
 
-#[cfg(unimplemented)]
-#[doc = "repeat_zero := e*"]
-fn repeat_zero<T>(input: state, parser: parser<T>) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
-#[doc = "repeat_one := e+"]
-fn repeat_one<T>(input: state, parser: parser<T>) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
-#[doc = "alternative := e1 | e2 | …"]
-fn alternative<T>(input: state, alternatives: [parser<T>]) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
-#[doc = "list := elem (sep space elem)*"]
-fn list<T>(input: state, elem: parser<T>, sep: str, space: parser<()>) -> status<[T]>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
-#[doc = "terms := term ([ops] space term)*"]
-fn terms<T>(input: state, term: parser<T>, ops: [str], space: parser<()>, evaluators: [fn (T, T) -> T]) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
 #[doc = "everything := space e EOT"]
-fn everything<T>(file: str, text: str, space: parser<()>, parser: parser<T>) -> status<[T]>
+fn everything<T: copy>(file: str, text: str, space: parser<T>, parser: parser<T>, seed: T) -> status<T>
 {
-	let state = {file: "unit test", text: chars_with_eot(text), index: 0u, line: 1};
-	ret result::err({output: state, mesg: "not implemented"});
+	let input = {file: file, text: chars_with_eot(text), index: 0u, line: 1, value: seed};
+	alt space(input)
+	{
+		result::ok(a)
+		{
+			chain(parser(a)) {|answer| eot(answer)}
+		}
+		result::err(error)
+		{
+			ret result::err(error);
+		}
+	}
 }
