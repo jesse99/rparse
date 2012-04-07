@@ -30,13 +30,6 @@ fn expr_ok(text: str, parser: str_parser<int>, expected: int, line: int) -> bool
 	}
 }
 
-// TODO: is there no way to use s<int>?
-#[cfg(test)]
-fn s_int(input: state<int>) -> status<int>
-{
-	ret s(input);
-}
-
 #[cfg(test)]
 fn expr_parser() -> str_parser<int>
 {
@@ -44,8 +37,8 @@ fn expr_parser() -> str_parser<int>
 	// product := term ([*/] term)*
 	// pexpr := '(' expr ')'
 	// term := '-'? (integer | pexpr)
-	let term = bind integer(_, s_int);
-	ret bind everything("unit test", _, s_int, term, 0);
+	let term = integer(_, s(_));
+	ret everything("unit test", _, s(_), term, 0);
 }
 
 #[test]
