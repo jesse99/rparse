@@ -4,6 +4,9 @@ how does operator overloading work?
 how do classes work?
 
 
+* Do a checkin
+* Is chain_v just sequence?
+* Can anything else be simplified with higher order functions?
 * Update rust lang
 	- allow crust before fn
 	- priv, new, self are keywords

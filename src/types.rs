@@ -16,7 +16,7 @@ type failed<T: copy> = {output: state<T>, mesg: str};
 
 
 #[doc = "Type for parse functions."]
-type parser<T: copy> = fn (state<T>) -> status<T>;
+type parser<T: copy> = fn@ (state<T>) -> status<T>;
 
 #[doc = "Type for top-level parse functions."]
 type str_parser<T: copy> = fn@ (str) -> status<T>;

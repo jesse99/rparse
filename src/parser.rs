@@ -43,6 +43,32 @@ fn is_alphanum(ch: char) -> bool
 	ret is_alpha(ch) || is_digit(ch);
 }
 
+fn eot<T: copy>(answer: state<T>) -> status<T>
+{
+	if answer.text[answer.index] == '\u0003'
+	{
+		ret result::ok(answer);
+	}
+	else
+	{
+		let last = uint::min(answer.index + 16u, vec::len(answer.text) - 1u);
+		let trailer = str::from_chars(vec::slice(answer.text, answer.index, last));
+		ret result::err({output: answer, mesg: #fmt["expected EOT but found '%s'", trailer]});
+	}
+}
+
+fn sequence_r<T: copy>(input: state<T>, parsers: [parser<T>], index: uint) -> status<T>
+{
+	if index == vec::len(parsers)
+	{
+		ret result::ok(input);
+	}
+	else
+	{
+		ret chain(parsers[index](input)) {|out| sequence_r(out, parsers, index + 1u)};
+	}
+}
+
 // ---- Parse Functions -------------------------------------------------------
 // This (and some of the other functions) handle repetition themselves
 // for efficiency. It also has a very short name because it is a very commonly
@@ -113,7 +139,7 @@ fn integer(input: state<int>, space: parser<int>) -> status<int>
 		ret result::err({output: input, mesg: "expected an integer"});
 	}
 	
-	alt space({index: i with input})
+	alt space({index: i with input})		// TODO: not sure if we can simplify this with chain (type inference has problems figuring out the type of the closure)
 	{
 		result::ok(answer)
 		{
@@ -132,39 +158,21 @@ fn integer(input: state<int>, space: parser<int>) -> status<int>
 	}
 }
 
+#[doc = "sequence := e1 e2 e3…"]
+fn sequence<T: copy>(input: state<T>, parsers: [parser<T>]) -> status<T>
+{
+	ret sequence_r(input, parsers, 0u);
+}
+
 #[doc = "just := e"]
 fn just<T: copy>(file: str, text: str, parser: parser<T>, seed: T) -> status<T>
 {
 	ret parser({file: file, text: chars_with_eot(text), index: 0u, line: 1, value: seed});
 }
 
-fn eot<T: copy>(answer: state<T>) -> status<T>
-{
-	if answer.text[answer.index] == '\u0003'
-	{
-		ret result::ok(answer);
-	}
-	else
-	{
-		let last = uint::min(answer.index + 16u, vec::len(answer.text) - 1u);
-		let trailer = str::from_chars(vec::slice(answer.text, answer.index, last));
-		ret result::err({output: answer, mesg: #fmt["expected EOT but found '%s'", trailer]});
-	}
-}
-
 #[doc = "everything := space e EOT"]
 fn everything<T: copy>(file: str, text: str, space: parser<T>, parser: parser<T>, seed: T) -> status<T>
 {
 	let input = {file: file, text: chars_with_eot(text), index: 0u, line: 1, value: seed};
-	alt space(input)
-	{
-		result::ok(a)
-		{
-			chain(parser(a)) {|answer| eot(answer)}
-		}
-		result::err(error)
-		{
-			ret result::err(error);
-		}
-	}
+	ret sequence(input, [space, parser, eot(_)]);
 }
