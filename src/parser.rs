@@ -2,9 +2,7 @@
 
 import io;
 import io::writer_util;
-import chain = result::chain;
-import success = result::success;
-import result = result::result;
+import result::*;
 import types::*;
 
 // ---- Helper Functions ------------------------------------------------------
@@ -24,6 +22,7 @@ fn chars_with_eot(s: str) -> [char]
     while i < len
     {
         let {ch, next} = str::char_range_at(s, i);
+        assert next > i;
         buf += [ch];
         i = next;
     }
@@ -88,6 +87,27 @@ fn eot<T: copy>(answer: state<T>) -> status<T>
 		let trailer = str::from_chars(vec::slice(answer.text, answer.index, last));
 		ret result::err({output: answer, maxIndex: answer.index, mesg: #fmt["expected EOT but found '%s'", trailer]});
 	}
+}
+
+fn binary_op_arms<T: copy>(input: state<T>, arms: [(parser<T>, parser<T>, fn@ (T, T) -> T)]) -> status<T>
+{
+	let mut i = 0u;
+	while i < vec::len(arms)
+	{
+		let (op, rhs, eval) = arms[i];
+		let mut out = op(input);
+		if success(out)
+		{
+			out = rhs(get(out));
+			if success(out)
+			{
+				let answer = get(out);
+				ret result::ok({value: eval(input.value, answer.value) with answer});
+			}
+		}
+		i += 1u;
+	}
+	ret result::err({output: input, maxIndex: input.index, mesg: "no arm matched"});		// this is not really an error: it just signals binary_op that it is done
 }
 
 // ---- Parse Functions -------------------------------------------------------
@@ -188,6 +208,7 @@ fn literal<T: copy>(input: state<T>, literal: str, space: parser<T>) -> status<T
 	while i < str::len(literal)
 	{
 		let {ch, next} = str::char_range_at(literal, i);
+		assert next > i;
 		if ch == input.text[j]
 		{
 			i = next;
@@ -241,6 +262,39 @@ fn integer(input: state<int>, space: parser<int>) -> status<int>
 	}
 }
 
+#[doc = "terms := lhs (op rhs)*
+
+Where arms is a vector of (op, rhs, eval)."]
+fn binary_op<T: copy>(input: state<T>, lhs: parser<T>, arms: [(parser<T>, parser<T>, fn@ (T, T) -> T)]) -> status<T>
+{
+	let result = lhs(input);
+	alt result
+	{
+		result::ok(answer)
+		{
+			let mut out = result;
+			while true
+			{
+				let out2 = binary_op_arms(get(out), arms);
+				if success(out2)
+				{
+					assert get(out2).index > get(out).index;	// arm must fail or make progress
+					out = out2;
+				}
+				else
+				{
+					ret plog("binary_op", input, out);	// we expect arms to fail eventually
+				}
+			}
+			ret plog("binary_op", input, out);			// keep the compiler happy
+		}
+		result::err(error)
+		{
+			ret plog("binary_op", input, result::err(error));
+		}
+	}
+}
+
 #[doc = "optional := e?"]
 fn optional<T: copy>(input: state<T>, parser: parser<T>) -> status<T>
 {
@@ -282,7 +336,7 @@ fn alternative<T: copy>(input: state<T>, parsers: [parser<T>]) -> status<T>
 					maxIndex = error.maxIndex;
 					errMesg = error.mesg;
 				}
-				else
+				else if !vec::contains(messages, error.mesg)
 				{
 					vec::push(messages, error.mesg);
 				}

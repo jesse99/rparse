@@ -78,13 +78,6 @@ fn list<T>(input: state, elem: parser<T>, sep: str, space: parser<()>) -> status
 	ret result::err({output: input, mesg: "not implemented"});
 }
 
-#[cfg(unimplemented)]
-#[doc = "terms := term ([ops] space term)*"]
-fn terms<T>(input: state, term: parser<T>, ops: [str], space: parser<()>, evaluators: [fn (T, T) -> T]) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
 ------------------------------------------------------------------------------------
 #[doc = "identifier := [a-zA-Z_] [a-zA-Z_0-9]* space"]
 fn identifier(input: state, space: parser<()>) -> status<str>
