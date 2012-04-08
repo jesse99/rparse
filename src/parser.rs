@@ -1,4 +1,4 @@
-#[doc = "Generic parse functions."];
+#[doc = "Generic parse functions."];		// TODO: expand on this a bit (eg mention top level functions)
 
 import io;
 import io::writer_util;
@@ -47,7 +47,6 @@ fn is_alphanum(ch: char) -> bool
 	ret is_alpha(ch) || is_digit(ch);
 }
 
-// Kind of a crappy version
 fn is_print(ch: char) -> bool
 {
 	ret ch >= ' ' && ch <= '~';
@@ -91,21 +90,23 @@ fn eot<T: copy>(answer: state<T>) -> status<T>
 	}
 }
 
-fn sequence_r<T: copy>(input: state<T>, parsers: [parser<T>], index: uint) -> status<T>
+// ---- Parse Functions -------------------------------------------------------
+// TODO: Hack to work-around inability to define macro items. See issue 1176.
+// These macros assume that there is a local variable named "space" used
+// to parse zero or more whitespace characters.
+fn define_macros()
 {
-	if index == vec::len(parsers)
-	{
-		ret plog("sequence", input, result::ok(input));
-	}
-	else
-	{
-		ret plog("sequence", input, chain(parsers[index](input)) {|out| sequence_r(out, parsers, index + 1u)});
-	}
+	#macro[[#alternative[e, ...], alternative(_, [e, ...])]];
+	#macro[[#cyclic[ptr], cyclic(_, ptr)]];
+	#macro[[#everything[file, e], everything(file, _, space, e, 0)]];
+	#macro[[#integer[], integer(_, space)]];
+	#macro[[#literal[value], literal(_, value, space)]];
 }
 
-// ---- Parse Functions -------------------------------------------------------
 #[doc = "Used to log the results of a parse function (at both info and debug levels).
+
 Typical usage is to call this function with whatever the parse function wants to return:
+
    ret plog(\"my_parser\", input, output);"]
 fn plog<T: copy>(fun: str, input: state<T>, output: status<T>) -> status<T>
 {
@@ -144,8 +145,7 @@ fn fails(input: state<int>) -> status<int>
 
 // This (and some of the other functions) handle repetition themselves
 // for efficiency. It also has a very short name because it is a very commonly
-// used function. TODO: could use a longer name if we decide to put it into
-// state<T>.
+// used function.
 #[doc = "s := (' ' | '\t' | '\r' | '\n')*"]
 fn s<T: copy>(input: state<T>) -> status<T>
 {
@@ -253,6 +253,23 @@ fn integer(input: state<int>, space: parser<int>) -> status<int>
 	}
 }
 
+#[doc = "optional := e?"]
+fn optional<T: copy>(input: state<T>, parser: parser<T>) -> status<T>
+{
+	let result = parser(input);
+	alt result
+	{
+		result::ok(answer)
+		{
+			ret plog("optional", input, result);
+		}
+		result::err(error)
+		{
+			ret plog("optional", input, result::ok(input));
+		}
+	}
+}
+
 #[doc = "alternative := e1 | e2 | e3…"]
 fn alternative<T: copy>(input: state<T>, parsers: [parser<T>]) -> status<T>
 {
@@ -298,10 +315,35 @@ fn alternative<T: copy>(input: state<T>, parsers: [parser<T>]) -> status<T>
 	}
 }
 
-#[doc = "sequence := e1 e2 e3…"]
-fn sequence<T: copy>(input: state<T>, parsers: [parser<T>]) -> status<T>
+#[doc = "sequence := e1 e2 e3…
+
+Eval will be called with [input value, e1 value, …]."]
+fn sequence<T: copy>(input: state<T>, parsers: [parser<T>], eval: fn@ ([T]) -> T) -> status<T>
 {
-	ret plog("sequence", input, sequence_r(input, parsers, 0u));
+	let mut results: [T] = [];
+	vec::reserve(results, vec::len(parsers) + 1u);
+	vec::push(results, input.value);
+	
+	let mut i = 0u;
+	let mut out = input;
+	while i < vec::len(parsers)
+	{
+		alt parsers[i](out)
+		{
+			result::ok(answer)
+			{
+				out = answer;
+				vec::push(results, answer.value);
+			}
+			result::err(error)
+			{
+				ret plog("sequence", input, result::err(error));
+			}
+		}
+		i += 1u;
+	}
+	
+	ret plog("sequence", input, result::ok({value: eval(results) with out}));
 }
 
 #[doc = "Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions)."]
@@ -310,7 +352,7 @@ fn cyclic<T: copy>(input: state<T>, parser: @mut parser<T>) -> status<T>
 	ret (*parser)(input);
 }
 
-#[doc = "just := e"]
+#[doc = "Parses the text and does not fail if all the text was not consumed.."]
 fn just<T: copy>(file: str, text: str, parser: parser<T>, seed: T) -> status<T>
 {
 	#info["------------------------------------------"];
@@ -318,11 +360,11 @@ fn just<T: copy>(file: str, text: str, parser: parser<T>, seed: T) -> status<T>
 	ret parser({file: file, text: chars_with_eot(text), index: 0u, line: 1, value: seed});
 }
 
-#[doc = "everything := space e EOT"]
+#[doc = "Parses the text and fails if all the text was not consumed. Leading space is allowed."]
 fn everything<T: copy>(file: str, text: str, space: parser<T>, parser: parser<T>, seed: T) -> status<T>
 {
 	#info["------------------------------------------"];
 	#info["parsing '%s'", text];
 	let input = {file: file, text: chars_with_eot(text), index: 0u, line: 1, value: seed};
-	ret sequence(input, [space, parser, eot(_)]);
+	ret sequence(input, [space, parser, eot(_)]) {|results| results[2]};
 }
