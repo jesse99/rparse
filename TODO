@@ -4,16 +4,17 @@ how does operator overloading work?
 how do classes work?
 
 
-* Do a checkin
-* Is chain_v just sequence?
-* Can anything else be simplified with higher order functions?
+* Would it be nicer if s was part of state?
+	- look at how the parse expr code shakes out
+* May want to sort the parser functions.
 * Update rust lang
 	- allow crust before fn
 	- priv, new, self are keywords
 	- args can have a space before the :
+	- can have a space before < in generic functions
 	- class introduces a new type
+	- void void function doesn't need parens (see uv.rs 338)
 * Use #[crate_type = "lib"]; in rc file instead of --lib.
- * Void void function doesn't need parens (see uv.rs 338)
  * uv module has support for handling async events.
 * Might want to record usage for some key types.
 * May want to mark some functions as pure. Maybe all of them?
@@ -40,29 +41,11 @@ how do classes work?
 * Add an install target
 	- consumers should have an update-libraries target
 * Look at some existing parser libraries.
+* Search for todo.
 * Add to cargo?
 * May want to ask for a code review on mailing list.
 * Issues:
 	- reference manual is way too loose
-
-
-//#[test]
-//fn test_expr()
-//{
-//	// Expr := Mult ('+' | '-' Mult)*
-//	// Mult = Number ('*' | '/' Number)*
-//	let parse_mult = bind(parse_terms, _, _, integer, ["*", "/"], [{|x, y| x*y}, {|x, y| x/y}]);
-//	let parse_add = bind(parse_terms, _, _, parse_mult, ["+", "-"], [{|x, y| x+y}, {|x, y| x-y}]);
-//	let parse = bind(parse_all, _, _, parse_add);
-//
-//	alt parse(text, index)
-//	{
-//		result::ok(answer)	{assert(answer.value = expected); assert(answer.index == len(answer.text))}
-//		result::err(mesg)	{ret result::err(mesg)}
-//	}
-//	
-//	check("2+3*5", 17);
-//}
 
 
 
@@ -89,13 +72,6 @@ fn repeat_one<T>(input: state, parser: parser<T>) -> status<T>
 }
 
 #[cfg(unimplemented)]
-#[doc = "alternative := e1 | e2 | …"]
-fn alternative<T>(input: state, alternatives: [parser<T>]) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
 #[doc = "list := elem (sep space elem)*"]
 fn list<T>(input: state, elem: parser<T>, sep: str, space: parser<()>) -> status<[T]>
 {
@@ -110,37 +86,6 @@ fn terms<T>(input: state, term: parser<T>, ops: [str], space: parser<()>, evalua
 }
 
 ------------------------------------------------------------------------------------
-#[doc = "literal := <literal> space"]
-fn literal(input: state, literal: str, space: parser<()>) -> status<str>
-{
-	assert str::is_ascii(literal);		// so it's OK to cast literal to char, TODO: could relax this with an each_char that passed in both the char and its index
-	
-	let mut i = 0u;
-	while i < str::len(literal)
-	{
-		if input.text[input.index + i] == literal[i] as char
-		{
-			i += 1u;
-		}
-		else
-		{
-			ret result::err({output: input, mesg: #fmt["expected '%s'", literal]});
-		}
-	}
-	
-	alt space({index: input.index + i with input})
-	{
-		result::ok(answer)
-		{
-			ret result::ok({output: answer.output, value: literal});
-		}
-		result::err(error)
-		{
-			ret result::err(error);
-		}
-	}
-}
-
 #[doc = "identifier := [a-zA-Z_] [a-zA-Z_0-9]* space"]
 fn identifier(input: state, space: parser<()>) -> status<str>
 {
@@ -170,14 +115,6 @@ fn identifier(input: state, space: parser<()>) -> status<str>
 	}
 }
 ----------------------------------------------------------------
-
-#[test]
-fn test_literal()
-{
-	assert check_err("", bind literal(_, "+", s), "expected '+'", 1);
-	assert check_ok("+ x", bind literal(_, "+", s), "+", 1);
-	assert check_ok("<<", bind literal(_, "<<", s), "<<", 1);
-}
 
 #[test]
 fn test_identifier()

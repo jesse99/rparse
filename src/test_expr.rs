@@ -30,15 +30,32 @@ fn expr_ok(text: str, parser: str_parser<int>, expected: int, line: int) -> bool
 	}
 }
 
+// TODO:
+// alternative should print the error of the parser which processed the most characters (will need to extend failed)
+// get rid of the ascii restriction in literal (use char_range_at)
+// might want to try adding a curry operator (or function)
+// space processing in literal and integer kind of blows
+// implement product
+// may want a terms parser
 #[cfg(test)]
 fn expr_parser() -> str_parser<int>
 {
-	// expr := product ([+-] product)*
-	// product := term ([*/] term)*
 	// pexpr := '(' expr ')'
-	// term := '-'? (integer | pexpr)
-	let term = integer(_, s(_));
-	ret everything("unit test", _, s(_), term, 0);
+	// term := [-+] (integer | pexpr)
+	// product := term ([*/] term)*
+	// expr := product ([+-] product)*
+	// start := s expr
+	let pe = @mut fails(_);
+	let pexpr = sequence(_, [
+		literal(_, "(", s(_)), 
+		cyclic(_, pe), 
+		literal(_, ")", s(_))]);
+	
+	let term = alternative(_, [integer(_, s(_)), pexpr]);
+	let expr = term;
+	*pe = expr;
+	
+	ret everything("unit test", _, s(_), expr, 0);
 }
 
 #[test]
@@ -46,11 +63,17 @@ fn test_term()
 {
 	let expr = expr_parser();
 	
-	assert check_err_str("", expr, "expected an integer", 1);
+	assert check_err_str("", expr, "expected an integer or expected '('", 1);
 	assert expr_ok("23", expr, 23, 1);
 	assert expr_ok(" 57   ", expr, 57, 1);
 	assert expr_ok("\t\t\n-100", expr, -100, 2);
 	assert expr_ok("+1", expr, 1, 1);
-	assert check_err_str("+", expr, "expected an integer", 1);
+	assert check_err_str("+", expr, "expected an integer or expected '('", 1);
 	assert check_err_str(" 57   200", expr, "expected EOT but found '200'", 1);
+
+	assert expr_ok("(23)", expr, 23, 1);
+	assert expr_ok("((23))", expr, 23, 1);
+	assert check_err_str("((23)", expr, "expected an integer or expected '('", 1);
+	
+	// TODO: test leading sign
 }

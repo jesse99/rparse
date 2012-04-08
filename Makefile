@@ -9,7 +9,7 @@ all: parser
 parser: lib
 
 check: bin/test-rparse
-	./bin/test-rparse
+	export RUST_LOG=rparse=1 && ./bin/test-rparse
 
 # ------------------
 # Binary targets 
