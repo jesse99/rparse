@@ -92,22 +92,34 @@ fn eot<T: copy>(answer: state<T>) -> status<T>
 fn binary_op_arms<T: copy>(input: state<T>, arms: [(parser<T>, parser<T>, fn@ (T, T) -> T)]) -> status<T>
 {
 	let mut i = 0u;
+	let mut maxIndex = input.index;
 	while i < vec::len(arms)
 	{
 		let (op, rhs, eval) = arms[i];
-		let mut out = op(input);
-		if success(out)
+		alt op(input)
 		{
-			out = rhs(get(out));
-			if success(out)
+			result::ok(opOut)
 			{
-				let answer = get(out);
-				ret result::ok({value: eval(input.value, answer.value) with answer});
+				alt rhs(opOut)
+				{
+					result::ok(rhsOut)
+					{
+						ret result::ok({value: eval(input.value, rhsOut.value) with rhsOut});
+					}
+					result::err(error)
+					{
+						maxIndex = uint::max(maxIndex, error.maxIndex);
+					}
+				}
+			}
+			result::err(error)
+			{
+				maxIndex = uint::max(maxIndex, error.maxIndex);
 			}
 		}
 		i += 1u;
 	}
-	ret result::err({output: input, maxIndex: input.index, mesg: "no arm matched"});		// this is not really an error: it just signals binary_op that it is done
+	ret result::err({output: input, maxIndex: maxIndex, mesg: "no arm matched"});		// this is not really an error: it just signals binary_op that it is done
 }
 
 // ---- Parse Functions -------------------------------------------------------

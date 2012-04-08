@@ -46,24 +46,24 @@ fn expr_parser() -> str_parser<int>
 	// sub_expr := '(' expr ')'
 	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|results| results[2]});
 	
-	// term := [-+]? (integer | sub_expr)
-	let term = alternative(_, [
+	// factor := [-+]? (integer | sub_expr)
+	let factor = alternative(_, [
 		sequence(_, [plus_sign, sub_expr], {|results| results[2]}),
 		sequence(_, [minus_sign, sub_expr], {|results| -results[2]}),
 		int_literal,
 		sub_expr
 	]);
 	
-	// product := term ([*/] term)*
+	// term := factor ([*/] factor)*
 	let mult = fn@ (&&x: int, &&y: int) -> int {ret x * y};	// generic arguments are currently always passed by pointer so we need the lame && sigil
 	let div = fn@ (&&x: int, &&y: int) -> int {ret x / y};
-	let product = binary_op(_, term, [
-		(mult_sign, term, mult),
-		(div_sign, term, div)
+	let term = binary_op(_, factor, [
+		(mult_sign, factor, mult),
+		(div_sign, factor, div)
 	]);
 	
-	// expr := product ([+-] product)*
-	let expr = product;
+	// expr := term ([+-] term)*
+	let expr = term;
 	*expr_ptr = expr;
 	
 	// start := s expr
@@ -73,10 +73,11 @@ fn expr_parser() -> str_parser<int>
 }
 
 // TODO:
+// cleanup
+// arms should track max index
 // implement expr
-// might want to support function calls (maybe just a few binary calls like max and min)
 #[test]
-fn test_term()
+fn test_factor()
 {
 	let expr = expr_parser();
 	
@@ -97,7 +98,7 @@ fn test_term()
 }
 
 #[test]
-fn test_product()
+fn test_term()
 {
 	let expr = expr_parser();
 	

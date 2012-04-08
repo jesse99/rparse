@@ -1,37 +1,11 @@
-create allows directory references
-functions can have preconditions
-how does operator overloading work?
-how do classes work?
-
-
-* Would it be nicer if s was part of state?
-	- look at how the parse expr code shakes out
 * May want to sort the parser functions.
-* Update rust lang
-	- allow crust before fn
-	- priv, new, self are keywords
-	- args can have a space before the :
-	- can have a space before < in generic functions
-	- class introduces a new type
-	- void void function doesn't need parens (see uv.rs 338)
 * Use #[crate_type = "lib"]; in rc file instead of --lib.
- * uv module has support for handling async events.
 * Might want to record usage for some key types.
 * May want to mark some functions as pure. Maybe all of them?
 * State needs a value:
- 	- work on an expr parser
- 	- will probably need eval arguments
- 	- can functions return a different value type?
- 	- do we want to cut back on some of the different methods?
- 	
  	- work on a simplistic xml dom parser
-* Would operator overloading make the syntax nicer?
 * test code should probably use to_str interface instead of %?.
 * Work on parser library:
-	- add tests for the rest of the functions
-	- add test expr
-	- add test parse tree
-	- be sure to check error reporting
 	- might want ascii and unicode versions of relevent parsers (eg whitespace)
 	- might want a few more specialized parsers (like C whitespace and ascii whitespace)
 * Update the readme with an example
@@ -44,8 +18,7 @@ how do classes work?
 * Search for todo.
 * Add to cargo?
 * May want to ask for a code review on mailing list.
-* Issues:
-	- reference manual is way too loose
+* Might want an example of parsing significant whitespace.
 
 
 
