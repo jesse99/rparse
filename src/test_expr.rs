@@ -31,41 +31,45 @@ fn expr_ok(text: str, parser: str_parser<int>, expected: int, line: int) -> bool
 }
 
 // TODO:
-// do a commit
-// may want to get rid of macros (try stuff like `let left_paren = literal(…)`
 // implement product
 // may want a terms parser
 // implement expr
 // might want to support unary function calls
-#[cfg(test)]
-fn expr_parser() -> str_parser<int>
+fn expr_parser2() -> str_parser<int>
 {
+	let space = s(_);
+	let left_paren = literal(_, "(", space);
+	let right_paren = literal(_, ")", space);
+	let plus_sign = literal(_, "+", space);
+	let minus_sign = literal(_, "-", space);
+	let int_literal = integer(_, space);
+	let expr_ptr = @mut fails(_);
+	let expr_ref = cyclic(_, expr_ptr);
+	
+	// sub_expr := '(' expr ')'
+	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|results| results[2]});
+	
+	// term := [-+]? (integer | sub_expr)
+	let term = alternative(_, [
+		sequence(_, [plus_sign, sub_expr], {|results| results[2]}),
+		sequence(_, [minus_sign, sub_expr], {|results| -results[2]}),
+		int_literal,
+		sub_expr
+	]);
+	
 	// product := term ([*/] term)*
 	// expr := product ([+-] product)*
 	// start := s expr
-	let space = s(_);
-	let expr_ptr = @mut fails(_);
-	
-	// sub_expr := '(' expr ')'
-	let sub_expr = sequence(_, [#literal["("], #cyclic[expr_ptr], #literal[")"]], {|results| results[2]});
-	
-	// term := [-+]? (integer | sub_expr)
-	let term = #alternative[
-		sequence(_, [#literal["+"], sub_expr], {|results| results[2]}),
-		sequence(_, [#literal["-"], sub_expr], {|results| -results[2]}),
-		#integer[],
-		sub_expr
-	];
 	let expr = term;
 	*expr_ptr = expr;
 	
-	ret #everything["unit test", expr];
+	ret everything("unit test", space, expr, 0, _);
 }
 
 #[test]
 fn test_term()
 {
-	let expr = expr_parser();
+	let expr = expr_parser2();
 	
 	assert check_err_str("", expr, "expected '+' or expected '-' or expected an integer or expected '('", 1);
 	assert expr_ok("23", expr, 23, 1);

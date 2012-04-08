@@ -91,18 +91,6 @@ fn eot<T: copy>(answer: state<T>) -> status<T>
 }
 
 // ---- Parse Functions -------------------------------------------------------
-// TODO: Hack to work-around inability to define macro items. See issue 1176.
-// These macros assume that there is a local variable named "space" used
-// to parse zero or more whitespace characters.
-fn define_macros()
-{
-	#macro[[#alternative[e, ...], alternative(_, [e, ...])]];
-	#macro[[#cyclic[ptr], cyclic(_, ptr)]];
-	#macro[[#everything[file, e], everything(file, _, space, e, 0)]];
-	#macro[[#integer[], integer(_, space)]];
-	#macro[[#literal[value], literal(_, value, space)]];
-}
-
 #[doc = "Used to log the results of a parse function (at both info and debug levels).
 
 Typical usage is to call this function with whatever the parse function wants to return:
@@ -353,7 +341,7 @@ fn cyclic<T: copy>(input: state<T>, parser: @mut parser<T>) -> status<T>
 }
 
 #[doc = "Parses the text and does not fail if all the text was not consumed.."]
-fn just<T: copy>(file: str, text: str, parser: parser<T>, seed: T) -> status<T>
+fn just<T: copy>(file: str, parser: parser<T>, seed: T, text: str) -> status<T>
 {
 	#info["------------------------------------------"];
 	#info["parsing '%s'", text];
@@ -361,7 +349,7 @@ fn just<T: copy>(file: str, text: str, parser: parser<T>, seed: T) -> status<T>
 }
 
 #[doc = "Parses the text and fails if all the text was not consumed. Leading space is allowed."]
-fn everything<T: copy>(file: str, text: str, space: parser<T>, parser: parser<T>, seed: T) -> status<T>
+fn everything<T: copy>(file: str, space: parser<T>, parser: parser<T>, seed: T, text: str) -> status<T>
 {
 	#info["------------------------------------------"];
 	#info["parsing '%s'", text];
