@@ -389,7 +389,7 @@ fn sequence<T: copy>(input: state<T>, parsers: [parser<T>], eval: fn@ ([T]) -> T
 }
 
 #[doc = "Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions)."]
-fn cyclic<T: copy>(input: state<T>, parser: @mut parser<T>) -> status<T>
+fn forward_ref<T: copy>(input: state<T>, parser: @mut parser<T>) -> status<T>
 {
 	ret (*parser)(input);
 }

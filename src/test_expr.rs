@@ -41,7 +41,7 @@ fn expr_parser() -> str_parser<int>
 	let div_sign = literal(_, "/", s);
 	let int_literal = integer(_, s);
 	let expr_ptr = @mut fails(_);
-	let expr_ref = cyclic(_, expr_ptr);	// forward reference to the expr parser
+	let expr_ref = forward_ref(_, expr_ptr);	
 	
 	// sub_expr := '(' expr ')'
 	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|results| results[2]});
