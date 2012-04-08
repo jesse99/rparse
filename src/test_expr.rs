@@ -48,7 +48,7 @@ fn expr_parser() -> str_parser<int>
 	let pe = @mut fails(_);
 	let pexpr = sequence(_, [
 		literal(_, "(", s(_)), 
-		cyclic(_, pe), 
+		cyclic(_, pe),
 		literal(_, ")", s(_))]);
 	
 	let term = alternative(_, [integer(_, s(_)), pexpr]);
@@ -68,12 +68,12 @@ fn test_term()
 	assert expr_ok(" 57   ", expr, 57, 1);
 	assert expr_ok("\t\t\n-100", expr, -100, 2);
 	assert expr_ok("+1", expr, 1, 1);
-	assert check_err_str("+", expr, "expected an integer or expected '('", 1);
+	assert check_err_str("+", expr, "expected an integer", 1);
 	assert check_err_str(" 57   200", expr, "expected EOT but found '200'", 1);
 
 	assert expr_ok("(23)", expr, 23, 1);
 	assert expr_ok("((23))", expr, 23, 1);
-	assert check_err_str("((23)", expr, "expected an integer or expected '('", 1);
+	assert check_err_str("((23)", expr, "expected ')'", 1);
 	
 	// TODO: test leading sign
 }

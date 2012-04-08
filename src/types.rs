@@ -11,8 +11,9 @@ Value is the current result of the parse."]
 type state<T: copy> = {file: str, text: [char], index: uint, line: int, value: T};
 
 #[doc = "Included in the result of parse functions which failed.
-Output will be the same as the input state."]
-type failed<T: copy> = {output: state<T>, mesg: str};
+Output will be the same as the input state. MaxIndex is the index of the
+character that the parser failed on (used for error reporting)."]
+type failed<T: copy> = {output: state<T>, maxIndex: uint, mesg: str};
 
 
 #[doc = "Type for parse functions."]

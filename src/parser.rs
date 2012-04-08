@@ -87,7 +87,7 @@ fn eot<T: copy>(answer: state<T>) -> status<T>
 	{
 		let last = uint::min(answer.index + 16u, vec::len(answer.text) - 1u);
 		let trailer = str::from_chars(vec::slice(answer.text, answer.index, last));
-		ret result::err({output: answer, mesg: #fmt["expected EOT but found '%s'", trailer]});
+		ret result::err({output: answer, maxIndex: answer.index, mesg: #fmt["expected EOT but found '%s'", trailer]});
 	}
 }
 
@@ -139,7 +139,7 @@ fn plog<T: copy>(fun: str, input: state<T>, output: status<T>) -> status<T>
 #[doc = "A parser that always fails."]
 fn fails(input: state<int>) -> status<int>
 {
-	ret plog("fails", input, result::err({output: input, mesg: "forced failure"}));
+	ret plog("fails", input, result::err({output: input, maxIndex: input.index, mesg: "forced failure"}));
 }
 
 // This (and some of the other functions) handle repetition themselves
@@ -188,7 +188,7 @@ fn spaces<T: copy>(input: state<T>) -> status<T>
 	}
 	else
 	{
-		ret plog("spaces", input, result::err({output: input, mesg: "expected whitespace"}));
+		ret plog("spaces", input, result::err({output: input, maxIndex: input.index, mesg: "expected whitespace"}));
 	}
 }
 
@@ -206,7 +206,7 @@ fn literal<T: copy>(input: state<T>, literal: str, space: parser<T>) -> status<T
 		}
 		else
 		{
-			ret plog(#fmt["literal '%s'", literal], input, result::err({output: input, mesg: #fmt["expected '%s'", literal]}));
+			ret plog(#fmt["literal '%s'", literal], input, result::err({output: input, maxIndex: input.index + i, mesg: #fmt["expected '%s'", literal]}));
 		}
 	}
 	
@@ -230,7 +230,7 @@ fn integer(input: state<int>, space: parser<int>) -> status<int>
 	
 	if i == start
 	{
-		ret plog("integer", input, result::err({output: input, mesg: "expected an integer"}));
+		ret plog("integer", input, result::err({output: input, maxIndex: start, mesg: "expected an integer"}));
 	}
 	
 	alt space({index: i with input})		// TODO: not sure if we can simplify this with chain (type inference has problems figuring out the type of the closure)
@@ -256,6 +256,8 @@ fn integer(input: state<int>, space: parser<int>) -> status<int>
 fn alternative<T: copy>(input: state<T>, parsers: [parser<T>]) -> status<T>
 {
 	let mut i = 0u;
+	let mut maxIndex = input.index;
+	let mut errMesg = "";
 	let mut messages: [str] = [];
 	
 	while i < vec::len(parsers)
@@ -269,13 +271,30 @@ fn alternative<T: copy>(input: state<T>, parsers: [parser<T>]) -> status<T>
 			}
 			result::err(error)
 			{
-				vec::push(messages, error.mesg);
+				if error.maxIndex > maxIndex
+				{
+					maxIndex = error.maxIndex;
+					errMesg = error.mesg;
+				}
+				else
+				{
+					vec::push(messages, error.mesg);
+				}
 			}
 		}
 		i += 1u;
 	}
 	
-	ret plog("alternative", input, result::err({output: input, mesg: str::connect(messages, " or ")}));
+	// If the alternatives were able to process anything then we'll use the error message of the one that processed the most.
+	// Otherwise none of them were able to process anything so we'll print what each expected.
+	if str::is_empty(errMesg)
+	{
+		ret plog("alternative", input, result::err({output: input, maxIndex: maxIndex, mesg: str::connect(messages, " or ")}));
+	}
+	else
+	{
+		ret plog("alternative", input, result::err({output: input, maxIndex: maxIndex, mesg: errMesg}));
+	}
 }
 
 #[doc = "sequence := e1 e2 e3…"]
