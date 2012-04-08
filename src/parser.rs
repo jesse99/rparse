@@ -195,22 +195,23 @@ fn spaces<T: copy>(input: state<T>) -> status<T>
 #[doc = "literal := <literal> space"]
 fn literal<T: copy>(input: state<T>, literal: str, space: parser<T>) -> status<T>
 {
-	assert str::is_ascii(literal);		// so it's OK to cast literal to char, TODO: could relax this with an each_char that passed in both the char and its index
-	
 	let mut i = 0u;
+	let mut j = input.index;
 	while i < str::len(literal)
 	{
-		if input.text[input.index + i] == literal[i] as char
+		let {ch, next} = str::char_range_at(literal, i);
+		if ch == input.text[j]
 		{
-			i += 1u;
+			i = next;
+			j += 1u;
 		}
 		else
 		{
-			ret plog(#fmt["literal '%s'", literal], input, result::err({output: input, maxIndex: input.index + i, mesg: #fmt["expected '%s'", literal]}));
+			ret plog(#fmt["literal '%s'", literal], input, result::err({output: input, maxIndex: j, mesg: #fmt["expected '%s'", literal]}));
 		}
 	}
 	
-	ret plog("literal", input, space({index: input.index + i with input}));
+	ret plog("literal", input, space({index: j with input}));
 }
 
 #[doc = "integer := [+-]? [0-9]+ space"]

@@ -31,10 +31,7 @@ fn expr_ok(text: str, parser: str_parser<int>, expected: int, line: int) -> bool
 }
 
 // TODO:
-// alternative should print the error of the parser which processed the most characters (will need to extend failed)
-// get rid of the ascii restriction in literal (use char_range_at)
 // might want to try adding a curry operator (or function)
-// space processing in literal and integer kind of blows
 // implement product
 // may want a terms parser
 #[cfg(test)]
