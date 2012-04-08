@@ -1,4 +1,5 @@
 * May want to sort the parser functions.
+* Should evaluators return a result<T, str>?
 * Use #[crate_type = "lib"]; in rc file instead of --lib.
 * Might want to record usage for some key types.
 * May want to mark some functions as pure. Maybe all of them?

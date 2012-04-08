@@ -63,19 +63,19 @@ fn expr_parser() -> str_parser<int>
 	]);
 	
 	// expr := term ([+-] term)*
-	let expr = term;
+	let add = fn@ (&&x: int, &&y: int) -> int {ret x + y};
+	let sub = fn@ (&&x: int, &&y: int) -> int {ret x - y};
+	let expr = binary_op(_, term, [
+		(plus_sign, term, add),
+		(minus_sign, term, sub)
+	]);
 	*expr_ptr = expr;
 	
 	// start := s expr
-	let start = expr;
-	
-	ret everything("unit test", start, s, 0, _);
+	let start = everything("unit test", expr, s, 0, _);
+	ret start;
 }
 
-// TODO:
-// cleanup
-// arms should track max index
-// implement expr
 #[test]
 fn test_factor()
 {
@@ -109,4 +109,15 @@ fn test_term()
 	assert check_err_str("4 % 1", expr, "expected EOT but found '% 1'", 1);
 	
 	assert expr_ok("2 * 3 / 6", expr, 1, 1);
+}
+
+#[test]
+fn test_expr()
+{
+	let expr = expr_parser();
+	
+	assert expr_ok("3+2", expr, 5, 1);
+	assert expr_ok(" 3\t-2  ", expr, 1, 1);
+	assert expr_ok("2 + 3*4", expr, 14, 1);
+	assert expr_ok("(2 + 3)*4", expr, 20, 1);
 }
