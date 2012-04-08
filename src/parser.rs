@@ -134,8 +134,8 @@ fn fails(input: state<int>) -> status<int>
 // This (and some of the other functions) handle repetition themselves
 // for efficiency. It also has a very short name because it is a very commonly
 // used function.
-#[doc = "s := (' ' | '\t' | '\r' | '\n')*"]
-fn s<T: copy>(input: state<T>) -> status<T>
+#[doc = "space_zero_or_more := (' ' | '\t' | '\r' | '\n')*"]
+fn space_zero_or_more<T: copy>(input: state<T>) -> status<T>
 {
 	let mut i = input.index;
 	let mut line = input.line;
@@ -164,10 +164,10 @@ fn s<T: copy>(input: state<T>) -> status<T>
 	ret plog("s", input, result::ok({index: i, line: line with input}));
 }
 
-#[doc = "spaces := (' ' | '\t' | '\r' | '\n')+"]
-fn spaces<T: copy>(input: state<T>) -> status<T>
+#[doc = "space_zero_or_more := (' ' | '\t' | '\r' | '\n')+"]
+fn space_one_or_more<T: copy>(input: state<T>) -> status<T>
 {
-	let result = s(input);
+	let result = space_zero_or_more(input);
 	let state = result::get(result);
 	
 	if state.index > input.index
@@ -349,7 +349,7 @@ fn just<T: copy>(file: str, parser: parser<T>, seed: T, text: str) -> status<T>
 }
 
 #[doc = "Parses the text and fails if all the text was not consumed. Leading space is allowed."]
-fn everything<T: copy>(file: str, space: parser<T>, parser: parser<T>, seed: T, text: str) -> status<T>
+fn everything<T: copy>(file: str, parser: parser<T>, space: parser<T>, seed: T, text: str) -> status<T>
 {
 	#info["------------------------------------------"];
 	#info["parsing '%s'", text];

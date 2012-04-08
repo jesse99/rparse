@@ -37,14 +37,14 @@ fn expr_ok(text: str, parser: str_parser<int>, expected: int, line: int) -> bool
 // might want to support unary function calls
 fn expr_parser2() -> str_parser<int>
 {
-	let space = s(_);
-	let left_paren = literal(_, "(", space);
-	let right_paren = literal(_, ")", space);
-	let plus_sign = literal(_, "+", space);
-	let minus_sign = literal(_, "-", space);
-	let int_literal = integer(_, space);
+	let s = space_zero_or_more(_);
+	let left_paren = literal(_, "(", s);
+	let right_paren = literal(_, ")", s);
+	let plus_sign = literal(_, "+", s);
+	let minus_sign = literal(_, "-", s);
+	let int_literal = integer(_, s);
 	let expr_ptr = @mut fails(_);
-	let expr_ref = cyclic(_, expr_ptr);
+	let expr_ref = cyclic(_, expr_ptr);	// forward reference to the expr parser
 	
 	// sub_expr := '(' expr ')'
 	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|results| results[2]});
@@ -63,7 +63,7 @@ fn expr_parser2() -> str_parser<int>
 	let expr = term;
 	*expr_ptr = expr;
 	
-	ret everything("unit test", space, expr, 0, _);
+	ret everything("unit test", expr, s, 0, _);
 }
 
 #[test]
