@@ -17,3 +17,6 @@ mod test_expr;
 
 #[cfg(test)]
 mod test_primitives;
+
+#[cfg(test)]
+mod test_xml;

@@ -1,10 +1,13 @@
-* May want to sort the parser functions.
-* Should evaluators return a result<T, str>?
-* Use #[crate_type = "lib"]; in rc file instead of --lib.
-* Might want to record usage for some key types.
-* May want to mark some functions as pure. Maybe all of them?
+* See if the reference manual has changed any.
 * State needs a value:
  	- work on a simplistic xml dom parser
+* May want to sort the parser functions.
+* Use #[crate_type = "lib"]; in rc file instead of --lib.
+* Should there be a validate parser? Takes a predicate function to validate the parsed
+   value.
+* Add expr parser to readme.
+* Might want to record usage for some key types.
+* Should any of the functions have preconditions?
 * test code should probably use to_str interface instead of %?.
 * Work on parser library:
 	- might want ascii and unicode versions of relevent parsers (eg whitespace)
