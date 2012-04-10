@@ -288,7 +288,7 @@ fn binary_op<T: copy>(input: state<T>, lhs: parser<T>, arms: [(parser<T>, parser
 			while true
 			{
 				let out2 = binary_op_arms(get(out), arms);
-				if success(out2)
+				if is_success(out2)
 				{
 					assert get(out2).index > get(out).index;	// arm must fail or make progress
 					out = out2;
