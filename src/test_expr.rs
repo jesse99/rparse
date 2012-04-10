@@ -55,6 +55,8 @@ fn expr_parser() -> str_parser<int>
 	]);
 	
 	// term := factor ([*/] factor)*
+	// Divide by zero will have undefined results. One way to nicely
+	// report it is to define a non_zero_factor parser.
 	let mult = fn@ (&&x: int, &&y: int) -> int {ret x * y};	// generic arguments are currently always passed by pointer so we need the lame && sigil
 	let div = fn@ (&&x: int, &&y: int) -> int {ret x / y};
 	let term = binary_op(_, factor, [
