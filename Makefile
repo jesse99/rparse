@@ -1,3 +1,5 @@
+RUSTC ?= rustc
+
 # ------------------
 # Internal variables
 dummy1 := $(shell mkdir bin 2> /dev/null)
@@ -21,7 +23,7 @@ check: bin/test-rparse
 # setting an executable's name, but not libraries).
 .PHONY : lib
 lib:
-	rustc --lib --out-dir bin src/parser.rc
+	$(RUSTC) --out-dir bin src/parser.rc
 
 bin/test-rparse: src/parser.rc src/*.rs
-	rustc -g --test -o $@ src/parser.rc
+	$(RUSTC) -g --test -o $@ src/parser.rc
