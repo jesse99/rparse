@@ -126,8 +126,8 @@ fn name(input: state<node>) -> status<node>
 	ret plog("name", input, result::ok({value: nname(s) with answer}));
 }
 
-// element1 := '<' name attribute* '/>'
-fn element1(input: state<node>) -> status<node>
+// empty_element := '<' name attribute* '/>'
+fn empty_element(input: state<node>) -> status<node>	// TODO: spec calls this an empty_element
 {
 	let s = space_zero_or_more(_);
 	let lt = literal(_, "<", s);
@@ -143,19 +143,19 @@ fn element1(input: state<node>) -> status<node>
 			_			{fail "name should return nxml";}
 		}
 	};
-	ret plog("element1", input, result);
+	ret plog("empty_element", input, result);
 }
 
 // start := element
-// element := element1 | element2
-// element2 := '<' name attribute* '>' element* content '</' name '>'
+// element := empty_element | element
+// element := '<' name attribute* '>' element* content '</' name '>'
 // attribute := name '=' '"' [^"]* '"'
 // content := <anything but '</'>*
 fn xml_parser() -> str_parser<node>
 {
 	let s = space_zero_or_more(_);
 
-	let element = element1(_);
+	let element = empty_element(_);
 
 	let start = everything("unit test", element, s, nxml(xxml("", [], [], "")), _);
 	ret start;
@@ -171,7 +171,10 @@ fn test_factor()
 	assert check_err_str("<simple></oops>", parser, "xxx", 1);
 	
 	// TODO:
-	// attributes
+	// attributes in empty_element
+	// element
+	// check (some) funky whitespace
+	// attributes in element
 	// child elements
 	// content
 }
