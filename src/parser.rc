@@ -1,4 +1,5 @@
 #[link(name = "rparse", vers = "0.1", uuid = "0188129D-F459-4EA4-A928-A5BA5632EF2E")];
+#[crate_type = "lib"];
 
 #[author = "Jesse Jones"];
 #[license = "MIT"];
