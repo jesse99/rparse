@@ -307,6 +307,45 @@ fn binary_op<T: copy>(input: state<T>, lhs: parser<T>, arms: [(parser<T>, parser
 	}
 }
 
+#[doc = "terms := e*
+
+Eval is called each time e is parsed with the last value and the value of e."]
+fn repeat_zero_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T, T) -> T) -> status<T>
+{
+	let mut out = input;
+	loop
+	{
+		alt parser(out)
+		{
+			result::ok(answer)
+			{
+				assert answer.index > out.index;		// must make progress to guarantee loop termination
+				out = {value: eval(out.value, answer.value) with answer};
+			}
+			result::err(error)
+			{
+				ret plog("repeat_zero_or_more", out, result::ok(out));
+			}
+		}
+	}
+}
+
+#[doc = "terms := e+
+
+Eval is called each time e is parsed with the last value and the value of e."]
+fn repeat_one_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T, T) -> T, errMesg: str) -> status<T>
+{
+	let out = get(repeat_zero_or_more(input, parser, eval));
+	if out.index > input.index
+	{
+		ret plog("repeat_one_or_more", out, result::ok(out));
+	}
+	else
+	{
+		ret plog("repeat_one_or_more", input, result::err({output: input, maxIndex: input.index, mesg: errMesg}));
+	}
+}
+
 #[doc = "optional := e?"]
 fn optional<T: copy>(input: state<T>, parser: parser<T>) -> status<T>
 {
