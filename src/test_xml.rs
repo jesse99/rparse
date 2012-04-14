@@ -287,6 +287,9 @@ fn test_element()
 }
 
 // TODO:
+// use a separate xml_parser file
+// probably want a test dir
+// may want to try an http request parser instead
 // element
 // check (some) funky whitespace
 // attributes in element
