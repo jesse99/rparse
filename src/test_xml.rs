@@ -86,21 +86,12 @@ impl of to_str for node
 	{
 		alt self
 		{
-			ntext(name)
-			{
-				ret name;
-			}
-			nattribute(attr)
-			{
-				ret #fmt["%s = \"%s\"", attr.name, attr.value];
-			}
-			nxml(child)
-			{
-				ret child.to_str();
-			}
+			ntext(name)		{ret name;}
+			nattribute(attr)	{ret #fmt["%s = \"%s\"", attr.name, attr.value];}
+			nxml(child)		{ret child.to_str();}
 		}
 	}
-}    
+}
 
 #[cfg(test)]
 fn xml_ok(text: str, expected: str, parser: str_parser<node>) -> bool
@@ -211,18 +202,9 @@ fn attributes(input: state<node>) -> status<node>
 		
 		alt lhs
 		{
-			ntext(name)			// lhs was an element name
-			{
-				nxml(xxml(name, [attr], [], ""))
-			}
-			nxml(child)			// lhs was an attribute
-			{
-				add_attribute(child, attr)
-			}
-			_
-			{
-				fail "attribute should be preceded by a name or an attribute";
-			}
+			ntext(name)	{nxml(xxml(name, [attr], [], ""))}	// lhs was an element name
+			nxml(child)	{add_attribute(child, attr)}			// lhs was an attribute
+			_				{fail "attribute should be preceded by a name or an attribute";}
 		}
 	};
 	ret plog("attributes", input, result);
@@ -240,14 +222,8 @@ fn empty_element(input: state<node>) -> status<node>
 		|results|
 		alt results[3]
 		{
-			ntext(name)		// no attributes
-			{
-				nxml(xxml(name, [], [], ""))
-			}
-			_					// had attributes
-			{
-				results[3]
-			}
+			ntext(name)	{nxml(xxml(name, [], [], ""))}	// no attributes
+			_				{results[3]}							// had attributes
 		}
 	};
 	ret plog("empty_element", input, result);
@@ -287,9 +263,6 @@ fn test_element()
 }
 
 // TODO:
-// use a separate xml_parser file
-// probably want a test dir
-// may want to try an http request parser instead
 // element
 // check (some) funky whitespace
 // attributes in element
