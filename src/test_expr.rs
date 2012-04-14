@@ -33,8 +33,9 @@ fn expr_ok(text: str, parser: str_parser<int>, expected: int, line: int) -> bool
 
 fn expr_parser() -> str_parser<int>
 {
-	// Create closures for parsers which parse a literal followed by optional whitespace.
 	let s = space_zero_or_more(_);
+
+	// Create closures for parsers which parse a literal followed by optional whitespace.
 	let left_paren = literal(_, "(", s);
 	let right_paren = literal(_, ")", s);
 	let plus_sign = literal(_, "+", s);
@@ -53,12 +54,12 @@ fn expr_parser() -> str_parser<int>
 	// If sequence is called with [p1, p2] parsers and it succeeds then it will
 	// call the closure with [input value, p1 value, p2 value]. In this case the
 	// values will be ints (in general they can by anything which is copyable).
-	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|results| result::ok(results[2])});
+	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|values| result::ok(values[1])});
 	
 	// factor := [-+]? (integer | sub_expr)
 	let factor = alternative(_, [
-		sequence(_, [plus_sign, sub_expr], {|results| result::ok(results[2])}),
-		sequence(_, [minus_sign, sub_expr], {|results| result::ok(-results[2])}),
+		sequence(_, [plus_sign, sub_expr], {|values| result::ok(values[1])}),
+		sequence(_, [minus_sign, sub_expr], {|values| result::ok(-values[1])}),
 		int_literal,		// int literal handles leading sign character already
 		sub_expr]);
 	

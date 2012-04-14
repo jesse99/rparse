@@ -1,11 +1,6 @@
 
-* State needs a value:
- 	- work on a simplistic xml dom parser
 * May want to sort the parser functions.
-* Use #[crate_type = "lib"]; in rc file instead of --lib.
 * Build the lib with optimizations on.
-* Should there be a validate parser? Takes a predicate function to validate the parsed
-   value.
 * Add expr parser to readme.
 * Might want to record usage for some key types.
 * Should any of the functions have preconditions?

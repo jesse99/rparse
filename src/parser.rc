@@ -7,7 +7,6 @@
 
 use std;
 
-//mod parser;
 mod types;
 
 #[cfg(test)]
