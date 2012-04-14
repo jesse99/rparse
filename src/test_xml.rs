@@ -142,26 +142,6 @@ fn xml_ok(text: str, expected: str, parser: str_parser<node>) -> bool
 	}
 }
 
-// name := [a-zA-Z] [a-zA-Z0-9_]*
-fn name(input: state<node>) -> status<node>
-{
-	if !is_alpha(input.text[input.index])
-	{
-		ret plog("name", input, result::err({output: input, maxIndex: input.index, mesg: "expected an element name"}));
-	}
-	
-	let start = input.index;
-	let mut i = start;
-	while is_alphanum(input.text[i]) || input.text[i] == '_'
-	{
-		i += 1u;
-	}
-	
-	let s = str::from_chars(vec::slice(input.text, start, i));
-	let answer = get(space_zero_or_more({index: i with input}));
-	ret plog("name", input, result::ok({value: name_node(s) with answer}));
-}
-
 // string_body := [^"]*
 fn string_body(input: state<node>) -> status<node>
 {
@@ -183,6 +163,7 @@ fn attribute(input: state<node>) -> status<node>
 	let s = space_zero_or_more(_);
 	let eq = literal(_, "=", s);
 	let quote = literal(_, "\"", s);
+	let name = identifier(_, s, {|n| name_node(n)});
 	let result = sequence(input, [name, eq, quote, string_body, quote])
 	{
 		|values|
@@ -229,6 +210,7 @@ fn empty_element(input: state<node>) -> status<node>
 	let s = space_zero_or_more(_);
 	let lt = literal(_, "<", s);
 	let slash_gt = literal(_, "/>", s);
+	let name = identifier(_, s, {|n| name_node(n)});
 	
 	let result = sequence(input, [lt, name, attributes(_), slash_gt])
 	{
@@ -251,6 +233,7 @@ fn complex_element(input: state<node>, element_ptr: @mut parser<node>) -> status
 		result::ok(make_children_node(values))
 	});
 	let body = content(_);
+	let name = identifier(_, s, {|n| name_node(n)});
 	
 	//                                        0  1        2                  3   4           5        6          7        8
 	let result = sequence(input, [lt, name, attributes(_), gt, children, body, lt_slash, name, gt])

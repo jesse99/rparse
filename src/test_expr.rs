@@ -42,7 +42,7 @@ fn expr_parser() -> str_parser<int>
 	let minus_sign = literal(_, "-", s);
 	let mult_sign = literal(_, "*", s);
 	let div_sign = literal(_, "/", s);
-	let int_literal = integer(_, s);
+	let int_literal = integer(_, s, {|v| v});
 	
 	// Parenthesized expressions require a forward reference to the expr parser
 	// so we initialize a function pointer to something that always fails, create

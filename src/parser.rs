@@ -250,7 +250,7 @@ fn literal<T: copy>(input: state<T>, literal: str, space: parser<T>) -> status<T
 }
 
 #[doc = "integer := [+-]? [0-9]+ space"]
-fn integer(input: state<int>, space: parser<int>) -> status<int>
+fn integer<T: copy>(input: state<T>, space: parser<T>, eval: fn@ (int) -> T) -> status<T>
 {
 	let mut start = input.index;
 	if input.text[start] == '+' || input.text[start] == '-'
@@ -279,13 +279,33 @@ fn integer(input: state<int>, space: parser<int>) -> status<int>
 			{
 				value = -value;
 			}
-			ret plog("integer", input, result::ok({value: value with answer}));
+			ret plog("integer", input, result::ok({value: eval(value) with answer}));
 		}
 		result::err(error)
 		{
 			ret plog("integer", input, result::err(error));
 		}
 	}
+}
+
+#[doc = " identifier := [a-zA-Z] [a-zA-Z0-9_]* space"]
+fn identifier<T: copy>(input: state<T>, space: parser<T>, eval: fn@ (str) -> T) -> status<T>
+{
+	if !is_alpha(input.text[input.index])
+	{
+		ret plog("identifier", input, result::err({output: input, maxIndex: input.index, mesg: "expected an element name"}));
+	}
+	
+	let start = input.index;
+	let mut i = start;
+	while is_alphanum(input.text[i]) || input.text[i] == '_'
+	{
+		i += 1u;
+	}
+	
+	let s = str::from_chars(vec::slice(input.text, start, i));
+	let answer = get(space({index: i with input}));
+	ret plog("identifier", input, result::ok({value: eval(s) with answer}));
 }
 
 #[doc = "terms := lhs (op rhs)*
