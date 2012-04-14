@@ -1,6 +1,7 @@
 // Test a grammar capable of evaluating simple mathematical expressions.
 import io;
 import io::writer_util;
+import result = result::result;
 import test_helpers::*;
 
 #[cfg(test)]
@@ -30,8 +31,6 @@ fn expr_ok(text: str, parser: str_parser<int>, expected: int, line: int) -> bool
 	}
 }
 
-// Note that divide by zero will yield undefined results. One way to fix this
-// is to define a non_zero_factor parser.
 fn expr_parser() -> str_parser<int>
 {
 	// Create closures for parsers which parse a literal followed by optional whitespace.
@@ -54,27 +53,27 @@ fn expr_parser() -> str_parser<int>
 	// If sequence is called with [p1, p2] parsers and it succeeds then it will
 	// call the closure with [input value, p1 value, p2 value]. In this case the
 	// values will be ints (in general they can by anything which is copyable).
-	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|results| results[2]});
+	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|results| result::ok(results[2])});
 	
 	// factor := [-+]? (integer | sub_expr)
 	let factor = alternative(_, [
-		sequence(_, [plus_sign, sub_expr], {|results| results[2]}),
-		sequence(_, [minus_sign, sub_expr], {|results| -results[2]}),
+		sequence(_, [plus_sign, sub_expr], {|results| result::ok(results[2])}),
+		sequence(_, [minus_sign, sub_expr], {|results| result::ok(-results[2])}),
 		int_literal,		// int literal handles leading sign character already
 		sub_expr]);
 	
 	// term := factor ([*/] factor)*
 	// Generic arguments are currently always passed by pointer so we need 
 	// the lame && sigil.
-	let mult = fn@ (&&x: int, &&y: int) -> int {ret x * y};
-	let div = fn@ (&&x: int, &&y: int) -> int {ret x / y};
+	let mult = fn@ (&&x: int, &&y: int) -> result<int, str> {ret result::ok(x * y)};
+	let div = fn@ (&&x: int, &&y: int) -> result<int, str> {ret if (y != 0) {result::ok(x / y)} else {result::err("divide by zero")}};
 	let term = binary_op(_, factor, [
 		(mult_sign, factor, mult),
 		(div_sign, factor, div)]);
 	
 	// expr := term ([+-] term)*
-	let add = fn@ (&&x: int, &&y: int) -> int {ret x + y};
-	let sub = fn@ (&&x: int, &&y: int) -> int {ret x - y};
+	let add = fn@ (&&x: int, &&y: int) -> result<int, str> {ret result::ok(x + y)};
+	let sub = fn@ (&&x: int, &&y: int) -> result<int, str> {ret result::ok(x - y)};
 	let expr = binary_op(_, term, [
 		(plus_sign, term, add),
 		(minus_sign, term, sub)]);
@@ -117,6 +116,7 @@ fn test_term()
 	assert check_err_str("4 * ", expr, "expected EOT but found '* '", 1);
 	assert check_err_str("4 ** 1", expr, "expected EOT but found '** 1'", 1);
 	assert check_err_str("4 % 1", expr, "expected EOT but found '% 1'", 1);
+	assert check_err_str("4 / 0", expr, "divide by zero", 1);
 	
 	assert expr_ok("2 * 3 / 6", expr, 1, 1);
 }

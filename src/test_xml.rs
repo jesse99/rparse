@@ -176,7 +176,7 @@ fn attribute(input: state<node>) -> status<node>
 		|results|
 		let name = get_node_text(results[1]);
 		let value = get_node_text(results[4]);
-		nattribute({name: name, value: value})
+		result::ok(nattribute({name: name, value: value}))
 	};
 	ret result;
 }
@@ -199,11 +199,10 @@ fn attributes(input: state<node>) -> status<node>
 	{
 		|lhs, rhs|
 		let attr = get_node_attr(rhs);
-		
 		alt lhs
 		{
-			ntext(name)	{nxml(xxml(name, [attr], [], ""))}	// lhs was an element name
-			nxml(child)	{add_attribute(child, attr)}			// lhs was an attribute
+			ntext(name)	{result::ok(nxml(xxml(name, [attr], [], "")))}	// lhs was an element name
+			nxml(child)	{result::ok(add_attribute(child, attr))}			// lhs was an attribute
 			_				{fail "attribute should be preceded by a name or an attribute";}
 		}
 	};
@@ -222,23 +221,53 @@ fn empty_element(input: state<node>) -> status<node>
 		|results|
 		alt results[3]
 		{
-			ntext(name)	{nxml(xxml(name, [], [], ""))}	// no attributes
-			_				{results[3]}							// had attributes
+			ntext(name)	{result::ok(nxml(xxml(name, [], [], "")))}	// no attributes
+			_				{result::ok(results[3])}							// had attributes
 		}
 	};
 	ret plog("empty_element", input, result);
 }
 
-// start := element
-// element := empty_element | element
-// element := '<' name attribute* '>' element* content '</' name '>'
+// complex_element := '<' name attribute* '>' element* content '</' name '>'
+fn complex_element(input: state<node>) -> status<node>
+{
+	let s = space_zero_or_more(_);
+	let lt = literal(_, "<", s);
+	let gt = literal(_, ">", s);
+	let lt_slash = literal(_, "</", s);
+	
+	let result = sequence(input, [
+		lt, name, attributes(_), gt, lt_slash, name, gt])
+	{
+		|results|
+		let name1 = get_node_text(results[2]);
+		let name2 = get_node_text(results[7]);
+		if name1 == name2
+		{
+			alt results[3]
+			{
+				ntext(name)	{result::ok(nxml(xxml(name, [], [], "")))}	// no attributes
+				_				{result::ok(results[3])}							// had attributes
+			}
+		}
+		else
+		{
+			result::err(#fmt["Expected end tag '%s' but found '%s'", name1, name2])
+		}
+	};
+	ret plog("complex_element", input, result);
+}
+
 // content := <anything but '</'>*
+
 fn xml_parser() -> str_parser<node>
 {
 	let s = space_zero_or_more(_);
-
-	let element = empty_element(_);
-
+	
+	// element := empty_element | complex_element
+	let element = alternative(_, [empty_element(_), complex_element(_)]);
+	
+	// start := element
 	let start = everything("unit test", element, s, nxml(xxml("", [], [], "")), _);
 	ret start;
 }
@@ -259,12 +288,12 @@ fn test_element()
 	let parser = xml_parser();
 	
 	assert xml_ok("<simple></simple>", "<simple></simple>", parser);
-	assert check_err_str("<simple></oops>", parser, "xxx", 1);
+	assert check_err_str("<simple></oops>", parser, "Expected end tag 'simple' but found 'oops'", 1);
 }
 
 // TODO:
-// element
 // check (some) funky whitespace
+// mismatched tag names
 // attributes in element
 // child elements
 // content

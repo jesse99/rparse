@@ -89,7 +89,7 @@ fn eot<T: copy>(answer: state<T>) -> status<T>
 	}
 }
 
-fn binary_op_arms<T: copy>(input: state<T>, arms: [(parser<T>, parser<T>, fn@ (T, T) -> T)]) -> status<T>
+fn binary_op_arms<T: copy>(input: state<T>, arms: [(parser<T>, parser<T>, fn@ (T, T) -> result::result<T, str>)]) -> status<T>
 {
 	let mut i = 0u;
 	let mut maxIndex = input.index;
@@ -104,7 +104,17 @@ fn binary_op_arms<T: copy>(input: state<T>, arms: [(parser<T>, parser<T>, fn@ (T
 				{
 					result::ok(rhsOut)
 					{
-						ret result::ok({value: eval(input.value, rhsOut.value) with rhsOut});
+						alt eval(input.value, rhsOut.value)
+						{
+							result::ok(value)
+							{
+								ret result::ok({value: value with rhsOut});
+							}
+							result::err(mesg)
+							{
+								ret result::err({output: input, maxIndex: maxIndex, mesg: mesg});
+							}
+						}
 					}
 					result::err(error)
 					{
@@ -119,7 +129,7 @@ fn binary_op_arms<T: copy>(input: state<T>, arms: [(parser<T>, parser<T>, fn@ (T
 		}
 		i += 1u;
 	}
-	ret result::err({output: input, maxIndex: maxIndex, mesg: "no arm matched"});		// this is not really an error: it just signals binary_op that it is done
+	ret result::err({output: input, maxIndex: maxIndex, mesg: ""});		// this is not really an error: it just signals binary_op that it is done
 }
 
 // ---- Parse Functions -------------------------------------------------------
@@ -277,7 +287,7 @@ fn integer(input: state<int>, space: parser<int>) -> status<int>
 #[doc = "terms := lhs (op rhs)*
 
 Where arms is a vector of (op, rhs, eval)."]
-fn binary_op<T: copy>(input: state<T>, lhs: parser<T>, arms: [(parser<T>, parser<T>, fn@ (T, T) -> T)]) -> status<T>
+fn binary_op<T: copy>(input: state<T>, lhs: parser<T>, arms: [(parser<T>, parser<T>, fn@ (T, T) -> result::result<T, str>)]) -> status<T>
 {
 	let result = lhs(input);
 	alt result
@@ -288,14 +298,24 @@ fn binary_op<T: copy>(input: state<T>, lhs: parser<T>, arms: [(parser<T>, parser
 			while true
 			{
 				let out2 = binary_op_arms(get(out), arms);
-				if is_success(out2)
+				alt out2
 				{
-					assert get(out2).index > get(out).index;	// arm must fail or make progress
-					out = out2;
-				}
-				else
-				{
-					ret plog("binary_op", input, out);	// we expect arms to fail eventually
+					result::ok(rhs)
+					{
+						assert rhs.index > get(out).index;	// arm must fail or make progress
+						out = out2;
+					}
+					result::err(error)
+					{
+						if str::is_empty(error.mesg)
+						{
+							ret plog("binary_op", input, out);	// we expect arms to fail eventually
+						}
+						else
+						{
+							ret plog("binary_op", input, result::err(error));
+						}
+					}
 				}
 			}
 			ret plog("binary_op", input, out);			// keep the compiler happy
@@ -310,7 +330,7 @@ fn binary_op<T: copy>(input: state<T>, lhs: parser<T>, arms: [(parser<T>, parser
 #[doc = "terms := e*
 
 Eval is called each time e is parsed with the last value and the value of e."]
-fn repeat_zero_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T, T) -> T) -> status<T>
+fn repeat_zero_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T, T) -> result::result<T, str>) -> status<T>
 {
 	let mut out = input;
 	loop
@@ -320,7 +340,17 @@ fn repeat_zero_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T
 			result::ok(answer)
 			{
 				assert answer.index > out.index;		// must make progress to guarantee loop termination
-				out = {value: eval(out.value, answer.value) with answer};
+				alt eval(out.value, answer.value)
+				{
+					result::ok(value)
+					{
+						out = {value: value  with answer};
+					}
+					result::err(mesg)
+					{
+						ret plog("repeat_zero_or_more", input, result::err({output: input, maxIndex: answer.index, mesg: mesg}));
+					}
+				}
 			}
 			result::err(error)
 			{
@@ -333,7 +363,7 @@ fn repeat_zero_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T
 #[doc = "terms := e+
 
 Eval is called each time e is parsed with the last value and the value of e."]
-fn repeat_one_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T, T) -> T, errMesg: str) -> status<T>
+fn repeat_one_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T, T) -> result::result<T, str>, errMesg: str) -> status<T>
 {
 	let out = get(repeat_zero_or_more(input, parser, eval));
 	if out.index > input.index
@@ -411,7 +441,7 @@ fn alternative<T: copy>(input: state<T>, parsers: [parser<T>]) -> status<T>
 #[doc = "sequence := e1 e2 e3…
 
 Eval will be called with [input value, e1 value, …]."]
-fn sequence<T: copy>(input: state<T>, parsers: [parser<T>], eval: fn@ ([T]) -> T) -> status<T>
+fn sequence<T: copy>(input: state<T>, parsers: [parser<T>], eval: fn@ ([T]) -> result::result<T, str>) -> status<T>
 {
 	let mut results: [T] = [];
 	vec::reserve(results, vec::len(parsers) + 1u);
@@ -436,7 +466,17 @@ fn sequence<T: copy>(input: state<T>, parsers: [parser<T>], eval: fn@ ([T]) -> T
 		i += 1u;
 	}
 	
-	ret plog("sequence", input, result::ok({value: eval(results) with out}));
+	alt eval(results)
+	{
+		result::ok(value)
+		{
+			ret plog("sequence", input, result::ok({value: value with out}));
+		}
+		result::err(mesg)
+		{
+			ret plog("sequence", input, result::err({output: input, maxIndex: out.index, mesg: mesg}));
+		}
+	}
 }
 
 #[doc = "Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions)."]
@@ -459,5 +499,5 @@ fn everything<T: copy>(file: str, parser: parser<T>, space: parser<T>, seed: T, 
 	#info["------------------------------------------"];
 	#info["parsing '%s'", text];
 	let input = {file: file, text: chars_with_eot(text), index: 0u, line: 1, value: seed};
-	ret sequence(input, [space, parser, eot(_)]) {|results| results[2]};
+	ret sequence(input, [space, parser, eot(_)]) {|results| result::ok(results[2])};
 }
