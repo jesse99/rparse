@@ -15,50 +15,50 @@ enum xml
 	xxml(str, [attribute], [xml], str)
 }
 
-// Parse tree node, i.e. intermediate data structure which will eventually become an xml object.
+// Parse tree node, i.e. an intermediate data structure which will eventually become an xml object.
 enum node
 {
-	nname(str),
-	nchildren([xml]),
-	nattribute(attribute),
-	nattributes([attribute]),
-	nxml(xml),
-	ntext(str)
+	name_node(str),
+	children_node([xml]),
+	attribute_node(attribute),
+	attribute_nodes([attribute]),
+	xml_node(xml),
+	text_node(str)
 }
 
 fn make_attribute_node(name: node, value: node) -> node
 {
-	let n = alt name {nname(x) {x} 	_ {fail}};
-	let v = alt value {ntext(x) {x}	_ {fail}};
-	ret nattribute({name: n, value: v});
+	let n = alt name {name_node(x) {x}	_ {fail}};
+	let v = alt value {text_node(x) {x}		_ {fail}};
+	ret attribute_node({name: n, value: v});
 }
 
 fn make_attributes_node(attrs: [node]) -> node
 {
-	let a = vec::map(attrs, {|v| alt v {nattribute(x) {x} _ {fail}}});
-	ret nattributes(a);
+	let a = vec::map(attrs, {|v| alt v {attribute_node(x) {x} _ {fail}}});
+	ret attribute_nodes(a);
 }
 
 fn make_children_node(children: [node]) -> node
 {
-	let c = vec::map(children, {|v| alt v {nxml(x) {x} _ {fail}}});
-	ret nchildren(c);
+	let c = vec::map(children, {|v| alt v {xml_node(x) {x} _ {fail}}});
+	ret children_node(c);
 }
 
 fn make_simple_node(name: node, attributes: node) -> node
 {
-	let n = alt name {nname(x) {x} 				_ {fail}};
-	let a = alt attributes {nattributes(x) {x}	_ {fail}};
-	ret nxml(xxml(n, a, [], ""));
+	let n = alt name {name_node(x) {x} 			_ {fail}};
+	let a = alt attributes {attribute_nodes(x) {x}	_ {fail}};
+	ret xml_node(xxml(n, a, [], ""));
 }
 
 fn make_complex_node(name: node, attributes: node, children: node, content: node) -> node
 {
-	let n = alt name {nname(x) {x} 				_ {fail}};
-	let a = alt attributes {nattributes(x) {x}	_ {fail}};
-	let c = alt children {nchildren(x) {x}		_ {fail}};
-	let t = alt content {ntext(x) {x}				_ {fail}};
-	ret nxml(xxml(n, a, c, t));
+	let n = alt name {name_node(x) {x} 			_ {fail}};
+	let a = alt attributes {attribute_nodes(x) {x}	_ {fail}};
+	let c = alt children {children_node(x) {x}		_ {fail}};
+	let t = alt content {text_node(x) {x}			_ {fail}};
+	ret xml_node(xxml(n, a, c, t));
 }
 
 impl of to_str for xml
@@ -98,12 +98,12 @@ impl of to_str for node
 	{
 		alt self
 		{
-			nname(s)			{ret s;}
-			nchildren(cc)		{let children = vec::map(cc) {|c| c.to_str()}; ret str::connect(children, "");}
-			nattribute(a)		{ret #fmt["%s=\"%s\"", a.name, a.value];}
-			nattributes(aa)	{let attrs = vec::map(aa) {|a| #fmt["%s=\"%s\"", a.name, a.value]}; ret str::connect(attrs, " ");}
-			nxml(x)			{ret x.to_str();}
-			ntext(s)			{ret s;}
+			name_node(s)		{ret s;}
+			children_node(cc)	{let children = vec::map(cc) {|c| c.to_str()}; ret str::connect(children, "");}
+			attribute_node(a)	{ret #fmt["%s=\"%s\"", a.name, a.value];}
+			attribute_nodes(aa)	{let attrs = vec::map(aa) {|a| #fmt["%s=\"%s\"", a.name, a.value]}; ret str::connect(attrs, " ");}
+			xml_node(x)			{ret x.to_str();}
+			text_node(s)			{ret s;}
 		}
 	}
 }
@@ -117,7 +117,7 @@ fn xml_ok(text: str, expected: str, parser: str_parser<node>) -> bool
 		{
 			alt answer.value
 			{
-				nxml(child)
+				xml_node(child)
 				{
 					let actual = child.to_str();
 					if actual != expected
@@ -142,6 +142,7 @@ fn xml_ok(text: str, expected: str, parser: str_parser<node>) -> bool
 	}
 }
 
+// name := [a-zA-Z] [a-zA-Z0-9_]*
 fn name(input: state<node>) -> status<node>
 {
 	if !is_alpha(input.text[input.index])
@@ -158,10 +159,11 @@ fn name(input: state<node>) -> status<node>
 	
 	let s = str::from_chars(vec::slice(input.text, start, i));
 	let answer = get(space_zero_or_more({index: i with input}));
-	ret plog("name", input, result::ok({value: nname(s) with answer}));
+	ret plog("name", input, result::ok({value: name_node(s) with answer}));
 }
 
-fn string(input: state<node>) -> status<node>
+// string_body := [^"]*
+fn string_body(input: state<node>) -> status<node>
 {
 	let start = input.index;
 	let mut i = start;
@@ -172,16 +174,16 @@ fn string(input: state<node>) -> status<node>
 	
 	let s = str::from_chars(vec::slice(input.text, start, i));
 	let answer = get(space_zero_or_more({index: i with input}));
-	ret plog("string", input, result::ok({value: ntext(s) with answer}));
+	ret plog("string", input, result::ok({value: text_node(s) with answer}));
 }
 
-// attribute := name '=' '"' [^"]* '"'
+// attribute := name '=' '"' string_body '"'
 fn attribute(input: state<node>) -> status<node>
 {
 	let s = space_zero_or_more(_);
 	let eq = literal(_, "=", s);
 	let quote = literal(_, "\"", s);
-	let result = sequence(input, [name, eq, quote, string, quote])
+	let result = sequence(input, [name, eq, quote, string_body, quote])
 	{
 		|values|
 		result::ok(make_attribute_node(values[0], values[3]))
@@ -213,7 +215,7 @@ fn content(input: state<node>) -> status<node>
 	if input.text[i] == '<' && input.text[i+1u] == '/'
 	{
 		let text = str::from_chars(vec::slice(input.text, input.index, i));
-		ret plog("content", input, result::ok({index: i, value: ntext(text) with input}));
+		ret plog("content", input, result::ok({index: i, value: text_node(text) with input}));
 	}
 	else
 	{
@@ -278,7 +280,7 @@ fn xml_parser() -> str_parser<node>
 	*element_ptr = element;
 	
 	// start := element
-	let start = everything("unit test", element, s, nxml(xxml("", [], [], "")), _);
+	let start = everything("unit test", element, s, xml_node(xxml("", [], [], "")), _);
 	ret start;
 }
 
@@ -314,6 +316,7 @@ fn test_element()
 // may want to use constructors like name_node
 // check (some) funky whitespace
 // check some more error cases
+//    especially missing terminators
 // check a real xml example
 // probably want to get rid of binary_op
 //    or move it into test_expr
