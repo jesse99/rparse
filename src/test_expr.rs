@@ -30,8 +30,11 @@ fn expr_ok(text: str, parser: str_parser<int>, expected: int, line: int) -> bool
 	}
 }
 
+// Note that divide by zero will yield undefined results. One way to fix this
+// is to define a non_zero_factor parser.
 fn expr_parser() -> str_parser<int>
 {
+	// Create closures for parsers which parse a literal followed by optional whitespace.
 	let s = space_zero_or_more(_);
 	let left_paren = literal(_, "(", s);
 	let right_paren = literal(_, ")", s);
@@ -40,42 +43,47 @@ fn expr_parser() -> str_parser<int>
 	let mult_sign = literal(_, "*", s);
 	let div_sign = literal(_, "/", s);
 	let int_literal = integer(_, s);
+	
+	// Parenthesized expressions require a forward reference to the expr parser
+	// so we initialize a function pointer to something that always fails, create
+	// a parser using the parser expr_ptr points to, and fixup expr_ptr later.
 	let expr_ptr = @mut fails(_);
 	let expr_ref = forward_ref(_, expr_ptr);	
 	
 	// sub_expr := '(' expr ')'
+	// If sequence is called with [p1, p2] parsers and it succeeds then it will
+	// call the closure with [input value, p1 value, p2 value]. In this case the
+	// values will be ints (in general they can by anything which is copyable).
 	let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|results| results[2]});
 	
 	// factor := [-+]? (integer | sub_expr)
 	let factor = alternative(_, [
 		sequence(_, [plus_sign, sub_expr], {|results| results[2]}),
 		sequence(_, [minus_sign, sub_expr], {|results| -results[2]}),
-		int_literal,
-		sub_expr
-	]);
+		int_literal,		// int literal handles leading sign character already
+		sub_expr]);
 	
 	// term := factor ([*/] factor)*
-	// Divide by zero will have undefined results. One way to nicely
-	// report it is to define a non_zero_factor parser.
-	let mult = fn@ (&&x: int, &&y: int) -> int {ret x * y};	// generic arguments are currently always passed by pointer so we need the lame && sigil
+	// Generic arguments are currently always passed by pointer so we need 
+	// the lame && sigil.
+	let mult = fn@ (&&x: int, &&y: int) -> int {ret x * y};
 	let div = fn@ (&&x: int, &&y: int) -> int {ret x / y};
 	let term = binary_op(_, factor, [
 		(mult_sign, factor, mult),
-		(div_sign, factor, div)
-	]);
+		(div_sign, factor, div)]);
 	
 	// expr := term ([+-] term)*
 	let add = fn@ (&&x: int, &&y: int) -> int {ret x + y};
 	let sub = fn@ (&&x: int, &&y: int) -> int {ret x - y};
 	let expr = binary_op(_, term, [
 		(plus_sign, term, add),
-		(minus_sign, term, sub)
-	]);
+		(minus_sign, term, sub)]);
 	*expr_ptr = expr;
 	
 	// start := s expr
-	let start = everything("unit test", expr, s, 0, _);
-	ret start;
+	// Returns a parser which takes a str and parses leading whitespace followed 
+	// by expr. The parser fails if expr does not consume all the input.
+	ret everything("unit test", expr, s, 0, _);
 }
 
 #[test]
