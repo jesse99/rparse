@@ -67,7 +67,7 @@ fn munge_chars(chars: [char]) -> str
 	// TODO: I'd like to use bullet here, but while io::println handles it correctly
 	// the logging subsystem does not. See issue 2154.
 	//let bullet = '\u2022';
-	let bullet = '*';
+	let bullet = '.';
 	
 	let mut value = "";
 	str::reserve(value, vec::len(chars));
@@ -168,7 +168,7 @@ fn plog<T: copy>(fun: str, input: state<T>, output: status<T>) -> status<T>
 }
 
 #[doc = "A parser that always fails."]
-fn fails(input: state<int>) -> status<int>
+fn fails<T: copy>(input: state<T>) -> status<T>
 {
 	ret plog("fails", input, result::err({output: input, maxIndex: input.index, mesg: "forced failure"}));
 }
@@ -354,7 +354,7 @@ fn repeat_zero_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T
 			}
 			result::err(error)
 			{
-				ret plog("repeat_zero_or_more", out, result::ok(out));
+				ret plog("repeat_zero_or_more", input, result::ok(out));
 			}
 		}
 	}
@@ -368,7 +368,7 @@ fn repeat_one_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T,
 	let out = get(repeat_zero_or_more(input, parser, eval));
 	if out.index > input.index
 	{
-		ret plog("repeat_one_or_more", out, result::ok(out));
+		ret plog("repeat_one_or_more", input, result::ok(out));
 	}
 	else
 	{
@@ -376,15 +376,27 @@ fn repeat_one_or_more<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T,
 	}
 }
 
-#[doc = "optional := e?"]
-fn optional<T: copy>(input: state<T>, parser: parser<T>) -> status<T>
+#[doc = "optional := e?
+
+If e succeeds then eval is called with the input value and the value of e."]
+fn optional<T: copy>(input: state<T>, parser: parser<T>, eval: fn@ (T, T) -> result::result<T, str>) -> status<T>
 {
-	let result = parser(input);
-	alt result
+	let out = parser(input);
+	alt out
 	{
 		result::ok(answer)
 		{
-			ret plog("optional", input, result);
+			alt eval(input.value, answer.value)
+			{
+				result::ok(value)
+				{
+					ret plog("optional", input, result::ok({value: value with answer}));
+				}
+				result::err(mesg)
+				{
+					ret plog("optional", input, result::err({output: input, maxIndex: answer.index, mesg: mesg}));
+				}
+			}
 		}
 		result::err(error)
 		{
