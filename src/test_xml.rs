@@ -26,91 +26,39 @@ enum node
 	ntext(str)
 }
 
-fn get_node_name(node: node) -> str
+fn make_attribute_node(name: node, value: node) -> node
 {
-	alt node
-	{
-		nname(t)	{ret t;}
-		_			{fail "expected nname, but found " + node.to_str();}
-	}
+	let n = alt name {nname(x) {x} 	_ {fail}};
+	let v = alt value {ntext(x) {x}	_ {fail}};
+	ret nattribute({name: n, value: v});
 }
 
-fn get_node_children(node: node) -> [xml]
+fn make_attributes_node(attrs: [node]) -> node
 {
-	alt node
-	{
-		nchildren(c)	{ret c;}
-		_				{fail "expected nchildren, but found " + node.to_str();}
-	}
+	let a = vec::map(attrs, {|v| alt v {nattribute(x) {x} _ {fail}}});
+	ret nattributes(a);
 }
 
-fn get_node_attr(node: node) -> attribute
+fn make_children_node(children: [node]) -> node
 {
-	alt node
-	{
-		nattribute(a)	{ret a;}
-		_				{fail "expected nattribute, but found " + node.to_str();}
-	}
+	let c = vec::map(children, {|v| alt v {nxml(x) {x} _ {fail}}});
+	ret nchildren(c);
 }
 
-fn get_node_attrs(node: node) -> [attribute]
+fn make_simple_node(name: node, attributes: node) -> node
 {
-	alt node
-	{
-		nattributes(a)	{ret a;}
-		_					{fail "expected nattributes, but found " + node.to_str();}
-	}
+	let n = alt name {nname(x) {x} 				_ {fail}};
+	let a = alt attributes {nattributes(x) {x}	_ {fail}};
+	ret nxml(xxml(n, a, [], ""));
 }
 
-fn get_node_xml(node: node) -> xml
+fn make_complex_node(name: node, attributes: node, children: node, content: node) -> node
 {
-	alt node
-	{
-		nxml(x)	{ret x;}
-		_			{fail "expected nxml, but found " + node.to_str();}
-	}
-}
-
-fn get_node_text(node: node) -> str
-{
-	alt node
-	{
-		ntext(t)	{ret t;}
-		_			{fail "expected ntext, but found " + node.to_str();}
-	}
-}
-
-fn add_attribute(node: xml, attr: attribute) -> node
-{
-	alt node
-	{
-		xxml(name, attrs, children, content)
-		{
-			nxml(xxml(name, attrs + [attr], children, content))
-		}
-	}
-}
-
-fn add_child(parent: xml, child: xml) -> node
-{
-	alt parent
-	{
-		xxml(name, attrs, children, content)
-		{
-			nxml(xxml(name, attrs, children + [child], content))
-		}
-	}
-}
-
-fn add_content(parent: xml, s: str) -> node
-{
-	alt parent
-	{
-		xxml(name, attrs, children, content)
-		{
-			nxml(xxml(name, attrs, children, content + s))
-		}
-	}
+	let n = alt name {nname(x) {x} 				_ {fail}};
+	let a = alt attributes {nattributes(x) {x}	_ {fail}};
+	let c = alt children {nchildren(x) {x}		_ {fail}};
+	let t = alt content {ntext(x) {x}				_ {fail}};
+	ret nxml(xxml(n, a, c, t));
 }
 
 impl of to_str for xml
@@ -236,9 +184,7 @@ fn attribute(input: state<node>) -> status<node>
 	let result = sequence(input, [name, eq, quote, string, quote])
 	{
 		|values|
-		let name = get_node_name(values[0]);
-		let value = get_node_text(values[3]);
-		result::ok(nattribute({name: name, value: value}))
+		result::ok(make_attribute_node(values[0], values[3]))
 	};
 	ret plog("attribute", input, result);
 }
@@ -249,7 +195,7 @@ fn attributes(input: state<node>) -> status<node>
 	let result = repeat_zero_or_more(input, attribute(_))
 	{
 		|values|
-		result::ok(nattributes(vec::map(values, {|v| get_node_attr(v)})))
+		result::ok(make_attributes_node(values))
 	};
 	ret plog("attributes", input, result);
 }
@@ -285,8 +231,7 @@ fn empty_element(input: state<node>) -> status<node>
 	let result = sequence(input, [lt, name, attributes(_), slash_gt])
 	{
 		|values|
-		let x = xxml(get_node_name(values[1]), get_node_attrs(values[2]), [], "");
-		result::ok(nxml(x))
+		result::ok(make_simple_node(values[1], values[2]))
 	};
 	ret plog("empty_element", input, result);
 }
@@ -301,7 +246,7 @@ fn complex_element(input: state<node>, element_ptr: @mut parser<node>) -> status
 	let children = repeat_zero_or_more(_, forward_ref(_, element_ptr),
 	{
 		|values|
-		result::ok(nchildren(vec::map(values, {|v| get_node_xml(v)})))
+		result::ok(make_children_node(values))
 	});
 	let body = content(_);
 	
@@ -309,12 +254,11 @@ fn complex_element(input: state<node>, element_ptr: @mut parser<node>) -> status
 	let result = sequence(input, [lt, name, attributes(_), gt, children, body, lt_slash, name, gt])
 	{
 		|values|
-		let name1 = get_node_name(values[1]);
-		let name2 = get_node_name(values[7]);
+		let name1 = values[1].to_str();
+		let name2 = values[7].to_str();
 		if name1 == name2
 		{
-			let x = xxml(name1, get_node_attrs(values[2]), get_node_children(values[4]), get_node_text(values[5]));
-			result::ok(nxml(x))
+			result::ok(make_complex_node(values[1], values[2], values[4], values[5]))
 		}
 		else
 		{
@@ -367,9 +311,7 @@ fn test_element()
 }
 
 // TODO:
-// do a commit
-// do something better when constructing nxml
-// do we need all the getters?
+// may want to use constructors like name_node
 // check (some) funky whitespace
 // check some more error cases
 // check a real xml example
