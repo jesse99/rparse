@@ -14,6 +14,7 @@ be bound before the parse function can be composed with other functions. For exa
 
 ## Example
 Here is an example of a simple parser which can be used to evaluate mathematical expressions.
+
     fn expr_parser() -> str_parser<int>
     {
         let s = space_zero_or_more(_);
@@ -68,19 +69,21 @@ Here is an example of a simple parser which can be used to evaluate mathematical
         // by expr. The parser fails if expr does not consume all the input.
         ret everything("unit test", expr, s, 0, _);
     }
-fn expr_parser() -> str_parser<int>
 
 Usage looks like this:
+
     fn expr_parser() -> str_parser<int>
-    let parser = expr_parser();
-    alt parser("(2 + 3)*4")
     {
-        result::ok(value)
+        let parser = expr_parser();
+        alt parser("(2 + 3)*4")
         {
-            io::stdout().write_line(#fmt["value = %d", value]);
-        }
-        result::err(error)
-        {
-            io::stderr().write_line(#fmt["Error '%s' on line %u", error.mesg, error.output.line]);
+            result::ok(value)
+            {
+                io::stdout().write_line(#fmt["value = %d", value]);
+            }
+            result::err(error)
+            {
+                io::stderr().write_line(#fmt["Error '%s' on line %u", error.mesg, error.output.line]);
+            }
         }
     }
