@@ -13,6 +13,7 @@
 * Add an install target
 	- consumers should have an update-libraries target
 * Search for todo.
+* Talk about the theory and limitations.
 * Add to cargo?
 * May want to ask for a code review on mailing list.
 * Might want an example of parsing significant whitespace.

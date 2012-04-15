@@ -8,6 +8,7 @@
 use std;
 
 mod basis;
+mod generators;
 mod misc;
 mod types;
 
@@ -15,6 +16,7 @@ mod types;
 mod tests
 {
 	mod test_basis;
+	mod test_generators;
 	mod test_helpers;
 	//mod test_expr;
 	//mod test_primitives;

@@ -5,7 +5,7 @@ import result = result::result;
 import misc::*;
 import types::*;
 
-export check_char_ok, check_char_failed, check_int_ok, check_int_failed;
+export check_char_ok, check_char_failed, check_int_ok, check_int_failed, check_str_ok, check_str_failed;
 
 fn check_char_ok(inText: str, parser: parser<char>, expected: char) -> bool
 {
@@ -32,6 +32,22 @@ fn check_int_ok(inText: str, parser: parser<int>, expected: int) -> bool
 }
 
 fn check_int_failed(inText: str, parser: parser<int>, expected: str, line: int) -> bool
+{
+	#info["----------------------------------------------------"];
+	let text = chars_with_eot(inText);
+	let result = parser({file: "unit test", text: text, index: 0u, line: 1});
+	ret check_failed(result, expected, line);
+}
+
+fn check_str_ok(inText: str, parser: parser<str>, expected: str) -> bool
+{
+	#info["----------------------------------------------------"];
+	let text = chars_with_eot(inText);
+	let result = parser({file: "unit test", text: text, index: 0u, line: 1,});
+	ret check_ok(result, expected);
+}
+
+fn check_str_failed(inText: str, parser: parser<str>, expected: str, line: int) -> bool
 {
 	#info["----------------------------------------------------"];
 	let text = chars_with_eot(inText);
