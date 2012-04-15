@@ -1,6 +1,3 @@
-
-* May want to sort the parser functions.
-* Build the lib with optimizations on.
 * Add expr parser to readme.
 * Might want to record usage for some key types.
 * Should any of the functions have preconditions?
@@ -10,6 +7,8 @@
 	- might want a few more specialized parsers (like C whitespace and ascii whitespace)
 * Update the readme with an example
 	- may want to switch to markdown as well
+* Improve docs
+	- http://brson.github.com/rust/2012/04/14/how-to-rustdoc/
 * Make needs to build debug or release.
 * Think about adding support for col numbers (probably via a get_col function).
 * Add an install target
@@ -19,6 +18,7 @@
 * Add to cargo?
 * May want to ask for a code review on mailing list.
 * Might want an example of parsing significant whitespace.
+* Probably better to build as a static library, see #552.
 
 
 
