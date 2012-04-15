@@ -83,8 +83,11 @@ impl parser_methods<T: copy> for parser<T>
 	{
 		{|input: state|
 			result::chain_err(self(input))
-			{|_failure|
-				parser2(input)
+			{|failure1|
+				result::chain_err(parser2(input))
+				{|failure2|
+					result::err({mesg: failure1.mesg + " or " + failure2.mesg with failure2})
+				}
 			}
 		}
 	}
