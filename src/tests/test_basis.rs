@@ -43,11 +43,11 @@ fn parse_unary() -> parser<char>
 		let ch = input.text[input.index];
 		if ch == '-' || ch == '+'
 		{
-			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
+			log_ok("unary", input, {new_state: {index: input.index + 1u with input}, value: ch})
 		}
 		else
 		{
-			result::err({new_state: input, max_index: input.index, mesg: "'-' or '+'"})
+			log_err("unary", input, {new_state: input, max_index: input.index, mesg: "'-' or '+'"})
 		}
 	}
 }
@@ -59,11 +59,11 @@ fn parse_digit() -> parser<int>
 		if ch >= '0' && ch <= '9'
 		{
 			let value = option::get(char::to_digit(ch, 10u)) as int;
-			result::ok({new_state: {index: input.index + 1u with input}, value: value})
+			log_ok("digit", input, {new_state: {index: input.index + 1u with input}, value: value})
 		}
 		else
 		{
-			result::err({new_state: input, max_index: input.index, mesg: "digit"})
+			log_err("digit", input, {new_state: input, max_index: input.index, mesg: "digit"})
 		}
 	}
 }
@@ -74,7 +74,7 @@ fn parse_num(op: char) -> parser<int>
 		chain(parse_digit()(input))
 		{|output|
 			let value = if op == '-' {-output.value} else {output.value};
-			result::ok({value: value with output})
+			log_ok("num", input, {value: value with output})
 		}
 	}
 }
@@ -105,11 +105,11 @@ fn parse_lower() -> parser<char>
 		let ch = input.text[input.index];
 		if ch >= 'a' && ch <= 'z'
 		{
-			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
+			log_ok("lower", input, {new_state: {index: input.index + 1u with input}, value: ch})
 		}
 		else
 		{
-			result::err({new_state: input, max_index: input.index, mesg: "lower-case letter"})
+			log_err("lower", input, {new_state: input, max_index: input.index, mesg: "lower-case letter"})
 		}
 	}
 }
@@ -120,11 +120,11 @@ fn parse_upper() -> parser<char>
 		let ch = input.text[input.index];
 		if ch >= 'A' && ch <= 'Z'
 		{
-			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
+			log_ok("upper", input, {new_state: {index: input.index + 1u with input}, value: ch})
 		}
 		else
 		{
-			result::err({new_state: input, max_index: input.index, mesg: "upper-case letter"})
+			log_err("upper", input, {new_state: input, max_index: input.index, mesg: "upper-case letter"})
 		}
 	}
 }

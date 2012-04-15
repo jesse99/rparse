@@ -16,18 +16,47 @@ which can then be used to parse whatever you like. The functions within this mod
 are the primitive functions from which all the other functions are built.
 "];
 
+import misc::*;
 import types::*;
 
 const EOT: char = '\u0003';
 
-// ---- Generators ------------------------------------------------------------
-#[doc = "Returns a parser which always fails. 
+// ---- Debugging -------------------------------------------------------------
+#[doc = "Used to log the results of a parse function (at info level)."]
+fn log_ok<T: copy>(fun: str, input: state, result: succeeded<T>) -> status<T>
+{
+	// Note that we make multiple calls to munge_chars which is fairly slow, but
+	// we only do that when actually logging: when info or debug logging is off
+	// the munge_chars calls aren't evaluated.
+	assert result.new_state.index >= input.index;			// can't go backwards on success (but no progress is fine, eg e*)
+	if result.new_state.index > input.index
+	{
+		#info("%s", munge_chars(input.text));
+		#info("%s^ %s parsed '%s'", repeat_char(' ', result.new_state.index), fun, str::slice(munge_chars(input.text), input.index, result.new_state.index));
+	}
+	else
+	{
+		#debug("%s", munge_chars(input.text));
+		#debug("%s^ %s passed", repeat_char(' ', result.new_state.index), fun);
+	}
+	ret result::ok(result);
+}
 
-Otherwise known as the zero monadic value."]
+#[doc = "Used to log the results of a parse function (at debug level)."]
+fn log_err<T: copy>(fun: str, input: state, result: failed<T>) -> status<T>
+{
+	assert result.new_state.index == input.index;			// on errors the next parser must begin at the start
+	#debug("%s", munge_chars(input.text));
+	#debug("%s^ %s failed", repeat_char('-', input.index), fun);
+	ret result::err(result);
+}
+
+// ---- Generators ------------------------------------------------------------
+#[doc = "Used to log the results of a parse function (at debug level)."]
 fn fails<T: copy>(mesg: str) -> parser<T>
 {
 	{|input: state|
-		result::err({new_state: input, max_index: input.index, mesg: mesg})}
+		log_err("fails", input, {new_state: input, max_index: input.index, mesg: mesg})}
 }
 
 #[doc = "Returns a parser which always succeeds, but does not consume any input. 
@@ -36,7 +65,7 @@ Otherwise known as the monadic unit function."]
 fn return<T: copy>(value: T) -> parser<T>
 {
 	{|input: state|
-		result::ok({new_state: input, value: value})}
+		log_ok("return", input, {new_state: input, value: value})}
 }
 
 #[doc = "Returns a parser which succeeds until EOT is reached."]
@@ -46,17 +75,17 @@ fn next() -> parser<char>
 		let ch = input.text[input.index];
 		if ch != EOT
 		{
-			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
+			log_ok("next", input, {new_state: {index: input.index + 1u with input}, value: ch})
 		}
 		else
 		{
-			result::err({new_state: input, max_index: input.index, mesg: "EOT"})
+			log_err("next", input, {new_state: input, max_index: input.index, mesg: "EOT"})
 		}
 	}
 }
 
 // ---- Combinators -----------------------------------------------------------
-impl parser_methods<T: copy> for parser<T>
+impl basis_combinators<T: copy> for parser<T>
 {
 	#[doc = "If everything is successful then the function returned by eval is called
 	with the result of calling self. If self fails eval is not called. If you don't
@@ -70,7 +99,7 @@ impl parser_methods<T: copy> for parser<T>
 			{|output|
 				result::chain_err(eval(output.value)(output.new_state))
 				{|failure|
-					result::err({new_state: input with failure})
+					log_err("then", input, {new_state: input with failure})
 				}
 			}
 		}
@@ -86,7 +115,7 @@ impl parser_methods<T: copy> for parser<T>
 			{|failure1|
 				result::chain_err(parser2(input))
 				{|failure2|
-					result::err({mesg: failure1.mesg + " or " + failure2.mesg with failure2})
+					log_err("or", input, {mesg: failure1.mesg + " or " + failure2.mesg with failure2})
 				}
 			}
 		}
