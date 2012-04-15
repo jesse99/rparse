@@ -23,7 +23,7 @@ check: bin/test-rparse
 # setting an executable's name, but not libraries).
 .PHONY : lib
 lib:
-	$(RUSTC) --out-dir bin src/parser.rc
+	$(RUSTC) --out-dir bin -O src/parser.rc
 
 bin/test-rparse: src/parser.rc src/*.rs
 	$(RUSTC) -g --test -o $@ src/parser.rc
