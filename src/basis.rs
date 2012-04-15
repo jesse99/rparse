@@ -56,35 +56,36 @@ fn next() -> parser<char>
 }
 
 // ---- Combinators -----------------------------------------------------------
-#[doc = "If everything is successful then the function returned by eval is called
-with the result of calling parser If parser fails eval is not called. If you don't
-want to use the value from parser _then can be used instead.
-
-Otherwise known as the monadic bind function."]
-fn then<T: copy, U: copy>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> parser<U>
+impl parser_methods<T: copy> for parser<T>
 {
-	{|input: state|
-		result::chain(parser(input))
-		{|output|
-			result::chain_err(eval(output.value)(output.new_state))
-			{|failure|
-				result::err({new_state: input with failure})
+	#[doc = "If everything is successful then the function returned by eval is called
+	with the result of calling self. If self fails eval is not called. If you don't
+	want to use the value from self _then can be used instead.
+	
+	Otherwise known as the monadic bind function."]
+	fn then<T: copy, U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
+	{
+		{|input: state|
+			result::chain(self(input))
+			{|output|
+				result::chain_err(eval(output.value)(output.new_state))
+				{|failure|
+					result::err({new_state: input with failure})
+				}
+			}
+		}
+	}
+	
+	#[doc = "Returns a parser which first tries self, and if that fails, parser 2.
+	
+	Otherwise known as the monadic plus function."]
+	fn or<T: copy>( parser2: parser<T>) -> parser<T>
+	{
+		{|input: state|
+			result::chain_err(self(input))
+			{|_failure|
+				parser2(input)
 			}
 		}
 	}
 }
-
-#[doc = "Returns a parser which first tries parser1, and if that fails, parser 2.
-
-Otherwise known as the monadic plus function."]
-fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
-{
-	{|input: state|
-		result::chain_err(parser1(input))
-		{|_failure|
-			parser2(input)
-		}
-	}
-}
-
-// TODO: make these methods

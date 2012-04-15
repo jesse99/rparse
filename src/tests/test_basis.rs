@@ -82,7 +82,7 @@ fn parse_num(op: char) -> parser<int>
 #[test]
 fn test_then()
 {
-	let p = then(parse_unary(), {|c| parse_num(c)});
+	let p = parse_unary().then({|c| parse_num(c)});
 	
 	assert check_int_ok("-9", p, -9);
 	assert check_int_ok("+3", p, 3);
@@ -132,7 +132,7 @@ fn parse_upper() -> parser<char>
 #[test]
 fn test_or()
 {
-	let p = or(parse_lower(), parse_upper());
+	let p = parse_lower().or(parse_upper());
 	
 	assert check_char_ok("a", p, 'a');
 	assert check_char_ok("Z", p, 'Z');
