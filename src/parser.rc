@@ -7,13 +7,16 @@
 
 use std;
 
+mod basis;
+mod misc;
 mod types;
 
 #[cfg(test)]
 mod tests
 {
+	mod test_basis;
 	mod test_helpers;
-	mod test_expr;
-	mod test_primitives;
-	mod test_xml;
+	//mod test_expr;
+	//mod test_primitives;
+	//mod test_xml;
 }

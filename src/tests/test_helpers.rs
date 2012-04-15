@@ -2,74 +2,83 @@
 import io;
 import io::writer_util;
 import result = result::result;
-
+import misc::*;
 import types::*;
 
-#[cfg(test)]
-fn check_ok<T: copy>(inText: str, parser: parser<T>, expected: T, line: int, seed: T) -> bool
+export check_char_ok, check_char_failed, check_int_ok, check_int_failed;
+
+fn check_char_ok(inText: str, parser: parser<char>, expected: char) -> bool
 {
 	let text = chars_with_eot(inText);
-	alt parser({file: "unit test", text: text, index: 0u, line: 1, value: seed})
+	let result = parser({file: "unit test", text: text, index: 0u, line: 1,});
+	ret check_ok(result, expected);
+}
+
+fn check_char_failed(inText: str, parser: parser<char>, expected: str, line: int) -> bool
+{
+	let text = chars_with_eot(inText);
+	let result = parser({file: "unit test", text: text, index: 0u, line: 1});
+	ret check_failed(result, expected, line);
+}
+
+fn check_int_ok(inText: str, parser: parser<int>, expected: int) -> bool
+{
+	let text = chars_with_eot(inText);
+	let result = parser({file: "unit test", text: text, index: 0u, line: 1});
+	ret check_ok(result, expected);
+}
+
+fn check_int_failed(inText: str, parser: parser<int>, expected: str, line: int) -> bool
+{
+	let text = chars_with_eot(inText);
+	let result = parser({file: "unit test", text: text, index: 0u, line: 1});
+	ret check_failed(result, expected, line);
+}
+
+// ---- Private Functions -----------------------------------------------------
+fn check_ok<T: copy>(result: status<T>, expected: T) -> bool
+{
+	alt result
 	{
-		result::ok(answer)
+		result::ok(output)
 		{
-			if answer.value != expected
+			if output.value != expected
 			{
-				io::stderr().write_line(#fmt["Expected %? but found %?", expected, answer.value]);
-				ret false;
-			}
-			if answer.line != line
-			{
-				io::stderr().write_line(#fmt["Expected line %d but found line %d", line, answer.line]);
+				io::stderr().write_line(#fmt["Expected %? but found %?", expected, output.value]);
 				ret false;
 			}
 			ret true;
 		}
-		result::err(error)
+		result::err(failure)
 		{
-			io::stderr().write_line(#fmt["Error: %s", error.mesg]);
+			io::stderr().write_line(#fmt["Error: expected %s", failure.mesg]);
 			ret false;
 		}
 	}
 }
 
-#[cfg(test)]
-fn check_err_status<T: copy>(x: status<T>, expected: str, line: int) -> bool
+fn check_failed<T: copy>(result: status<T>, expected: str, line: int) -> bool
 {
-	alt x
+	alt result
 	{
-		result::ok(answer)
+		result::ok(output)
 		{
-			io::stderr().write_line(#fmt["Expected error '%s' but found %?", expected, answer.value]);
+			io::stderr().write_line(#fmt["Expected error '%s' but found %?", expected, output.value]);
 			ret false;
 		}
-		result::err(error)
+		result::err(failure)
 		{
-			if error.mesg != expected
+			if failure.mesg != expected
 			{
-				io::stderr().write_line(#fmt["Expected error '%s' but found '%s'", expected, error.mesg]);
+				io::stderr().write_line(#fmt["Expected error '%s' but found '%s'", expected, failure.mesg]);
 				ret false;
 			}
-			if error.output.line != line
+			if failure.new_state.line != line
 			{
-				io::stderr().write_line(#fmt["Expected error '%s' on line %d but line is %d", expected, line, error.output.line]);
+				io::stderr().write_line(#fmt["Expected error '%s' on line %d but line is %d", expected, line, failure.new_state.line]);
 				ret false;
 			}
 			ret true;
 		}
 	}
-}
-
-#[cfg(test)]
-fn check_err_str<T: copy>(text: str, parser: str_parser<T>, expected: str, line: int) -> bool
-{
-	ret check_err_status(parser(text), expected, line);
-}
-
-#[cfg(test)]
-fn check_err<T: copy>(inText: str, parser: parser<T>, expected: str, line: int, seed: T) -> bool
-{
-	let text = chars_with_eot(inText);
-	let x= parser({file: "unit test", text: text, index: 0u, line: 1, value: seed});
-	ret check_err_status(x, expected, line);
 }

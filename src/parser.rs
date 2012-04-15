@@ -5,6 +5,7 @@ import io::writer_util;
 import result::*;
 import types::*;
 
+/*
 const EOT: char = '\u0003';
 
 // ---- Helper Functions ------------------------------------------------------
@@ -517,3 +518,4 @@ fn everything<T: copy>(file: str, parser: parser<T>, space: parser<T>, seed: T, 
 	let input = {file: file, text: chars_with_eot(text), index: 0u, line: 1, value: seed};
 	ret sequence(input, [space, parser, eot(_)]) {|results| result::ok(results[2])};
 }
+*/
