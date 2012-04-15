@@ -165,10 +165,8 @@ fn attribute(input: state<node>) -> status<node>
 	let quote = literal(_, "\"", s);
 	let name = identifier(_, s, {|n| name_node(n)});
 	let result = sequence(input, [name, eq, quote, string_body, quote])
-	{
-		|values|
-		result::ok(make_attribute_node(values[0], values[3]))
-	};
+		{|values| result::ok(make_attribute_node(values[0], values[3]))};
+	
 	ret plog("attribute", input, result);
 }
 
@@ -176,10 +174,8 @@ fn attribute(input: state<node>) -> status<node>
 fn attributes(input: state<node>) -> status<node>
 {
 	let result = repeat_zero_or_more(input, attribute(_))
-	{
-		|values|
-		result::ok(make_attributes_node(values))
-	};
+		{|values| result::ok(make_attributes_node(values))};
+		
 	ret plog("attributes", input, result);
 }
 
@@ -213,10 +209,8 @@ fn empty_element(input: state<node>) -> status<node>
 	let name = identifier(_, s, {|n| name_node(n)});
 	
 	let result = sequence(input, [lt, name, attributes(_), slash_gt])
-	{
-		|values|
-		result::ok(make_simple_node(values[1], values[2]))
-	};
+		{|values| result::ok(make_simple_node(values[1], values[2]))};
+		
 	ret plog("empty_element", input, result);
 }
 
@@ -228,10 +222,8 @@ fn complex_element(input: state<node>, element_ptr: @mut parser<node>) -> status
 	let gt = literal(_, ">", s);
 	let lt_slash = literal(_, "</", s);
 	let children = repeat_zero_or_more(_, forward_ref(_, element_ptr),
-	{
-		|values|
-		result::ok(make_children_node(values))
-	});
+		{|values| result::ok(make_children_node(values))});
+		
 	let body = content(_);
 	let name = identifier(_, s, {|n| name_node(n)});
 	
@@ -275,6 +267,9 @@ fn test_simple_element()
 	assert xml_ok("<trivial/>", "<trivial></trivial>", parser);
 	assert xml_ok("<trivial first=\"number one\"/>", "<trivial first=\"number one\"></trivial>", parser);
 	assert xml_ok("<trivial first=\"number one\" second=\"number two\"/>", "<trivial first=\"number one\" second=\"number two\"></trivial>", parser);
+	assert xml_ok("  <  trivial first \t =    \"number one\"  \t/>", "<trivial first=\"number one\"></trivial>", parser);
+	assert check_err_str("<trivial", parser, "expected '/>'", 1);
+	assert check_err_str("<trivial first=\"number one/>", parser, "expected '/>'", 1);
 }
 
 #[test]
@@ -282,7 +277,7 @@ fn test_element()
 {
 	let parser = xml_parser();
 	
-	assert xml_ok("<simple></simple>", "<simple></simple>", parser);
+	assert xml_ok("<simple>\n  \n</simple>", "<simple></simple>", parser);
 	assert check_err_str("<simple></oops>", parser, "Expected end tag 'simple' but found 'oops'", 1);
 	assert xml_ok("<simple alpha = \"A\" beta=\"12\"></simple>", "<simple alpha=\"A\" beta=\"12\"></simple>", parser);
 	
@@ -294,13 +289,3 @@ fn test_element()
 	assert xml_ok("<parent>some text</parent>", "<parent>some text</parent>", parser);
 	assert xml_ok("<parent><child/>blah blah</parent>", "<parent><child></child>blah blah</parent>", parser);
 }
-
-// TODO:
-// may want to use constructors like name_node
-// check (some) funky whitespace
-// check some more error cases
-//    especially missing terminators
-// check a real xml example
-// probably want to get rid of binary_op
-//    or move it into test_expr
-
