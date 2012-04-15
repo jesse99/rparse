@@ -33,22 +33,22 @@ fn chars_with_eot(s: str) -> [char]
 }
 
 // Note that, unlike the functions in the char module, these are 7-bit ASCII functions.
-fn is_alpha(ch: char) -> bool
+pure fn is_alpha(ch: char) -> bool
 {
 	ret (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
-fn is_digit(ch: char) -> bool
+pure fn is_digit(ch: char) -> bool
 {
 	ret ch >= '0' && ch <= '9';
 }
 
-fn is_alphanum(ch: char) -> bool
+pure fn is_alphanum(ch: char) -> bool
 {
 	ret is_alpha(ch) || is_digit(ch);
 }
 
-fn is_print(ch: char) -> bool
+pure fn is_print(ch: char) -> bool
 {
 	ret ch >= ' ' && ch <= '~';
 }

@@ -1,19 +1,17 @@
-* Add expr parser to readme.
+* Look at some existing parser libraries.
 * Might want to record usage for some key types.
-* Should any of the functions have preconditions?
-* test code should probably use to_str interface instead of %?.
+* Need to be explicit about what is exported.
+* Add a list parser?
 * Work on parser library:
 	- might want ascii and unicode versions of relevent parsers (eg whitespace)
 	- might want a few more specialized parsers (like C whitespace and ascii whitespace)
-* Update the readme with an example
-	- may want to switch to markdown as well
 * Improve docs
 	- http://brson.github.com/rust/2012/04/14/how-to-rustdoc/
-* Make needs to build debug or release.
 * Think about adding support for col numbers (probably via a get_col function).
+* Should some of the types be classes?
+	- if nothing else type errors would be a lot shorter
 * Add an install target
 	- consumers should have an update-libraries target
-* Look at some existing parser libraries.
 * Search for todo.
 * Add to cargo?
 * May want to ask for a code review on mailing list.
@@ -24,70 +22,8 @@
 
 
 #[cfg(unimplemented)]
-#[doc = "optional := e?"]
-fn optional<T>(input: state, parser: parser<T>) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
-#[doc = "repeat_zero := e*"]
-fn repeat_zero<T>(input: state, parser: parser<T>) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
-#[doc = "repeat_one := e+"]
-fn repeat_one<T>(input: state, parser: parser<T>) -> status<T>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
-
-#[cfg(unimplemented)]
 #[doc = "list := elem (sep space elem)*"]
 fn list<T>(input: state, elem: parser<T>, sep: str, space: parser<()>) -> status<[T]>
 {
 	ret result::err({output: input, mesg: "not implemented"});
-}
-
-------------------------------------------------------------------------------------
-#[doc = "identifier := [a-zA-Z_] [a-zA-Z_0-9]* space"]
-fn identifier(input: state, space: parser<()>) -> status<str>
-{
-	let mut ch = input.text[input.index];
-	if !(is_alpha(ch) || ch == '_')
-	{
-		ret result::err({output: input, mesg: "expected identifier"});
-	}
-	
-	let mut i = input.index;
-	while is_alphanum(input.text[i]) || input.text[i] == '_'
-	{
-		i += 1u;
-	}
-	
-	alt space({index: i with input})
-	{
-		result::ok(answer)
-		{
-			let value = vec::slice(input.text, input.index, i - input.index);
-			ret result::ok({output: answer.output, value: str::from_chars(value)});
-		}
-		result::err(error)
-		{
-			ret result::err(error);
-		}
-	}
-}
-----------------------------------------------------------------
-
-#[test]
-fn test_identifier()
-{
-	assert check_err("", bind identifier(_, s), "expected identifier", 1);
-	assert check_ok("begin end", bind identifier(_, s), "begin", 1);
-	assert check_ok("beginning", bind identifier(_, s), "beginning", 1);
-	assert check_ok("z99_", bind identifier(_, s), "z99_", 1);
-	assert check_ok("_", bind identifier(_, s), "_", 1);
 }
