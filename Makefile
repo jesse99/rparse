@@ -25,5 +25,5 @@ check: bin/test-rparse
 lib:
 	$(RUSTC) --out-dir bin -O src/parser.rc
 
-bin/test-rparse: src/parser.rc src/*.rs
+bin/test-rparse: src/parser.rc src/*.rs src/tests/*.rs
 	$(RUSTC) -g --test -o $@ src/parser.rc

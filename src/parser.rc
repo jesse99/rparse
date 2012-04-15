@@ -10,13 +10,10 @@ use std;
 mod types;
 
 #[cfg(test)]
-mod test_helpers;
-
-#[cfg(test)]
-mod test_expr;
-
-#[cfg(test)]
-mod test_primitives;
-
-#[cfg(test)]
-mod test_xml;
+mod tests
+{
+	mod test_helpers;
+	mod test_expr;
+	mod test_primitives;
+	mod test_xml;
+}
