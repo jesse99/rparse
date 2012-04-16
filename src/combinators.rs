@@ -73,6 +73,17 @@ impl std_combinators<T: copy> for parser<T>
 		}
 	}
 	
+	#[doc = "optional := e?"]
+	fn optional<T: copy>(missing: T) -> parser<T>
+	{
+		{|input: state|
+			result::chain_err(self(input))
+			{|_failure|
+				log_ok("optional", input, {new_state: input, value: missing})
+			}
+		}
+	}
+	
 	#[doc = "repeat0 := e*
 	
 	Values for each parsed e are returned."]
@@ -142,5 +153,45 @@ impl std_combinators<T: copy> for parser<T>
 				}
 			}
 		}
+	}
+}
+
+#[doc = "sequence := e0 e1...
+
+If the parses succeed eval is called with the value from each parse. This is a version 
+of then that is simpler to use with more than two parsers (assuming that they all 
+return the same type)."]
+fn sequence<T: copy, U: copy>(parsers: [parser<T>], eval: fn@ ([T]) -> U) -> parser<U>
+{
+	{|input: state|
+		let mut output = input;
+		let mut result = result::err({old_state: input, err_state: input, mesg: "dummy"});
+		let mut values = [];
+		vec::reserve(values, vec::len(parsers));
+		
+		let mut i = 0u;
+		while i < vec::len(parsers)
+		{
+			alt parsers[i](output)
+			{
+				result::ok(pass)
+				{
+					output = pass.new_state;
+					vec::push(values, pass.value);
+					i += 1u;
+				}
+				result::err(failure)
+				{
+					result = log_err("sequence", input, {old_state: input with failure});
+					break;
+				}
+			}
+		}
+		
+		if i == vec::len(parsers)
+		{
+			result = log_ok("sequence", input, {new_state: output, value: eval(values)})
+		}
+		result
 	}
 }

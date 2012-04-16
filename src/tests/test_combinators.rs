@@ -86,3 +86,35 @@ fn test_space1()
 	assert check_str_failed("x\nz", p, "'y'", 2);
 	assert check_str_failed("x\n\r\nz", p, "'y'", 3);
 }
+
+#[test]
+fn test_optional()
+{
+	let p = text("x").optional("z");
+	
+	assert check_str_ok("x", p, "x");
+	assert check_str_ok("b", p, "z");
+	assert check_str_ok("", p, "z");
+}
+
+pure fn is_identifier_trailer(ch: char) -> bool
+{
+	ret ch == '?' || ch == '!';
+}
+
+#[test]
+fn test_sequence()
+{
+	let prefix = match1(is_identifier_prefix, "identifier");
+	let suffix = match1(is_identifier_suffix, "identifier").repeat0().then({|v| return(str::connect(v, ""))});
+	let trailer = match1(is_identifier_trailer, "identifier").optional("");
+	let p = sequence([prefix, suffix, trailer], {|values| str::connect(values, "")});
+	
+	assert check_str_ok("hey", p, "hey");
+	assert check_str_ok("hey?", p, "hey?");
+	assert check_str_ok("hey!", p, "hey!");
+	assert check_str_ok("hey_there", p, "hey_there");
+	assert check_str_ok("hey there", p, "hey");
+	assert check_str_ok("spanky123xy", p, "spanky123xy");
+	assert check_str_failed("", p, "identifier", 1);
+}
