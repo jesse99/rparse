@@ -19,8 +19,6 @@ are the primitive functions from which all the other functions are built.
 import misc::*;
 import types::*;
 
-const EOT: char = '\u0003';
-
 // ---- Debugging -------------------------------------------------------------
 #[doc = "Used to log the results of a parse function (at info level)."]
 fn log_ok<T: copy>(fun: str, input: state, result: succeeded<T>) -> status<T>
@@ -92,7 +90,8 @@ impl basis_combinators<T: copy> for parser<T>
 	#[doc = "If everything is successful then the function returned by eval is called
 	with the result of calling self. If self fails eval is not called. Also see _then.
 	
-	Otherwise known as the monadic bind function."]
+	Otherwise known as the monadic bind function. Often used to translate parsed
+	values: `p().then({|v| return(blah::from_whatever(v))})`"]
 	fn then<T: copy, U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
 	{
 		{|input: state|

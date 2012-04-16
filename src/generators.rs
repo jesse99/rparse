@@ -1,7 +1,32 @@
 #[doc = "Functions used to build parse functions."];
 
 import basis::*;
+import combinators::*;
+import misc::*;
 import types::*;
+
+#[doc = "Consumes one or more characters matching the predicate.
+Returns the matched characters. Note that this does not increment line."]
+fn match1(predicate: fn@ (char) -> bool, errMesg: str) -> parser<str>
+{
+	{|input: state|
+		let mut i = input.index;
+		while input.text[i] != EOT && predicate(input.text[i])
+		{
+			i += 1u;
+		}
+		
+		if i > input.index
+		{
+			let text = str::from_chars(vec::slice(input.text, input.index, i));
+			log_ok("match1", input, {new_state: {index: i with input}, value: text})
+		}
+		else
+		{
+			log_err("match1", input, {old_state: input, err_state: {index: i with input}, mesg: errMesg})
+		}
+	}
+}
 
 #[doc = "Returns s if input matches s. Also see literal."]
 fn text(s: str) -> parser<str>
@@ -46,17 +71,20 @@ fn literal<T: copy>(s: str, value: T) -> parser<T>
 	}
 }
 
-/*
-#[doc = "integer := [+-] [0-9]+"]
+#[doc = "integer := [+-]? [0-9]+"]
 fn integer() -> parser<int>
 {
-	{|input: state|
-		chain(text(s)(input))
-		{|pass|
-			log_ok("literal", input, {new_state: pass.new_state, value: value})
-		}
-	}
+	let digits = match1(is_digit, "digits").then({|s| return(option::get(int::from_str(s)))});
+	let case1 = text("+")._then(digits);
+	let case2 = text("-")._then(digits).then({|v| return(-v)});
+	let case3 = digits;
+	case1.or(case2.or(case3))
 }
-*/
 
-// identifier
+#[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*"]
+fn identifier() -> parser<str>
+{
+	let prefix = match1(is_identifier_prefix, "identifier");
+	let suffix = match1(is_identifier_suffix, "identifier").repeat0();
+	prefix.then({|p| suffix.then({|s| return(p + str::connect(s, ""))})})
+}

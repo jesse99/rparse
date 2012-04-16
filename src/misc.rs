@@ -40,6 +40,16 @@ pure fn is_alphanum(ch: char) -> bool
 	ret is_alpha(ch) || is_digit(ch);
 }
 
+pure fn is_identifier_prefix(ch: char) -> bool
+{
+	ret is_alpha(ch) || ch == '_';
+}
+
+pure fn is_identifier_suffix(ch: char) -> bool
+{
+	ret is_identifier_prefix(ch) || is_digit(ch);
+}
+
 pure fn is_print(ch: char) -> bool
 {
 	ret ch >= ' ' && ch <= '~';
