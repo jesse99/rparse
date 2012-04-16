@@ -199,12 +199,29 @@ impl std_combinators<T: copy> for parser<T>
 				{
 					result::ok(pass2)
 					{
-						// e1 and [(op1 e2), (op2 e3)]
-						// e1 and [op1, op2] and [e2, e3]
-						// [op1, op2] and [e1, e2] and e3
-						// [(e1 op1), (e2 op2)] and e3
-						let value = vec::foldr(pass2.value, pass.value, {|lhs, rhs| eval(tuple::first(lhs), tuple::second(lhs), rhs)});
-						log_ok("chainr1", input, {new_state: pass2.new_state, value: value})
+						if vec::is_not_empty(pass2.value)
+						{
+							// e1 and [(op1 e2), (op2 e3)]
+							let e1 = pass.value;
+							let terms = pass2.value;
+							
+							// e1 and [op1, op2] and [e2, e3]
+							let (ops, parsers) = vec::unzip(terms);
+							
+							// [op1, op2] and [e1, e2] and e3
+							let e3 = vec::last(parsers);
+							let parsers = [e1] + vec::slice(parsers, 0u, vec::len(parsers) - 1u);
+							
+							// [(e1 op1), (e2 op2)] and e3
+							let terms = vec::zip(parsers, ops);
+							
+							let value = vec::foldr(terms, e3, {|lhs, rhs| eval(tuple::first(lhs), tuple::second(lhs), rhs)});
+							log_ok("chainr1", input, {new_state: pass2.new_state, value: value})
+						}
+						else
+						{
+							log_ok("chainr1", input, {new_state: pass2.new_state, value: pass.value})
+						}
 					}
 					result::err(failure)
 					{
