@@ -155,6 +155,14 @@ impl std_combinators<T: copy> for parser<T>
 		}
 	}
 	
+	// chain_suffix := (op e)*
+	#[doc(hidden)]
+	fn chain_suffix<T: copy, U: copy>(op: parser<U>) -> parser<[(U, T)]>
+	{
+		let q = op.then({|operator| self.then({|value| return((operator, value))})});
+		q.repeat0()
+	}
+	
 	#[doc = "chainl1 := e (op e)*
 	
 	Left associative binary operator. eval is called for each parsed op."]
@@ -163,34 +171,46 @@ impl std_combinators<T: copy> for parser<T>
 		{|input: state|
 			result::chain(self(input))
 			{|pass|
-				let mut output = pass.new_state;
-				let mut value = pass.value;
-				loop
+				alt self.chain_suffix(op)(pass.new_state)
 				{
-					alt op(output)
+					result::ok(pass2)
 					{
-						result::ok(operator)
-						{
-							alt self(operator.new_state)
-							{
-								result::ok(rhs)
-								{
-									output = rhs.new_state;
-									value = eval(value, operator.value, rhs.value);
-								}
-								result::err(failure)
-								{
-									break;
-								}
-							}
-						}
-						result::err(failure)
-						{
-							break;
-						}
+						let value = vec::foldl(pass.value, pass2.value, {|lhs, rhs| eval(lhs, tuple::first(rhs), tuple::second(rhs))});
+						log_ok("chainl1", input, {new_state: pass2.new_state, value: value})
+					}
+					result::err(failure)
+					{
+						log_err("chainl1", input, {old_state: input with failure})
 					}
 				}
-				log_ok("chainl1", input, {new_state: output, value: value})
+			}
+		}
+	}
+	
+	#[doc = "chainr1 := e (op e)*
+	
+	Right associative binary operator. eval is called for each parsed op."]
+	fn chainr1<T: copy, U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
+	{
+		{|input: state|
+			result::chain(self(input))
+			{|pass|
+				alt self.chain_suffix(op)(pass.new_state)
+				{
+					result::ok(pass2)
+					{
+						// e1 and [(op1 e2), (op2 e3)]
+						// e1 and [op1, op2] and [e2, e3]
+						// [op1, op2] and [e1, e2] and e3
+						// [(e1 op1), (e2 op2)] and e3
+						let value = vec::foldr(pass2.value, pass.value, {|lhs, rhs| eval(tuple::first(lhs), tuple::second(lhs), rhs)});
+						log_ok("chainr1", input, {new_state: pass2.new_state, value: value})
+					}
+					result::err(failure)
+					{
+						log_err("chainr1", input, {old_state: input with failure})
+					}
+				}
 			}
 		}
 	}

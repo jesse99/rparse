@@ -150,5 +150,20 @@ fn test_chainl1()
 	assert check_int_ok("2", p, 2);
 	assert check_int_ok("2*3", p, 6);
 	assert check_int_ok("2*3/4", p, 1);
+	assert check_int_ok("2*3/4/2", p, 0);
+	assert check_int_ok("2*3-4", p, 6);
+}
+
+#[test]
+fn test_chainr1()
+{
+	let factor = integer();
+	let op = text("*").or(text("/"));
+	let p = factor.chainr1(op, {|lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs}});
+	
+	assert check_int_ok("2", p, 2);
+	assert check_int_ok("2*3", p, 6);
+	assert check_int_ok("2*3/4", p, 0);
+	assert check_int_ok("2*3/4/2", p, 2);
 	assert check_int_ok("2*3-4", p, 6);
 }
