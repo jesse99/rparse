@@ -156,42 +156,50 @@ impl std_combinators<T: copy> for parser<T>
 	}
 }
 
-#[doc = "sequence := e0 e1...
+#[doc = "sequence2 := e0 e1
 
 If the parses succeed eval is called with the value from each parse. This is a version 
-of then that is simpler to use with more than two parsers (assuming that they all 
-return the same type)."]
-fn sequence<T: copy, U: copy>(parsers: [parser<T>], eval: fn@ ([T]) -> U) -> parser<U>
+of then that is often simpler to use."]
+fn sequence2<T0: copy, T1: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> R) -> parser<R>
 {
-	{|input: state|
-		let mut output = input;
-		let mut result = result::err({old_state: input, err_state: input, mesg: "dummy"});
-		let mut values = [];
-		vec::reserve(values, vec::len(parsers));
-		
-		let mut i = 0u;
-		while i < vec::len(parsers)
-		{
-			alt parsers[i](output)
-			{
-				result::ok(pass)
-				{
-					output = pass.new_state;
-					vec::push(values, pass.value);
-					i += 1u;
-				}
-				result::err(failure)
-				{
-					result = log_err("sequence", input, {old_state: input with failure});
-					break;
-				}
+	parser0.then()
+	{|a0|
+		parser1.then({|a1| return(eval(a0, a1))})
+	}
+}
+
+#[doc = "sequence3 := e0 e1 e2
+
+If the parses succeed eval is called with the value from each parse. This is a version 
+of then that is often simpler to use."]
+fn sequence3<T0: copy, T1: copy, T2: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> R) -> parser<R>
+{
+	parser0.then()
+	{|a0|
+		parser1.then()
+		{|a1|
+			parser2.then({|a2| return(eval(a0, a1, a2))})
+		}
+	}
+}
+
+#[doc = "sequence4 := e0 e1 e2 e3
+
+If the parses succeed eval is called with the value from each parse. This is a version 
+of then that is often simpler to use."]
+fn sequence4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> R) -> parser<R>
+{
+	parser0.then()
+	{|a0|
+		parser1.then()
+		{|a1|
+			parser2.then()
+			{|a2|
+				parser3.then({|a3| return(eval(a0, a1, a2, a3))})
 			}
 		}
-		
-		if i == vec::len(parsers)
-		{
-			result = log_ok("sequence", input, {new_state: output, value: eval(values)})
-		}
-		result
 	}
 }

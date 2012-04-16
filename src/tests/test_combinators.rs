@@ -106,9 +106,9 @@ pure fn is_identifier_trailer(ch: char) -> bool
 fn test_sequence()
 {
 	let prefix = match1(is_identifier_prefix, "identifier");
-	let suffix = match1(is_identifier_suffix, "identifier").repeat0().then({|v| return(str::connect(v, ""))});
+	let suffix = match1(is_identifier_suffix, "identifier").repeat0();
 	let trailer = match1(is_identifier_trailer, "identifier").optional("");
-	let p = sequence([prefix, suffix, trailer], {|values| str::connect(values, "")});
+	let p = sequence3(prefix, suffix, trailer, {|a, b, c| a + str::connect(b, "") + c});
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -117,4 +117,9 @@ fn test_sequence()
 	assert check_str_ok("hey there", p, "hey");
 	assert check_str_ok("spanky123xy", p, "spanky123xy");
 	assert check_str_failed("", p, "identifier", 1);
+	
+	let p = sequence2(text("a"), text("b"), {|x, y| x+y});
+	let text = chars_with_eot("az");
+	let result = p({file: "unit test", text: text, index: 0u, line: 1});
+	assert get_err(result).old_state.index == 0u;
 }

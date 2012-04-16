@@ -76,7 +76,7 @@ fn integer() -> parser<int>
 {
 	let digits = match1(is_digit, "digits").then({|s| return(option::get(int::from_str(s)))});
 	let case1 = text("+")._then(digits);
-	let case2 = text("-")._then(digits).then({|v| return(-v)});
+	let case2 = sequence2(text("-"), digits, {|_o, v| -v});
 	let case3 = digits;
 	case1.or(case2.or(case3))
 }
