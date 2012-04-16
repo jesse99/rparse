@@ -78,7 +78,7 @@ fn integer() -> parser<int>
 	let case1 = text("+")._then(digits);
 	let case2 = sequence2(text("-"), digits, {|_o, v| -v});
 	let case3 = digits;
-	case1.or(case2.or(case3))
+	alternative([case1, case2, case3])
 }
 
 #[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*"]

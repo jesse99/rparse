@@ -97,6 +97,22 @@ fn test_optional()
 	assert check_str_ok("", p, "z");
 }
 
+#[test]
+fn test_alternative()
+{
+	let p = alternative([text("a"), text("bb"), text("c")]);
+	
+	assert check_str_ok("a", p, "a");
+	assert check_str_ok("bb", p, "bb");
+	assert check_str_ok("c", p, "c");
+	assert check_str_ok("ca", p, "c");
+	assert check_str_failed("", p, "'a' or 'bb' or 'c'", 1);
+	
+	let text = chars_with_eot("bz");
+	let result = p({file: "unit test", text: text, index: 0u, line: 1});
+	assert get_err(result).old_state.index == 0u;
+}
+
 pure fn is_identifier_trailer(ch: char) -> bool
 {
 	ret ch == '?' || ch == '!';

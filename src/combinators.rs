@@ -156,6 +156,47 @@ impl std_combinators<T: copy> for parser<T>
 	}
 }
 
+#[doc = "alternative := e0 | e1 | …
+
+This is a version of or that is nicer to use when there are more than two alternatives."]
+fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
+{
+	// A recursive algorithm would be a lot simpler, but it's not clear how that could
+	// produce good error messages.
+	assert vec::is_not_empty(parsers);
+	
+	{|input: state|
+		let mut result: option<status<T>> = none;
+		let mut errors = [];
+		let mut i = 0u;
+		while i < vec::len(parsers) && option::is_none(result)
+		{
+			alt parsers[i](input)
+			{
+				result::ok(pass)
+				{
+					result = option::some(log_ok("alternative", input, pass));
+				}
+				result::err(failure)
+				{
+					vec::push(errors, failure.mesg);
+				}
+			}
+			i += 1u;
+		}
+		
+		if option::is_some(result)
+		{
+			option::get(result)
+		}
+		else
+		{
+			let mesg = str::connect(errors, " or ");
+			log_err("alternative", input, {old_state: input, err_state: input, mesg: mesg})
+		}
+	}
+}
+
 #[doc = "sequence2 := e0 e1
 
 If the parses succeed eval is called with the value from each parse. This is a version 
