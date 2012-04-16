@@ -139,3 +139,16 @@ fn test_sequence()
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;
 }
+
+#[test]
+fn test_chainl1()
+{
+	let factor = integer();
+	let op = text("*").or(text("/"));
+	let p = factor.chainl1(op, {|lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs}});
+	
+	assert check_int_ok("2", p, 2);
+	assert check_int_ok("2*3", p, 6);
+	assert check_int_ok("2*3/4", p, 1);
+	assert check_int_ok("2*3-4", p, 6);
+}

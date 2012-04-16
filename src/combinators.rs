@@ -154,6 +154,46 @@ impl std_combinators<T: copy> for parser<T>
 			}
 		}
 	}
+	
+	#[doc = "chainl1 := e (op e)*
+	
+	Left associative binary operator. eval is called for each parsed op."]
+	fn chainl1<T: copy, U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
+	{
+		{|input: state|
+			result::chain(self(input))
+			{|pass|
+				let mut output = pass.new_state;
+				let mut value = pass.value;
+				loop
+				{
+					alt op(output)
+					{
+						result::ok(operator)
+						{
+							alt self(operator.new_state)
+							{
+								result::ok(rhs)
+								{
+									output = rhs.new_state;
+									value = eval(value, operator.value, rhs.value);
+								}
+								result::err(failure)
+								{
+									break;
+								}
+							}
+						}
+						result::err(failure)
+						{
+							break;
+						}
+					}
+				}
+				log_ok("chainl1", input, {new_state: output, value: value})
+			}
+		}
+	}
 }
 
 #[doc = "alternative := e0 | e1 | …
