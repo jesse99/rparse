@@ -1,6 +1,5 @@
 #[doc = "Functions used to build parse functions."];
 
-//import misc::*;
 import basis::*;
 import types::*;
 
@@ -31,7 +30,7 @@ fn text(s: str) -> parser<str>
 		}
 		else
 		{
-			log_err("text", input, {new_state: input, max_index: j, mesg: #fmt["'%s'", s]})
+			log_err("text", input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", s]})
 		}
 	}
 }
@@ -41,8 +40,8 @@ fn literal<T: copy>(s: str, value: T) -> parser<T>
 {
 	{|input: state|
 		chain(text(s)(input))
-		{|output|
-			log_ok("literal", input, {new_state: output.new_state, value: value})
+		{|pass|
+			log_ok("literal", input, {new_state: pass.new_state, value: value})
 		}
 	}
 }
@@ -53,8 +52,8 @@ fn integer() -> parser<int>
 {
 	{|input: state|
 		chain(text(s)(input))
-		{|output|
-			log_ok("literal", input, {new_state: output.new_state, value: value})
+		{|pass|
+			log_ok("literal", input, {new_state: pass.new_state, value: value})
 		}
 	}
 }

@@ -21,8 +21,8 @@ type status<T: copy> = result<succeeded<T>, failed>;
 line may advance. Value is an arbitrary value associated with the parse."]
 type succeeded<T: copy> = {new_state: state, value: T};
 
-#[doc = "new_state should be identical to the input state. max_index 
-is the index of the character that the parser failed on (used for error reporting)."]
-type failed = {new_state: state, max_index: uint, mesg: str};
+#[doc = "old_state should be identical to the input state. err_state is
+where the error happened."]
+type failed = {old_state: state, err_state: state, mesg: str};
 
 

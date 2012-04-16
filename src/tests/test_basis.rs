@@ -1,6 +1,3 @@
-//import io;
-//import io::writer_util;
-//import result = result::result;
 import basis::*;
 import misc::*;
 import test_helpers::*;
@@ -47,7 +44,7 @@ fn parse_unary() -> parser<char>
 		}
 		else
 		{
-			log_err("unary", input, {new_state: input, max_index: input.index, mesg: "'-' or '+'"})
+			log_err("unary", input, {old_state: input, err_state: {index: input.index with input}, mesg: "'-' or '+'"})
 		}
 	}
 }
@@ -63,7 +60,7 @@ fn parse_digit() -> parser<int>
 		}
 		else
 		{
-			log_err("digit", input, {new_state: input, max_index: input.index, mesg: "digit"})
+			log_err("digit", input, {old_state: input, err_state: {index: input.index with input}, mesg: "digit"})
 		}
 	}
 }
@@ -92,11 +89,11 @@ fn test_then()
 	
 	let text = chars_with_eot("~9");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
-	assert get_err(result).new_state.index == 0u;	// simple case where parse_unary fails
+	assert get_err(result).old_state.index == 0u;	// simple case where parse_unary fails
 	
 	let text = chars_with_eot("--");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
-	assert get_err(result).new_state.index == 0u;	// if parse_num fails we need to start over
+	assert get_err(result).old_state.index == 0u;	// if parse_num fails we need to start over
 }
 
 fn parse_lower() -> parser<char>
@@ -109,7 +106,7 @@ fn parse_lower() -> parser<char>
 		}
 		else
 		{
-			log_err("lower", input, {new_state: input, max_index: input.index, mesg: "lower-case letter"})
+			log_err("lower", input, {old_state: input, err_state: {index: input.index with input}, mesg: "lower-case letter"})
 		}
 	}
 }
@@ -124,7 +121,7 @@ fn parse_upper() -> parser<char>
 		}
 		else
 		{
-			log_err("upper", input, {new_state: input, max_index: input.index, mesg: "upper-case letter"})
+			log_err("upper", input, {old_state: input, err_state: {index: input.index with input}, mesg: "upper-case letter"})
 		}
 	}
 }

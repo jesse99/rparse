@@ -1,6 +1,3 @@
-//import io;
-//import io::writer_util;
-//import result = result::result;
 import basis::*;
 import generators::*;
 import misc::*;

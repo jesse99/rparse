@@ -45,7 +45,9 @@ fn log_ok<T: copy>(fun: str, input: state, result: succeeded<T>) -> status<T>
 #[doc = "Used to log the results of a parse function (at debug level)."]
 fn log_err<T: copy>(fun: str, input: state, result: failed<T>) -> status<T>
 {
-	assert result.new_state.index == input.index;			// on errors the next parser must begin at the start
+	assert result.old_state.index == input.index;			// on errors the next parser must begin at the start
+	assert result.err_state.index >= input.index;			// errors can't be before the input
+
 	#debug("%s", munge_chars(input.text));
 	#debug("%s^ %s failed", repeat_char('-', input.index), fun);
 	ret result::err(result);
@@ -56,7 +58,7 @@ fn log_err<T: copy>(fun: str, input: state, result: failed<T>) -> status<T>
 fn fails<T: copy>(mesg: str) -> parser<T>
 {
 	{|input: state|
-		log_err("fails", input, {new_state: input, max_index: input.index, mesg: mesg})}
+		log_err("fails", input, {old_state: input, err_state: input, mesg: mesg})}
 }
 
 #[doc = "Returns a parser which always succeeds, but does not consume any input. 
@@ -79,7 +81,7 @@ fn next() -> parser<char>
 		}
 		else
 		{
-			log_err("next", input, {new_state: input, max_index: input.index, mesg: "EOT"})
+			log_err("next", input, {old_state: input, err_state: input, mesg: "EOT"})
 		}
 	}
 }
@@ -88,18 +90,17 @@ fn next() -> parser<char>
 impl basis_combinators<T: copy> for parser<T>
 {
 	#[doc = "If everything is successful then the function returned by eval is called
-	with the result of calling self. If self fails eval is not called. If you don't
-	want to use the value from self _then can be used instead.
+	with the result of calling self. If self fails eval is not called. Also see _then.
 	
 	Otherwise known as the monadic bind function."]
 	fn then<T: copy, U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
 	{
 		{|input: state|
 			result::chain(self(input))
-			{|output|
-				result::chain_err(eval(output.value)(output.new_state))
+			{|pass|
+				result::chain_err(eval(pass.value)(pass.new_state))
 				{|failure|
-					log_err("then", input, {new_state: input with failure})
+					log_err("then", input, {old_state: input with failure})
 				}
 			}
 		}
