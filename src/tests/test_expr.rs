@@ -17,12 +17,10 @@ fn expr_parser() -> parser<int>
 	let int_literal = integer().space0();
 	
 	// Parenthesized expressions require a forward reference to the expr parser
-	// so we initialize a function pointer to something that always fails, create
+	// so we initialize a function pointer to something of the right type, create
 	// a parser using the parser expr_ptr points to, and fixup expr_ptr later.
-	// (We're explicit about the expr_ref type because the type inference in
-	// sub_expr has problems if not).
-	let expr_ptr = @mut fails("null");
-	let expr_ref: parser<int> = forward_ref(expr_ptr);
+	let expr_ptr = @mut return(0);
+	let expr_ref = forward_ref(expr_ptr);
 	
 	// sub_expr := [-+]? '(' expr ')'
 	let sub_expr = alternative([
