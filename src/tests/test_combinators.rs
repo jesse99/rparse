@@ -21,6 +21,17 @@ fn test__then()
 }
 
 #[test]
+fn test_tag()
+{
+	let p = text("<")._then(text("foo"))._then(text(">")).tag("bracketed foo");
+	
+	assert check_str_ok("<foo>", p, ">");
+	assert check_str_failed("", p, "bracketed foo", 1);
+	assert check_str_failed("<", p, "bracketed foo", 1);
+	assert check_str_failed("<foo", p, "bracketed foo", 1);
+}
+
+#[test]
 fn test__repeat0()
 {
 	let p = text("b").repeat0();

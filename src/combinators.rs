@@ -20,6 +20,17 @@ impl std_combinators<T: copy> for parser<T>
 		}
 	}
 	
+	#[doc = "If self fails to parse then use label as the error message."]
+	fn tag<T: copy>(label: str) -> parser<T>
+	{
+		{|input: state|
+			result::chain_err(self(input))
+			{|failure|
+				log_err("tag", input, {mesg: label with failure})
+			}
+		}
+	}
+	
 	#[doc = "space0 := e [ \t\r\n]*"]
 	fn space0<T: copy>() -> parser<T>
 	{
