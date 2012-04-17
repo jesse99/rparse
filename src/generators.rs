@@ -5,6 +5,14 @@ import combinators::*;
 import misc::*;
 import types::*;
 
+#[doc = "Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions)."]
+fn forward_ref<T: copy>(parser: @mut parser<T>) -> parser<T>
+{
+	{|input: state|
+		(*parser)(input)
+	}
+}
+
 #[doc = "Consumes one or more characters matching the predicate.
 Returns the matched characters. Note that this does not increment line."]
 fn match1(predicate: fn@ (char) -> bool, errMesg: str) -> parser<str>
@@ -55,7 +63,7 @@ fn text(s: str) -> parser<str>
 		}
 		else
 		{
-			log_err("text", input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", s]})
+			log_err(#fmt["text '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", s]})
 		}
 	}
 }
@@ -64,9 +72,16 @@ fn text(s: str) -> parser<str>
 fn literal<T: copy>(s: str, value: T) -> parser<T>
 {
 	{|input: state|
-		chain(text(s)(input))
-		{|pass|
-			log_ok("literal", input, {new_state: pass.new_state, value: value})
+		alt text(s)(input)
+		{
+			result::ok(pass)
+			{
+				log_ok("literal", input, {new_state: pass.new_state, value: value})
+			}
+			result::err(failure)
+			{
+				log_err(#fmt["literal '%s'", s], input, failure)
+			}
 		}
 	}
 }

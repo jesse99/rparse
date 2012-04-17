@@ -21,34 +21,41 @@ import types::*;
 
 // ---- Debugging -------------------------------------------------------------
 #[doc = "Used to log the results of a parse function (at info level)."]
-fn log_ok<T: copy>(fun: str, input: state, result: succeeded<T>) -> status<T>
+fn log_ok<T: copy>(fun: str, input: state, pass: succeeded<T>) -> status<T>
 {
 	// Note that we make multiple calls to munge_chars which is fairly slow, but
 	// we only do that when actually logging: when info or debug logging is off
 	// the munge_chars calls aren't evaluated.
-	assert result.new_state.index >= input.index;			// can't go backwards on success (but no progress is fine, eg e*)
-	if result.new_state.index > input.index
+	assert pass.new_state.index >= input.index;			// can't go backwards on success (but no progress is fine, eg e*)
+	if pass.new_state.index > input.index
 	{
 		#info("%s", munge_chars(input.text));
-		#info("%s^ %s parsed '%s'", repeat_char(' ', result.new_state.index), fun, str::slice(munge_chars(input.text), input.index, result.new_state.index));
+		#info("%s^ %s parsed '%s'", repeat_char(' ', pass.new_state.index), fun, str::slice(munge_chars(input.text), input.index, pass.new_state.index));
 	}
 	else
 	{
 		#debug("%s", munge_chars(input.text));
-		#debug("%s^ %s passed", repeat_char(' ', result.new_state.index), fun);
+		#debug("%s^ %s passed", repeat_char(' ', pass.new_state.index), fun);
 	}
-	ret result::ok(result);
+	ret result::ok(pass);
 }
 
 #[doc = "Used to log the results of a parse function (at debug level)."]
-fn log_err<T: copy>(fun: str, input: state, result: failed<T>) -> status<T>
+fn log_err<T: copy>(fun: str, input: state, failure: failed<T>) -> status<T>
 {
-	assert result.old_state.index == input.index;			// on errors the next parser must begin at the start
-	assert result.err_state.index >= input.index;			// errors can't be before the input
-
+	assert failure.old_state.index == input.index;			// on errors the next parser must begin at the start
+	assert failure.err_state.index >= input.index;			// errors can't be before the input
+	
 	#debug("%s", munge_chars(input.text));
-	#debug("%s^ %s failed", repeat_char('-', input.index), fun);
-	ret result::err(result);
+	if failure.err_state.index > input.index 
+	{
+		#debug("%s^%s! %s failed", repeat_char('-', input.index), repeat_char(' ', failure.err_state.index - input.index), fun);
+	}
+	else
+	{
+		#debug("%s^ %s failed", repeat_char('-', input.index), fun);
+	}
+	ret result::err(failure);
 }
 
 // ---- Generators ------------------------------------------------------------
@@ -66,6 +73,21 @@ fn return<T: copy>(value: T) -> parser<T>
 {
 	{|input: state|
 		log_ok("return", input, {new_state: input, value: value})}
+}
+
+#[doc = "Returns a parser which matches the end of the input."]
+fn eot() -> parser<()>
+{
+	{|input: state|
+		if input.text[input.index] == EOT
+		{
+			log_ok("eot", input, {new_state: {index: input.index + 1u with input}, value: ()})
+		}
+		else
+		{
+			log_err("eot", input, {old_state: input, err_state: input, mesg: "EOT"})
+		}
+	}
 }
 
 #[doc = "Returns a parser which succeeds until EOT is reached."]

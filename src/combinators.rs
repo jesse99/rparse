@@ -1,10 +1,22 @@
 #[doc = "Functions used to build parse function using parse functions."];
 
 import basis::*;
+import misc::*;
 import types::*;
 
 impl std_combinators<T: copy> for parser<T>
 {
+	#[doc = "Uses self to parse text."]
+	fn parse(file: str, text: str) -> status<T>
+	{
+		let chars = chars_with_eot(text);
+		let input = {file: file, text: chars, index: 0u, line: 1};
+		result::chain_err(self(input))
+		{|failure|
+			result::err({mesg: "Expected " + failure.mesg with failure})
+		}
+	}
+	
 	#[doc = "If everything is successful then parser2 is called (and the value from self
 	is ignored). If self fails parser2 is not called. Also see then."]
 	fn _then<T: copy, U: copy>(parser2: parser<U>) -> parser<U>
@@ -20,13 +32,22 @@ impl std_combinators<T: copy> for parser<T>
 		}
 	}
 	
-	#[doc = "If self fails to parse then use label as the error message."]
+	#[doc = "If self completely fails to parse then use label as the error message."]
 	fn tag<T: copy>(label: str) -> parser<T>
 	{
 		{|input: state|
 			result::chain_err(self(input))
 			{|failure|
-				log_err("tag", input, {mesg: label with failure})
+				if failure.err_state.index == input.index
+				{
+					log_err("tag", input, {mesg: label with failure})
+				}
+				else
+				{
+					// If we managed to parse something then it is usually better to
+					// use that error message.
+					log_err("tag", input, failure)
+				}
 			}
 		}
 	}
@@ -242,6 +263,15 @@ impl std_combinators<T: copy> for parser<T>
 			}
 		}
 	}
+	
+	#[doc = "Parses the text and fails if all the text was not consumed. Leading space is allowed.
+	
+	This is normally the only time leading spaces are parsed and the syntax is a little odd. Use
+	something like `return(x).space0()` to create space where x is of type T."]
+	fn everything<T: copy>(space: parser<T>) -> parser<T>
+	{
+		sequence3(space, self, eot()) {|_a, b, _c| b}
+	}
 }
 
 #[doc = "alternative := e0 | e1 | …
@@ -289,7 +319,7 @@ fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
 		else
 		{
 			let mesg = str::connect(errors, " or ");
-			log_err("alternative", input, {old_state: input, err_state: input, mesg: mesg})
+			log_err("alternative", input, {old_state: input, err_state: {index: max_index with input}, mesg: mesg})
 		}
 	}
 }

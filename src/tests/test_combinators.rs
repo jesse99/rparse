@@ -27,8 +27,8 @@ fn test_tag()
 	
 	assert check_str_ok("<foo>", p, ">");
 	assert check_str_failed("", p, "bracketed foo", 1);
-	assert check_str_failed("<", p, "bracketed foo", 1);
-	assert check_str_failed("<foo", p, "bracketed foo", 1);
+	assert check_str_failed("<", p, "'foo'", 1);
+	assert check_str_failed("<foo", p, "'>'", 1);
 }
 
 #[test]
@@ -177,4 +177,16 @@ fn test_chainr1()
 	assert check_int_ok("2*3/4", p, 0);
 	assert check_int_ok("2*3/4/2", p, 2);
 	assert check_int_ok("2*3-4", p, 6);
+}
+
+#[test]
+fn test_everything()
+{
+	let s = return(0).space0();
+	let p = integer().everything(s);
+	
+	assert check_int_ok("2", p, 2);
+	assert check_int_ok("   \t3", p, 3);
+	assert check_int_failed("2 ", p, "EOT", 1);
+	assert check_int_failed("\t2\n", p, "EOT", 1);
 }
