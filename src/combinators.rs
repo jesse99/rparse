@@ -256,6 +256,7 @@ fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
 	{|input: state|
 		let mut result: option<status<T>> = none;
 		let mut errors = [];
+		let mut max_index = input.index;
 		let mut i = 0u;
 		while i < vec::len(parsers) && option::is_none(result)
 		{
@@ -267,7 +268,15 @@ fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
 				}
 				result::err(failure)
 				{
-					vec::push(errors, failure.mesg);
+					if failure.err_state.index > max_index
+					{
+						errors = [failure.mesg];
+						max_index = failure.err_state.index;
+					}
+					else if failure.err_state.index == max_index
+					{
+						vec::push(errors, failure.mesg);
+					}
 				}
 			}
 			i += 1u;

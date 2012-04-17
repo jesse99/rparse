@@ -115,7 +115,18 @@ impl basis_combinators<T: copy> for parser<T>
 			{|failure1|
 				result::chain_err(parser2(input))
 				{|failure2|
-					log_err("or", input, {mesg: failure1.mesg + " or " + failure2.mesg with failure2})
+					if failure1.err_state.index > failure2.err_state.index
+					{
+						log_err("or", input, failure1)
+					}
+					else if failure1.err_state.index < failure2.err_state.index
+					{
+						log_err("or", input, failure2)
+					}
+					else
+					{
+						log_err("or", input, {mesg: failure1.mesg + " or " + failure2.mesg with failure2})
+					}
 				}
 			}
 		}
