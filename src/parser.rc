@@ -20,6 +20,6 @@ mod tests
 	mod test_combinators;
 	mod test_generators;
 	mod test_helpers;
-	//mod test_expr;
+	mod test_expr;
 	//mod test_xml;
 }

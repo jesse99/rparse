@@ -15,75 +15,71 @@ be bound before the parse function can be composed with other functions. For exa
 ## Example
 Here is an example of a simple parser which can be used to evaluate mathematical expressions.
 
-    fn expr_parser() -> str_parser<int>
+    fn expr_parser() -> parser<int>
     {
-        let s = space_zero_or_more(_);
-    
-        // Create closures for parsers which parse a literal followed by optional whitespace.
-        let left_paren = literal(_, "(", s);
-        let right_paren = literal(_, ")", s);
-        let plus_sign = literal(_, "+", s);
-        let minus_sign = literal(_, "-", s);
-        let mult_sign = literal(_, "*", s);
-        let div_sign = literal(_, "/", s);
-        let int_literal = integer(_, s, {|v| v});    // fancier parsers can return stuff like int_node
+        // Create parsers for punctuation and integer literals. All of these
+        // parsers allow for zero or more trailing whitespace characters.
+        let plus_sign = text("+").space0();
+        let minus_sign = text("-").space0();
+        let mult_sign = text("*").space0();
+        let div_sign = text("/").space0();
+        let left_paren = text("(").space0();
+        let right_paren = text(")").space0();
+        let int_literal = integer().space0();
         
         // Parenthesized expressions require a forward reference to the expr parser
         // so we initialize a function pointer to something that always fails, create
         // a parser using the parser expr_ptr points to, and fixup expr_ptr later.
-        let expr_ptr = @mut fails(_);
-        let expr_ref = forward_ref(_, expr_ptr);    
+        // (We're explicit about the expr_ref type because the type inference in
+        // sub_expr has problems if not).
+        let expr_ptr = @mut fails("null");
+        let expr_ref: parser<int> = forward_ref(expr_ptr);
         
-        // sub_expr := '(' expr ')'
-        // If sequence is called with [p1, p2] parsers and it succeeds then it will
-        // call the closure with [input value, p1 value, p2 value]. In this case the
-        // values will be ints (in general they can by anything which is copyable).
-        let sub_expr = sequence(_, [left_paren, expr_ref, right_paren], {|values| result::ok(values[1])});
+        // sub_expr := [-+]? '(' expr ')'
+        let sub_expr = alternative([
+            sequence4(plus_sign, left_paren, expr_ref, right_paren) {|_a, _b, c, _d| c},
+            sequence4(minus_sign, left_paren, expr_ref, right_paren) {|_a, _b, c, _d| -c},
+            sequence3(left_paren, expr_ref, right_paren) {|_a, b, _c| b}]);
         
-        // factor := [-+]? (integer | sub_expr)
-        let factor = alternative(_, [
-            sequence(_, [plus_sign, sub_expr], {|values| result::ok(values[1])}),
-            sequence(_, [minus_sign, sub_expr], {|values| result::ok(-values[1])}),
-            int_literal,        // int literal handles leading sign character already
-            sub_expr]);
+        // factor := integer | sub_expr
+        // The tag provides better error messages if the factor parser fails
+        // on the very first character.
+        let factor = int_literal.or(sub_expr).tag("integer or sub-expression");
         
         // term := factor ([*/] factor)*
-        // Generic arguments are currently always passed by pointer so we need 
-        // the lame && sigil.
-        let mult = fn@ (&&x: int, &&y: int) -> result<int, str> {ret result::ok(x * y)};
-        let div = fn@ (&&x: int, &&y: int) -> result<int, str> {ret if (y != 0) {result::ok(x / y)} else {result::err("divide by zero")}};
-        let term = binary_op(_, factor, [
-            (mult_sign, factor, mult),
-            (div_sign, factor, div)]);
+        let term = factor.chainl1(mult_sign.or(div_sign))
+            {|lhs, op, rhs| if op == "*" {lhs*rhs} else {lhs/rhs}};
         
         // expr := term ([+-] term)*
-        let add = fn@ (&&x: int, &&y: int) -> result<int, str> {ret result::ok(x + y)};
-        let sub = fn@ (&&x: int, &&y: int) -> result<int, str> {ret result::ok(x - y)};
-        let expr = binary_op(_, term, [
-            (plus_sign, term, add),
-            (minus_sign, term, sub)]);
+        let expr = term.chainl1(plus_sign.or(minus_sign))
+            {|lhs, op, rhs| if op == "+" {lhs + rhs} else {lhs - rhs}};
         *expr_ptr = expr;
         
         // start := s expr
-        // Returns a parser which takes a str and parses leading whitespace followed 
-        // by expr. The parser fails if expr does not consume all the input.
-        ret everything("unit test", expr, s, 0, _);
+        // everything is a parser that accepts leading whitespace, followed by
+        // an abitrary parser, followed by EOT. (The s syntax is a little goofy
+        // because the space0 can't rely on expr to figure out which type to use).
+        let s = return(0).space0();
+        let start = expr.everything(s);
+        
+        ret start;
     }
 
 Usage looks like this:
 
-    fn expr_parser() -> str_parser<int>
+    fn eval(file: str, text: str) -> option::option<int>
     {
         let parser = expr_parser();
-        alt parser("(2 + 3)*4")
+        alt parser.parse(file, text)    // file is returned in err_state to make error reporting easier
         {
-            result::ok(value)
+            result::ok(pass)
             {
-                io::stdout().write_line(#fmt["value = %d", value]);
+                ret option::some(pass.value);
             }
-            result::err(error)
+            result::err(failure)
             {
-                io::stderr().write_line(#fmt["Error '%s' on line %u", error.mesg, error.output.line]);
+                io::stderr().write_line(#fmt["Error '%s' on line %u", failure.mesg, failure.err_state.line]);
+                ret option::none;
             }
         }
     }
