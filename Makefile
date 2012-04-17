@@ -13,6 +13,9 @@ parser: lib
 check: bin/test-rparse
 	export RUST_LOG=rparse=1 && ./bin/test-rparse
 
+check1: bin/test-rparse
+	export RUST_LOG=rparse=3 && ./bin/test-rparse test_x
+
 # ------------------
 # Binary targets 
 # We always build the lib because:
