@@ -1,7 +1,7 @@
 #[doc = "Functions and methods used to construct and compose parsers.
 
-Note that these functions and emthods don't actually consume input (although 
-the parsers they are invoked with often will)."];
+Note that these functions and methods don't actually consume input (although 
+the parsers they are invoked with normally will)."];
 
 import misc::*;
 import types::*;

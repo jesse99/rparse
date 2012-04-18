@@ -1,4 +1,4 @@
-#[doc = "Functions used to parse functions that actually consume input."];
+#[doc = "Functions used to create parse functions that actually consume input."];
 
 import misc::*;
 import parsers::*;
