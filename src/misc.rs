@@ -1,10 +1,5 @@
 #[doc = "Various utlity functions."];
 
-//import io;
-//import io::writer_util;
-//import result::*;
-//import types::*;
-
 const EOT: char = '\u0003';
 
 // TODO: don't export these.
