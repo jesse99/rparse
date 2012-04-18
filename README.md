@@ -53,10 +53,9 @@ Here is an example of a simple parser which can be used to evaluate mathematical
             {|lhs, op, rhs| if op == "+" {lhs + rhs} else {lhs - rhs}};
         *expr_ptr = expr;
         
-        // start := s expr
-        // everything is a parser that accepts leading whitespace, followed by
-        // an abitrary parser, followed by EOT. (The s syntax is a little goofy
-        // because the space0 can't rely on expr to figure out which type to use).
+        // start := space0 expr EOT
+        // The s syntax is a little goofy because the space0 comes before
+        // instead of after expr so it needs to be told which type to use.
         let s = return(0).space0();
         let start = expr.everything(s);
         
