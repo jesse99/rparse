@@ -354,6 +354,14 @@ fn tag<T: copy>(parser: parser<T>, label: str) -> parser<T>
 	}
 }
 
+#[doc = "Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions)."]
+fn forward_ref<T: copy>(parser: @mut parser<T>) -> parser<T>
+{
+	{|input: state|
+		(*parser)(input)
+	}
+}
+
 #[doc = "Uses parser to parse text. Also see everything function."]
 fn parse<T: copy>(parser: parser<T>, file: str, text: str) -> status<T>
 {

@@ -7,9 +7,8 @@
 
 use std;
 
-mod combinators;
-mod generators;
 mod misc;
+mod parsers;
 mod primitives;
 mod types;
 
