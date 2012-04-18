@@ -19,45 +19,6 @@ are the primitive functions from which all the other functions are built.
 import misc::*;
 import types::*;
 
-// ---- Debugging -------------------------------------------------------------
-#[doc = "Used to log the results of a parse function (at info level)."]
-fn log_ok<T: copy>(fun: str, input: state, pass: succeeded<T>) -> status<T>
-{
-	// Note that we make multiple calls to munge_chars which is fairly slow, but
-	// we only do that when actually logging: when info or debug logging is off
-	// the munge_chars calls aren't evaluated.
-	assert pass.new_state.index >= input.index;			// can't go backwards on success (but no progress is fine, eg e*)
-	if pass.new_state.index > input.index
-	{
-		#info("%s", munge_chars(input.text));
-		#info("%s^ %s parsed '%s'", repeat_char(' ', pass.new_state.index), fun, str::slice(munge_chars(input.text), input.index, pass.new_state.index));
-	}
-	else
-	{
-		#debug("%s", munge_chars(input.text));
-		#debug("%s^ %s passed", repeat_char(' ', pass.new_state.index), fun);
-	}
-	ret result::ok(pass);
-}
-
-#[doc = "Used to log the results of a parse function (at debug level)."]
-fn log_err<T: copy>(fun: str, input: state, failure: failed<T>) -> status<T>
-{
-	assert failure.old_state.index == input.index;			// on errors the next parser must begin at the start
-	assert failure.err_state.index >= input.index;			// errors can't be before the input
-	
-	#debug("%s", munge_chars(input.text));
-	if failure.err_state.index > input.index 
-	{
-		#debug("%s^%s! %s failed", repeat_char('-', input.index), repeat_char(' ', failure.err_state.index - input.index), fun);
-	}
-	else
-	{
-		#debug("%s^ %s failed", repeat_char('-', input.index), fun);
-	}
-	ret result::err(failure);
-}
-
 // ---- Generators ------------------------------------------------------------
 #[doc = "Used to log the results of a parse function (at debug level)."]
 fn fails<T: copy>(mesg: str) -> parser<T>
