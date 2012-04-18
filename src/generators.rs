@@ -1,8 +1,8 @@
 #[doc = "Functions used to build parse functions."];
 
-import basis::*;
 import combinators::*;
 import misc::*;
+import primitives::*;
 import types::*;
 
 #[doc = "Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions)."]
@@ -34,6 +34,33 @@ fn match1(predicate: fn@ (char) -> bool, errMesg: str) -> parser<str>
 			log_err("match1", input, {old_state: input, err_state: {index: i with input}, mesg: errMesg})
 		}
 	}
+}
+
+#[doc = "Returns a parser which matches the end of the input.
+
+Typically clients will use the everything method instead of calling this directly."]
+fn eot() -> parser<()>
+{
+	{|input: state|
+		if input.text[input.index] == EOT
+		{
+			log_ok("eot", input, {new_state: {index: input.index + 1u with input}, value: ()})
+		}
+		else
+		{
+			log_err("eot", input, {old_state: input, err_state: input, mesg: "EOT"})
+		}
+	}
+}
+
+#[doc = "Parses the text and fails if all the text was not consumed. Leading space is allowed.
+Also see parse function.
+
+This is normally the only time leading spaces are parsed and the syntax is a little odd. Use
+something like `return(x).space0()` to create space where x is of type T."]
+fn everything<T: copy>(parser: parser<T>, space: parser<T>) -> parser<T>
+{
+	sequence3(space, parser, eot()) {|_a, b, _c| b}
 }
 
 #[doc = "Returns s if input matches s. Also see literal."]

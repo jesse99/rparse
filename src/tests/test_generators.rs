@@ -1,6 +1,6 @@
-import basis::*;
 import generators::*;
 import misc::*;
+import primitives::*;
 import test_helpers::*;
 
 #[test]

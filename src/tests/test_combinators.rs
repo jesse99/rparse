@@ -1,7 +1,7 @@
-import basis::*;
 import combinators::*;
 import generators::*;
 import misc::*;
+import primitives::*;
 import test_helpers::*;
 
 #[test]
@@ -183,7 +183,7 @@ fn test_chainr1()
 fn test_everything()
 {
 	let s = return(0).space0();
-	let p = integer().everything(s);
+	let p = everything(integer(), s);
 	
 	assert check_int_ok("2", p, 2);
 	assert check_int_ok("   \t3", p, 3);

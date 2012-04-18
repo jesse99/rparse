@@ -7,10 +7,10 @@
 
 use std;
 
-mod basis;
 mod combinators;
 mod generators;
 mod misc;
+mod primitives;
 mod types;
 
 #[cfg(test)]

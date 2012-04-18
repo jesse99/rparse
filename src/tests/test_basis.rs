@@ -1,5 +1,5 @@
-import basis::*;
 import misc::*;
+import primitives::*;
 import test_helpers::*;
 
 #[test]
@@ -20,15 +20,6 @@ fn test_return()
 	assert check_int_ok("", p, 42);
 	assert check_int_ok("1", p, 42);
 	assert check_int_ok("22", p, 42);
-}
-
-#[test]
-fn test_next()
-{
-	let p = next();
-	
-	assert check_char_ok("x", p, 'x');
-	assert check_char_failed("", p, "EOT", 1);
 }
 
 // Usually these would be written using then, but we are using this

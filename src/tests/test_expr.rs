@@ -1,7 +1,7 @@
 // Test a grammar capable of evaluating simple mathematical expressions.
-import basis::*;
 import combinators::*;
 import generators::*;
+import primitives::*;
 import test_helpers::*;
 
 fn expr_parser() -> parser<int>
@@ -46,7 +46,7 @@ fn expr_parser() -> parser<int>
 	// The s syntax is a little goofy because the space0 comes before 
 	// instead of after expr so it needs to be told which type to use.
 	let s = return(0).space0();
-	let start = expr.everything(s);
+	let start = everything(expr, s);
 	
 	ret start;
 }
