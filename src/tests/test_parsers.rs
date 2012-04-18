@@ -4,6 +4,34 @@ import primitives::*;
 import test_helpers::*;
 
 #[test]
+fn test_space0()
+{
+	let p = text("x").space0()._then(text("y"));
+	
+	assert check_str_ok("xy", p, "y");
+	assert check_str_ok("x y", p, "y");
+	assert check_str_ok("x \n\t y", p, "y");
+	
+	assert check_str_failed("x z", p, "'y'", 1);
+	assert check_str_failed("x\nz", p, "'y'", 2);
+	assert check_str_failed("x\n\r\nz", p, "'y'", 3);
+}
+
+#[test]
+fn test_space1()
+{
+	let p = text("x").space1()._then(text("y"));
+	
+	assert check_str_ok("x y", p, "y");
+	assert check_str_ok("x \n\t y", p, "y");
+	
+	assert check_str_failed("xy", p, "whitespace", 1);
+	assert check_str_failed("x z", p, "'y'", 1);
+	assert check_str_failed("x\nz", p, "'y'", 2);
+	assert check_str_failed("x\n\r\nz", p, "'y'", 3);
+}
+
+#[test]
 fn test_match1()
 {
 	let p = match1(is_digit, "digits");
@@ -61,4 +89,16 @@ fn test_identifier()
 	assert check_str_ok("hey there", p, "hey");
 	assert check_str_ok("spanky123xy", p, "spanky123xy");
 	assert check_str_failed("", p, "identifier", 1);
+}
+
+#[test]
+fn test_everything()
+{
+	let s = return(0).space0();
+	let p = everything(integer(), s);
+	
+	assert check_int_ok("2", p, 2);
+	assert check_int_ok("   \t3", p, 3);
+	assert check_int_failed("2 ", p, "EOT", 1);
+	assert check_int_failed("\t2\n", p, "EOT", 1);
 }

@@ -15,9 +15,8 @@ mod types;
 #[cfg(test)]
 mod tests
 {
-	mod test_basis;
-	mod test_combinators;
-	mod test_generators;
+	mod test_parsers;
+	mod test_primitives;
 	mod test_helpers;
 	mod test_expr;
 	//mod test_xml;

@@ -2,6 +2,7 @@
 import parsers::*;
 import primitives::*;
 import test_helpers::*;
+import types::*;
 
 fn expr_parser() -> parser<int>
 {
