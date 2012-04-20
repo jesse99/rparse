@@ -19,5 +19,5 @@ mod tests
 	mod test_primitives;
 	mod test_helpers;
 	mod test_expr;
-	//mod test_xml;
+	mod test_xml;
 }

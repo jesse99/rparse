@@ -1,11 +1,13 @@
 // Test for a simple DOM style XML parser. Note that this is not intended to be 
 // standards compliant or even very useful. Instead it is designed to test a parser
-// returning a parse tree sort of thing.
-import io;
-import io::writer_util;
+// that returns objects instead of evaluating in-place.
 import to_str::to_str;
+import misc::*;
+import parsers::*;
+import primitives::*;
 import result::*;
 import test_helpers::*;
+import types::*;
 
 type attribute = {name: str, value: str};
 
@@ -13,52 +15,6 @@ enum xml
 {
 	// element name, attributes, children, content
 	xxml(str, [attribute], [xml], str)
-}
-
-// Parse tree node, i.e. an intermediate data structure which will eventually become an xml object.
-enum node
-{
-	name_node(str),
-	children_node([xml]),
-	attribute_node(attribute),
-	attribute_nodes([attribute]),
-	xml_node(xml),
-	text_node(str)
-}
-
-fn make_attribute_node(name: node, value: node) -> node
-{
-	let n = alt name {name_node(x) {x}	_ {fail}};
-	let v = alt value {text_node(x) {x}		_ {fail}};
-	ret attribute_node({name: n, value: v});
-}
-
-fn make_attributes_node(attrs: [node]) -> node
-{
-	let a = vec::map(attrs, {|v| alt v {attribute_node(x) {x} _ {fail}}});
-	ret attribute_nodes(a);
-}
-
-fn make_children_node(children: [node]) -> node
-{
-	let c = vec::map(children, {|v| alt v {xml_node(x) {x} _ {fail}}});
-	ret children_node(c);
-}
-
-fn make_simple_node(name: node, attributes: node) -> node
-{
-	let n = alt name {name_node(x) {x} 			_ {fail}};
-	let a = alt attributes {attribute_nodes(x) {x}	_ {fail}};
-	ret xml_node(xxml(n, a, [], ""));
-}
-
-fn make_complex_node(name: node, attributes: node, children: node, content: node) -> node
-{
-	let n = alt name {name_node(x) {x} 			_ {fail}};
-	let a = alt attributes {attribute_nodes(x) {x}	_ {fail}};
-	let c = alt children {children_node(x) {x}		_ {fail}};
-	let t = alt content {text_node(x) {x}			_ {fail}};
-	ret xml_node(xxml(n, a, c, t));
 }
 
 impl of to_str for xml
@@ -92,200 +48,149 @@ impl of to_str for attribute
 	}
 }
 
-impl of to_str for node
+fn check_xml_ok(inText: str, expected: str, parser: parser<xml>) -> bool
 {
-	fn to_str() -> str
+	#info["----------------------------------------------------"];
+	let text = chars_with_eot(inText);
+	alt parser({file: "unit test", text: text, index: 0u, line: 1,})
 	{
-		alt self
+		result::ok(pass)
 		{
-			name_node(s)		{ret s;}
-			children_node(cc)	{let children = vec::map(cc) {|c| c.to_str()}; ret str::connect(children, "");}
-			attribute_node(a)	{ret #fmt["%s=\"%s\"", a.name, a.value];}
-			attribute_nodes(aa)	{let attrs = vec::map(aa) {|a| #fmt["%s=\"%s\"", a.name, a.value]}; ret str::connect(attrs, " ");}
-			xml_node(x)			{ret x.to_str();}
-			text_node(s)			{ret s;}
+			check_ok(result::ok({new_state: pass.new_state, value: pass.value.to_str()}), expected)
+		}
+		result::err(failure)
+		{
+			check_ok(result::err(failure), expected)
 		}
 	}
 }
 
-#[cfg(test)]
-fn xml_ok(text: str, expected: str, parser: str_parser<node>) -> bool
+fn check_xml_failed(inText: str, parser: parser<xml>, expected: str, line: int) -> bool
 {
-	alt parser(text)
-	{
-		result::ok(answer)
-		{
-			alt answer.value
-			{
-				xml_node(child)
-				{
-					let actual = child.to_str();
-					if actual != expected
-					{
-						io::stderr().write_line(#fmt["Expected %s but found %s", expected, actual]);
-						ret false;
-					}
-					ret true;
-				}
-				_
-				{
-					io::stderr().write_line(#fmt["Error: expected xml node but found attribute %s", answer.value.to_str()]);
-					ret false;
-				}
-			}
-		}
-		result::err(error)
-		{
-			io::stderr().write_line(#fmt["Error: %s", error.mesg]);
-			ret false;
-		}
-	}
+	#info["----------------------------------------------------"];
+	let text = chars_with_eot(inText);
+	let result = parser({file: "unit test", text: text, index: 0u, line: 1});
+	ret check_failed(result, expected, line);
 }
 
 // string_body := [^"]*
-fn string_body(input: state<node>) -> status<node>
+fn string_body() -> parser<str>
 {
-	let start = input.index;
-	let mut i = start;
-	while input.text[i] != '"' && input.text[i] != EOT
-	{
-		i += 1u;
+	scan0()
+	{|chars, i|
+		if chars[i] == '\\' && chars[i+1u] == '"'
+		{
+			2u
+		}
+		else if chars[i] != '"'
+		{
+			1u
+		}
+		else
+		{
+			0u
+		}
 	}
-	
-	let s = str::from_chars(vec::slice(input.text, start, i));
-	let answer = get(space_zero_or_more({index: i with input}));
-	ret plog("string", input, result::ok({value: text_node(s) with answer}));
-}
-
-// attribute := name '=' '"' string_body '"'
-fn attribute(input: state<node>) -> status<node>
-{
-	let s = space_zero_or_more(_);
-	let eq = literal(_, "=", s);
-	let quote = literal(_, "\"", s);
-	let name = identifier(_, s, {|n| name_node(n)});
-	let result = sequence(input, [name, eq, quote, string_body, quote])
-		{|values| result::ok(make_attribute_node(values[0], values[3]))};
-	
-	ret plog("attribute", input, result);
-}
-
-// attributes := attribute*
-fn attributes(input: state<node>) -> status<node>
-{
-	let result = repeat_zero_or_more(input, attribute(_))
-		{|values| result::ok(make_attributes_node(values))};
-		
-	ret plog("attributes", input, result);
 }
 
 // content := (anything but '</')*
-fn content(input: state<node>) -> status<node>
+fn content() -> parser<str>
 {
-	let mut i = input.index;
-	while !(input.text[i] == '<' && input.text[i+1u] == '/') && input.text[i] != EOT
-	{
-		// TODO: need to increment line number on EOL characters
-		i += 1u;
-	}
-	
-	if input.text[i] == '<' && input.text[i+1u] == '/'
-	{
-		let text = str::from_chars(vec::slice(input.text, input.index, i));
-		ret plog("content", input, result::ok({index: i, value: text_node(text) with input}));
-	}
-	else
-	{
-		ret plog("content", input, result::err({output: input, maxIndex: i, mesg: "element content should be followed by an end tag"}));
+	scan0()
+	{|chars, i|
+		if chars[i] == '<' && chars[i+1u] == '/'
+		{
+			0u
+		}
+		else
+		{
+			1u
+		}
 	}
 }
 
-// empty_element := '<' name attribute* '/>'
-fn empty_element(input: state<node>) -> status<node>
+fn xml_parser() -> parser<xml>
 {
-	let s = space_zero_or_more(_);
-	let lt = literal(_, "<", s);
-	let slash_gt = literal(_, "/>", s);
-	let name = identifier(_, s, {|n| name_node(n)});
+	let quote = text("\"").space0();
+	let eq = text("=").space0();
+	let less = text("<").space0();
+	let greater = text(">").space0();
+	let slash_greater = text("/>").space0();
+	let less_slash = text("</").space0();
+	let name = identifier().space0();
 	
-	let result = sequence(input, [lt, name, attributes(_), slash_gt])
-		{|values| result::ok(make_simple_node(values[1], values[2]))};
-		
-	ret plog("empty_element", input, result);
-}
-
-// complex_element := '<' name attribute* '>' element* content '</' name '>'
-fn complex_element(input: state<node>, element_ptr: @mut parser<node>) -> status<node>
-{
-	let s = space_zero_or_more(_);
-	let lt = literal(_, "<", s);
-	let gt = literal(_, ">", s);
-	let lt_slash = literal(_, "</", s);
-	let children = repeat_zero_or_more(_, forward_ref(_, element_ptr),
-		{|values| result::ok(make_children_node(values))});
-		
-	let body = content(_);
-	let name = identifier(_, s, {|n| name_node(n)});
+	let dummy = xxml("dummy", [], [], "");
+	let element_ptr = @mut return(dummy);
+	let element_ref = forward_ref(element_ptr);
 	
-	//                                        0  1        2                  3   4           5        6          7        8
-	let result = sequence(input, [lt, name, attributes(_), gt, children, body, lt_slash, name, gt])
-	{
-		|values|
-		let name1 = values[1].to_str();
-		let name2 = values[7].to_str();
+	// attribute := name '=' '"' string_body '"'
+	let attribute = sequence5(name, eq, quote, string_body(), quote)
+	{|name, _a2, _a3, body, _a5|
+		result::ok({name: name, value: body})
+	};
+	
+	// empty_element := '<' name attribute* '/>'
+	let empty_element = sequence4(less, name, attribute.repeat0(), slash_greater)
+	{|_a1, name, attrs, _a4|
+		result::ok(xxml(name, attrs, [], ""))
+	};
+	
+	// complex_element := '<' name attribute* '>' element* content '</' name '>'
+	let complex_element = sequence9(less, name, attribute.repeat0(), greater, element_ref.repeat0(), content(), less_slash, name, greater)
+	{|_a1, name1, attrs, _a4, children, chars, _a5, name2, _a7|
 		if name1 == name2
 		{
-			result::ok(make_complex_node(values[1], values[2], values[4], values[5]))
+			result::ok(xxml(name1, attrs, children, chars))
 		}
 		else
 		{
 			result::err(#fmt["Expected end tag '%s' but found '%s'", name1, name2])
 		}
 	};
-	ret plog("complex_element", input, result);
-}
-
-fn xml_parser() -> str_parser<node>
-{
-	let s = space_zero_or_more(_);
 	
 	// element := empty_element | complex_element
-	let element_ptr = @mut fails(_);
-	let element = alternative(_, [empty_element(_), complex_element(_, element_ptr)]);
+	let element = empty_element.or(complex_element);
 	*element_ptr = element;
 	
-	// start := element
-	let start = everything("unit test", element, s, xml_node(xxml("", [], [], "")), _);
-	ret start;
+	// start := space0 element EOT
+	let s = return(dummy).space0();
+	everything(element, s)
 }
 
 #[test]
 fn test_simple_element()
 {
-	let parser = xml_parser();
+	let p = xml_parser();
 	
-	assert xml_ok("<trivial/>", "<trivial></trivial>", parser);
-	assert xml_ok("<trivial first=\"number one\"/>", "<trivial first=\"number one\"></trivial>", parser);
-	assert xml_ok("<trivial first=\"number one\" second=\"number two\"/>", "<trivial first=\"number one\" second=\"number two\"></trivial>", parser);
-	assert xml_ok("  <  trivial first \t =    \"number one\"  \t/>", "<trivial first=\"number one\"></trivial>", parser);
-	assert check_err_str("<trivial", parser, "expected '/>'", 1);
-	assert check_err_str("<trivial first=\"number one/>", parser, "expected '/>'", 1);
+	assert check_xml_ok("<trivial/>", "<trivial></trivial>", p);
+	assert check_xml_ok("<trivial first=\"number one\"/>", "<trivial first=\"number one\"></trivial>", p);
+	assert check_xml_ok("<trivial first=\"number one\" second=\"number two\"/>", "<trivial first=\"number one\" second=\"number two\"></trivial>", p);
+	assert check_xml_ok("  <  trivial first \t =    \"number one\"  \t/>", "<trivial first=\"number one\"></trivial>", p);
+	assert check_xml_failed("<trivial", p, "Expected '/>' or '>'", 1);
+	assert check_xml_failed("<trivial first=\"number one/>", p, "Expected '/>' or '>'", 1);
 }
 
 #[test]
 fn test_element()
 {
-	let parser = xml_parser();
+	let p = xml_parser();
 	
-	assert xml_ok("<simple>\n  \n</simple>", "<simple></simple>", parser);
-	assert check_err_str("<simple></oops>", parser, "Expected end tag 'simple' but found 'oops'", 1);
-	assert xml_ok("<simple alpha = \"A\" beta=\"12\"></simple>", "<simple alpha=\"A\" beta=\"12\"></simple>", parser);
+	assert check_xml_ok("<simple>\n  \n</simple>", "<simple></simple>", p);
+	assert check_xml_failed("<simple></oops>", p, "Expected end tag 'simple' but found 'oops'", 1);
+	assert check_xml_ok("<simple alpha = \"A\" beta=\"12\"></simple>", "<simple alpha=\"A\" beta=\"12\"></simple>", p);
 	
-	assert xml_ok("<parent><child></child></parent>", "<parent><child></child></parent>", parser);
-	assert xml_ok("<parent><child/></parent>", "<parent><child></child></parent>", parser);
-	assert xml_ok("<parent><child1/><child2/></parent>", "<parent><child1></child1><child2></child2></parent>", parser);
-	assert xml_ok("<parent><child1><child2></child2></child1></parent>", "<parent><child1><child2></child2></child1></parent>", parser);
+	assert check_xml_ok("<parent><child></child></parent>", "<parent><child></child></parent>", p);
+	assert check_xml_ok("<parent><child/></parent>", "<parent><child></child></parent>", p);
+	assert check_xml_ok("<parent><child1/><child2/></parent>", "<parent><child1></child1><child2></child2></parent>", p);
+	assert check_xml_ok("<parent><child1><child2></child2></child1></parent>", "<parent><child1><child2></child2></child1></parent>", p);
 	
-	assert xml_ok("<parent>some text</parent>", "<parent>some text</parent>", parser);
-	assert xml_ok("<parent><child/>blah blah</parent>", "<parent><child></child>blah blah</parent>", parser);
+	assert check_xml_ok("<parent>some text</parent>", "<parent>some text</parent>", p);
+	assert check_xml_ok("<parent><child/>blah blah</parent>", "<parent><child></child>blah blah</parent>", p);
+}
+
+#[testXX]
+fn test_x()
+{
+	let p = xml_parser();
+	assert check_xml_ok("<trivial/>", "<trivial></trivial>", p);
 }

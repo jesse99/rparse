@@ -97,10 +97,10 @@ fn test__then()
 	let p = text("<")._then(text("foo"))._then(text(">"));
 	
 	assert check_str_ok("<foo>", p, ">");
-	assert check_str_failed("", p, "'<'", 1);
-	assert check_str_failed("<", p, "'foo'", 1);
-	assert check_str_failed("<foo", p, "'>'", 1);
-	assert check_str_failed("<foo-", p, "'>'", 1);
+	assert check_str_failed("", p, "Expected '<'", 1);
+	assert check_str_failed("<", p, "Expected 'foo'", 1);
+	assert check_str_failed("<foo", p, "Expected '>'", 1);
+	assert check_str_failed("<foo-", p, "Expected '>'", 1);
 	
 	let text = chars_with_eot("<foo-");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
@@ -111,10 +111,10 @@ fn test__then()
 #[test]
 fn test_sequence()
 {
-	let prefix = match1(is_identifier_prefix, "identifier");
-	let suffix = match1(is_identifier_suffix, "identifier").repeat0();
-	let trailer = match1(is_identifier_trailer, "identifier").optional("");
-	let p = sequence3(prefix, suffix, trailer, {|a, b, c| a + str::connect(b, "") + c});
+	let prefix = match1(is_identifier_prefix, "Expected identifier");
+	let suffix = match1(is_identifier_suffix, "Expected identifier").repeat0();
+	let trailer = match1(is_identifier_trailer, "Expected identifier").optional("");
+	let p = sequence3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + c)});
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -122,9 +122,9 @@ fn test_sequence()
 	assert check_str_ok("hey_there", p, "hey_there");
 	assert check_str_ok("hey there", p, "hey");
 	assert check_str_ok("spanky123xy", p, "spanky123xy");
-	assert check_str_failed("", p, "identifier", 1);
+	assert check_str_failed("", p, "Expected identifier", 1);
 	
-	let p = sequence2(text("a"), text("b"), {|x, y| x+y});
+	let p = sequence2(text("a"), text("b"), {|x, y| result::ok(x+y)});
 	let text = chars_with_eot("az");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;
@@ -140,7 +140,7 @@ fn parse_lower() -> parser<char>
 		}
 		else
 		{
-			log_err("lower", input, {old_state: input, err_state: {index: input.index with input}, mesg: "lower-case letter"})
+			log_err("lower", input, {old_state: input, err_state: {index: input.index with input}, mesg: "Expected lower-case letter"})
 		}
 	}
 }
@@ -155,7 +155,7 @@ fn parse_upper() -> parser<char>
 		}
 		else
 		{
-			log_err("upper", input, {old_state: input, err_state: {index: input.index with input}, mesg: "upper-case letter"})
+			log_err("upper", input, {old_state: input, err_state: {index: input.index with input}, mesg: "Expected upper-case letter"})
 		}
 	}
 }
@@ -167,8 +167,8 @@ fn test_or()
 	
 	assert check_char_ok("a", p, 'a');
 	assert check_char_ok("Z", p, 'Z');
-	assert check_char_failed("", p, "lower-case letter or upper-case letter", 1);
-	assert check_char_failed("9", p, "lower-case letter or upper-case letter", 1);
+	assert check_char_failed("", p, "Expected lower-case letter or upper-case letter", 1);
+	assert check_char_failed("9", p, "Expected lower-case letter or upper-case letter", 1);
 }
 
 #[test]
@@ -180,7 +180,7 @@ fn test_alternative()
 	assert check_str_ok("bb", p, "bb");
 	assert check_str_ok("c", p, "c");
 	assert check_str_ok("ca", p, "c");
-	assert check_str_failed("", p, "'a' or 'bb' or 'c'", 1);
+	assert check_str_failed("", p, "Expected 'a' or 'bb' or 'c'", 1);
 	
 	let text = chars_with_eot("bz");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
@@ -231,8 +231,8 @@ fn test_list()
 	assert check_str_array_ok("b,b,b", p, ["b", "b", "b"]);
 	assert check_str_array_ok("b,b,c", p, ["b", "b"]);
 	
-	assert check_str_array_failed("", p, "'b'", 1);
-	assert check_str_array_failed("c", p, "'b'", 1);
+	assert check_str_array_failed("", p, "Expected 'b'", 1);
+	assert check_str_array_failed("c", p, "Expected 'b'", 1);
 }
 
 
@@ -271,11 +271,11 @@ fn test_chainr1()
 #[test]
 fn test_tag()
 {
-	let p = text("<")._then(text("foo"))._then(text(">")).tag("bracketed foo");
+	let p = text("<")._then(text("foo"))._then(text(">")).tag("Expected bracketed foo");
 	
 	assert check_str_ok("<foo>", p, ">");
-	assert check_str_failed("", p, "bracketed foo", 1);
-	assert check_str_failed("<", p, "'foo'", 1);
-	assert check_str_failed("<foo", p, "'>'", 1);
+	assert check_str_failed("", p, "Expected bracketed foo", 1);
+	assert check_str_failed("<", p, "Expected 'foo'", 1);
+	assert check_str_failed("<foo", p, "Expected '>'", 1);
 }
 

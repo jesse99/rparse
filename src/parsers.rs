@@ -8,6 +8,8 @@ import types::*;
 #[doc = "space0 := e [ \t\r\n]*"]
 fn space0<T: copy>(parser: parser<T>) -> parser<T>
 {
+	// It would be simpler to write this with scan0, but scan0 is relatively inefficient
+	// and space0 is typically called a lot.
 	{|input: state|
 		result::chain(parser(input))
 		{|pass|
@@ -52,7 +54,7 @@ fn space1<T: copy>(parser: parser<T>) -> parser<T>
 			}
 			else
 			{
-				log_err("space1", input, {old_state: input, err_state: pass.new_state, mesg: "whitespace"})
+				log_err("space1", input, {old_state: input, err_state: pass.new_state, mesg: "Expected whitespace"})
 			}
 		}
 	}
@@ -60,7 +62,7 @@ fn space1<T: copy>(parser: parser<T>) -> parser<T>
 
 #[doc = "Consumes one or more characters matching the predicate.
 Returns the matched characters. Note that this does not increment line."]
-fn match1(predicate: fn@ (char) -> bool, errMesg: str) -> parser<str>
+fn match1(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<str>
 {
 	{|input: state|
 		let mut i = input.index;
@@ -76,7 +78,61 @@ fn match1(predicate: fn@ (char) -> bool, errMesg: str) -> parser<str>
 		}
 		else
 		{
-			log_err("match1", input, {old_state: input, err_state: {index: i with input}, mesg: errMesg})
+			log_err("match1", input, {old_state: input, err_state: {index: i with input}, mesg: err_mesg})
+		}
+	}
+}
+
+#[doc = "Calls fun with an index into the characters to be parsed until it returns zero characters.
+Returns the matched characters. This does increment line."]
+fn scan0(fun: fn@ ([char], uint) -> uint) -> parser<str>
+{
+	{|input: state|
+		let mut i = input.index;
+		let mut line = input.line;
+		let mut result = result::err({old_state: input, err_state: input, mesg: "dummy"});
+		while result::is_failure(result)
+		{
+			let count = fun(input.text, i);
+			if count > 0u && input.text[i] != EOT		// EOT check makes it easier to write funs that do stuff like matching chars that are not something
+			{
+				uint::range(0u, count)
+				{|_k|
+					if input.text[i] == '\r'
+					{
+						line += 1;
+					}
+					else if input.text[i] == '\n' && (i == 0u || input.text[i-1u] != '\r')
+					{
+						line += 1;
+					}
+					i += 1u;
+				}
+			}
+			else
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, i));
+				result = log_ok("scan0", input, {new_state: {index: i, line: line with input}, value: text});
+			}
+		}
+		result
+	}
+}
+
+#[doc = "Like scan0 except that at least one character must be consumed."]
+fn scan1(err_mesg: str, fun: fn@ ([char], uint) -> uint) -> parser<str>
+{
+	{|input: state|
+		result::chain(scan0(fun)(input))
+		{|pass|
+			if pass.new_state.index > input.index
+			{
+				log_ok("scan1", input, pass)
+			}
+			else
+			{
+				log_err("scan1", input, {old_state: input, err_state: pass.new_state, mesg: err_mesg})
+			}
 		}
 	}
 }
@@ -108,7 +164,7 @@ fn text(s: str) -> parser<str>
 		}
 		else
 		{
-			log_err(#fmt["text '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", s]})
+			log_err(#fmt["text '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
 		}
 	}
 }
@@ -134,9 +190,9 @@ fn literal<T: copy>(s: str, value: T) -> parser<T>
 #[doc = "integer := [+-]? [0-9]+"]
 fn integer() -> parser<int>
 {
-	let digits = match1(is_digit, "digits").then({|s| return(option::get(int::from_str(s)))});
+	let digits = match1(is_digit, "Expected digits").then({|s| return(option::get(int::from_str(s)))});
 	let case1 = text("+")._then(digits);
-	let case2 = sequence2(text("-"), digits, {|_o, v| -v});
+	let case2 = sequence2(text("-"), digits, {|_o, v| result::ok(-v)});
 	let case3 = digits;
 	alternative([case1, case2, case3])
 }
@@ -144,8 +200,8 @@ fn integer() -> parser<int>
 #[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*"]
 fn identifier() -> parser<str>
 {
-	let prefix = match1(is_identifier_prefix, "identifier");
-	let suffix = match1(is_identifier_suffix, "identifier").repeat0();
+	let prefix = match1(is_identifier_prefix, "Expected identifier");
+	let suffix = match1(is_identifier_suffix, "Expected identifier").repeat0();
 	prefix.then({|p| suffix.then({|s| return(p + str::connect(s, ""))})})
 }
 
@@ -162,7 +218,7 @@ fn eot() -> parser<()>
 		}
 		else
 		{
-			log_err("eot", input, {old_state: input, err_state: input, mesg: "EOT"})
+			log_err("eot", input, {old_state: input, err_state: input, mesg: "Expected EOT"})
 		}
 	}
 }
@@ -174,7 +230,7 @@ This is normally the only time leading spaces are parsed and the syntax is a lit
 something like `return(x).space0()` to create space where x is of type T."]
 fn everything<T: copy>(parser: parser<T>, space: parser<T>) -> parser<T>
 {
-	sequence3(space, parser, eot()) {|_a, b, _c| b}
+	sequence3(space, parser, eot()) {|_a, b, _c| result::ok(b)}
 }
 
 #[doc = "These work the same as the functions of the same name, but tend

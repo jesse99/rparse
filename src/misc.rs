@@ -97,6 +97,12 @@ pure fn is_print(ch: char) -> bool
 	ret ch >= ' ' && ch <= '~';
 }
 
+#[doc = "Returns true if ch is ' ', '\t', '\r', or '\n'."]
+pure fn is_whitespace(ch: char) -> bool
+{
+	ret ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+}
+
 #[doc = "Returns a string with count ch characters."]
 fn repeat_char(ch: char, count: uint) -> str
 {

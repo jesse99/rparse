@@ -52,52 +52,192 @@ fn _then<T: copy, U: copy>(parser1: parser<T>, parser2: parser<U>) -> parser<U>
 	}
 }
 
-#[doc = "sequence2 := e0 e1
-
-If the parses succeed eval is called with the value from each parse. This is a version 
-of then that is often simpler to use."]
+#[doc = "sequence2 := e0 e1"]
 fn sequence2<T0: copy, T1: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> R) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then()
-	{|a0|
-		parser1.then({|a1| return(eval(a0, a1))})
-	}
-}
-
-#[doc = "sequence3 := e0 e1 e2
-
-If the parses succeed eval is called with the value from each parse. This is a version 
-of then that is often simpler to use."]
-fn sequence3<T0: copy, T1: copy, T2: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> R) -> parser<R>
-{
-	parser0.then()
-	{|a0|
-		parser1.then()
-		{|a1|
-			parser2.then({|a2| return(eval(a0, a1, a2))})
-		}
-	}
-}
-
-#[doc = "sequence4 := e0 e1 e2 e3
-
-If the parses succeed eval is called with the value from each parse. This is a version 
-of then that is often simpler to use."]
-fn sequence4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> R) -> parser<R>
-{
-	parser0.then()
-	{|a0|
-		parser1.then()
-		{|a1|
-			parser2.then()
-			{|a2|
-				parser3.then({|a3| return(eval(a0, a1, a2, a3))})
+	parser0.then() {|a0|
+	parser1.then() {|a1|
+		alt eval(a0, a1)
+		{
+			result::ok(value)
+			{
+				return(value)
+			}
+			result::err(mesg)
+			{
+				fails(mesg)
 			}
 		}
-	}
+	}}
+}
+
+#[doc = "sequence3 := e0 e1 e2"]
+fn sequence3<T0: copy, T1: copy, T2: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> result::result<R, str>) -> parser<R>
+{
+	parser0.then() {|a0|
+	parser1.then() {|a1|
+	parser2.then() {|a2|
+		alt eval(a0, a1, a2)
+		{
+			result::ok(value)
+			{
+				return(value)
+			}
+			result::err(mesg)
+			{
+				fails(mesg)
+			}
+		}
+	}}}
+}
+
+#[doc = "sequence4 := e0 e1 e2 e3"]
+fn sequence4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::result<R, str>) -> parser<R>
+{
+	parser0.then() {|a0|
+	parser1.then() {|a1|
+	parser2.then() {|a2|
+	parser3.then() {|a3|
+		alt eval(a0, a1, a2, a3)
+		{
+			result::ok(value)
+			{
+				return(value)
+			}
+			result::err(mesg)
+			{
+				fails(mesg)
+			}
+		}
+	}}}}
+}
+
+#[doc = "sequence5 := e0 e1 e2 e3 e4"]
+fn sequence5<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::result<R, str>) -> parser<R>
+{
+	parser0.then() {|a0|
+	parser1.then() {|a1|
+	parser2.then() {|a2|
+	parser3.then() {|a3|
+	parser4.then() {|a4|
+		alt eval(a0, a1, a2, a3, a4)
+		{
+			result::ok(value)
+			{
+				return(value)
+			}
+			result::err(mesg)
+			{
+				fails(mesg)
+			}
+		}
+	}}}}}
+}
+
+#[doc = "sequence6 := e0 e1 e2 e3 e4 e5"]
+fn sequence6<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::result<R, str>) -> parser<R>
+{
+	parser0.then() {|a0|
+	parser1.then() {|a1|
+	parser2.then() {|a2|
+	parser3.then() {|a3|
+	parser4.then() {|a4|
+	parser5.then() {|a5|
+		alt eval(a0, a1, a2, a3, a4, a5)
+		{
+			result::ok(value)
+			{
+				return(value)
+			}
+			result::err(mesg)
+			{
+				fails(mesg)
+			}
+		}
+	}}}}}}
+}
+
+#[doc = "sequence7 := e0 e1 e2 e3 e4 e5 e6"]
+fn sequence7<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::result<R, str>) -> parser<R>
+{
+	parser0.then() {|a0|
+	parser1.then() {|a1|
+	parser2.then() {|a2|
+	parser3.then() {|a3|
+	parser4.then() {|a4|
+	parser5.then() {|a5|
+	parser6.then() {|a6|
+		alt eval(a0, a1, a2, a3, a4, a5, a6)
+		{
+			result::ok(value)
+			{
+				return(value)
+			}
+			result::err(mesg)
+			{
+				fails(mesg)
+			}
+		}
+	}}}}}}}
+}
+
+#[doc = "sequence8 := e0 e1 e2 e3 e4 e5 e6 e7"]
+fn sequence8<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::result<R, str>) -> parser<R>
+{
+	parser0.then() {|a0|
+	parser1.then() {|a1|
+	parser2.then() {|a2|
+	parser3.then() {|a3|
+	parser4.then() {|a4|
+	parser5.then() {|a5|
+	parser6.then() {|a6|
+	parser7.then() {|a7|
+		alt eval(a0, a1, a2, a3, a4, a5, a6, a7)
+		{
+			result::ok(value)
+			{
+				return(value)
+			}
+			result::err(mesg)
+			{
+				fails(mesg)
+			}
+		}
+	}}}}}}}}
+}
+
+#[doc = "sequence9 := e0 e1 e2 e3 e4 e5 e6 e7 e8"]
+fn sequence9<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, T8: copy, R: copy>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, parser8: parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::result<R, str>) -> parser<R>
+{
+	parser0.then() {|a0|
+	parser1.then() {|a1|
+	parser2.then() {|a2|
+	parser3.then() {|a3|
+	parser4.then() {|a4|
+	parser5.then() {|a5|
+	parser6.then() {|a6|
+	parser7.then() {|a7|
+	parser8.then() {|a8|
+		alt eval(a0, a1, a2, a3, a4, a5, a6, a7, a8)
+		{
+			result::ok(value)
+			{
+				return(value)
+			}
+			result::err(mesg)
+			{
+				fails(mesg)
+			}
+		}
+	}}}}}}}}}
 }
 
 #[doc = "Returns a parser which first tries parser1, and if that fails, parser 2."]
@@ -118,7 +258,15 @@ fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 				}
 				else
 				{
-					log_err("or", input, {mesg: failure1.mesg + " or " + failure2.mesg with failure2})
+					if str::starts_with(failure2.mesg, "Expected ")
+					{
+						let mesg2 = str::slice(failure2.mesg, str::len("Expected "), str::len(failure2.mesg));
+						log_err("or", input, {mesg: failure1.mesg + " or " + mesg2 with failure2})
+					}
+					else
+					{
+						log_err("or", input, {mesg: failure1.mesg + " or " + failure2.mesg with failure2})
+					}
 				}
 			}
 		}
@@ -137,7 +285,7 @@ fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
 	{|input: state|
 		let mut result: option<status<T>> = none;
 		let mut errors = [];
-		let mut max_index = input.index;
+		let mut max_index = uint::max_value;
 		let mut i = 0u;
 		while i < vec::len(parsers) && option::is_none(result)
 		{
@@ -149,14 +297,22 @@ fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
 				}
 				result::err(failure)
 				{
-					if failure.err_state.index > max_index
+					if failure.err_state.index > max_index || max_index == uint::max_value
 					{
 						errors = [failure.mesg];
 						max_index = failure.err_state.index;
 					}
 					else if failure.err_state.index == max_index
 					{
-						vec::push(errors, failure.mesg);
+						if str::starts_with(failure.mesg, "Expected ")
+						{
+							let mesg = str::slice(failure.mesg, str::len("Expected "), str::len(failure.mesg));
+							vec::push(errors, mesg);
+						}
+						else
+						{
+							vec::push(errors, failure.mesg);
+						}
 					}
 				}
 			}

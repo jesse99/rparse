@@ -85,7 +85,7 @@ fn check_ok<T: copy>(result: status<T>, expected: T) -> bool
 		}
 		result::err(failure)
 		{
-			io::stderr().write_line(#fmt["Error: expected %s", failure.mesg]);
+			io::stderr().write_line(#fmt["Error: expected %? but found error %s", expected, failure.mesg]);
 			ret false;
 		}
 	}
@@ -104,7 +104,7 @@ fn check_failed<T: copy>(result: status<T>, expected: str, line: int) -> bool
 		{
 			if failure.mesg != expected
 			{
-				io::stderr().write_line(#fmt["Expected error '%s' but found '%s'", expected, failure.mesg]);
+				io::stderr().write_line(#fmt["Expected error '%s' but found error '%s'", expected, failure.mesg]);
 				ret false;
 			}
 			if failure.err_state.line != line
