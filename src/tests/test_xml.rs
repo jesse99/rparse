@@ -186,6 +186,7 @@ fn test_element()
 	
 	assert check_xml_ok("<parent>some text</parent>", "<parent>some text</parent>", p);
 	assert check_xml_ok("<parent><child/>blah blah</parent>", "<parent><child></child>blah blah</parent>", p);
+	assert check_xml_failed("<simple>\r  \n  \r\n</oops>", p, "Expected end tag 'simple' but found 'oops'", 4);
 }
 
 #[testXX]
