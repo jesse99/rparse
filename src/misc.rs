@@ -115,7 +115,7 @@ fn repeat_char(ch: char, count: uint) -> str
 // Note that we don't want to escape control characters here because we need
 // one code point to map to one printed character (so our log_ok arrows point to
 // the right character).
-#[doc = "Replaces non is_print characters with '.'."]
+#[doc = "Replaces non-is_print characters with '.'."]
 fn munge_chars(chars: [char]) -> str
 {
 	// TODO: I'd like to use bullet here, but while io::println handles it correctly

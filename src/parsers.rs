@@ -61,7 +61,9 @@ fn space1<T: copy>(parser: parser<T>) -> parser<T>
 }
 
 #[doc = "Consumes one or more characters matching the predicate.
-Returns the matched characters. Note that this does not increment line."]
+Returns the matched characters. 
+
+Note that this does not increment line."]
 fn match1(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<str>
 {
 	{|input: state|
@@ -84,7 +86,9 @@ fn match1(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<str>
 }
 
 #[doc = "Calls fun with an index into the characters to be parsed until it returns zero characters.
-Returns the matched characters. This does increment line."]
+Returns the matched characters. 
+
+This does increment line."]
 fn scan0(fun: fn@ ([char], uint) -> uint) -> parser<str>
 {
 	{|input: state|

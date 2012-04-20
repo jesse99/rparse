@@ -5,9 +5,6 @@ import result = result::result;
 #[doc = "Type for parse functions."]
 type parser<T: copy> = fn@ (state) -> status<T>;
 
-#[doc = "Type for top-level parse functions."]
-type str_parser<T: copy> = fn@ (str) -> status<T>;
-
 
 #[doc = "Input argument for parse functions. File is not interpreted 
 and need not be a path. Text is assumed to end with EOT. Lines are 1-based."]

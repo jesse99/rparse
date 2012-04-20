@@ -20,8 +20,8 @@ fn return<T: copy>(value: T) -> parser<T>
 		log_ok("return", input, {new_state: input, value: value})}
 }
 
-#[doc = "If everything is successful then the function returned by eval is called
-with the result of calling parser. If parser fails eval is not called.
+#[doc = "If parser is successful then the function returned by eval is called
+with parser's result. If parser fails eval is not called.
 
 Often used to translate parsed values: `p().then({|v| return(blah::from_whatever(v))})`"]
 fn then<T: copy, U: copy>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> parser<U>
@@ -37,7 +37,7 @@ fn then<T: copy, U: copy>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> pars
 	}
 }
 
-#[doc = "If everything is successful then parser2 is called (and the value from parser1
+#[doc = "If parser1 is successful is successful then parser2 is called (and the value from parser1
 is ignored). If parser1 fails parser2 is not called."]
 fn _then<T: copy, U: copy>(parser1: parser<T>, parser2: parser<U>) -> parser<U>
 {
@@ -240,7 +240,7 @@ fn sequence9<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: cop
 	}}}}}}}}}
 }
 
-#[doc = "Returns a parser which first tries parser1, and if that fails, parser 2."]
+#[doc = "Returns a parser which first tries parser1, and if that fails, parser2."]
 fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 {
 	{|input: state|
