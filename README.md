@@ -35,14 +35,14 @@ Here is an example of a simple parser which can be used to evaluate mathematical
         
         // sub_expr := [-+]? '(' expr ')'
         let sub_expr = alternative([
-            sequence4(plus_sign, left_paren, expr_ref, right_paren) {|_a, _b, c, _d| c},
-            sequence4(minus_sign, left_paren, expr_ref, right_paren) {|_a, _b, c, _d| -c},
-            sequence3(left_paren, expr_ref, right_paren) {|_a, b, _c| b}]);
+            sequence4(plus_sign, left_paren, expr_ref, right_paren) {|_a, _b, c, _d| result::ok(c)},
+            sequence4(minus_sign, left_paren, expr_ref, right_paren) {|_a, _b, c, _d| result::ok(-c)},
+            sequence3(left_paren, expr_ref, right_paren) {|_a, b, _c| result::ok(b)}]);
         
         // factor := integer | sub_expr
         // The tag provides better error messages if the factor parser fails
         // on the very first character.
-        let factor = int_literal.or(sub_expr).tag("integer or sub-expression");
+        let factor = int_literal.or(sub_expr).tag("Expected integer or sub-expression");
         
         // term := factor ([*/] factor)*
         let term = factor.chainl1(mult_sign.or(div_sign))
@@ -57,9 +57,7 @@ Here is an example of a simple parser which can be used to evaluate mathematical
         // The s syntax is a little goofy because the space0 comes before
         // instead of after expr so it needs to be told which type to use.
         let s = return(0).space0();
-        let start = expr.everything(s);
-        
-        ret start;
+        expr.everything(s)
     }
 
 Usage looks like this:

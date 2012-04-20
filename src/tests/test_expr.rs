@@ -46,9 +46,7 @@ fn expr_parser() -> parser<int>
 	// The s syntax is a little goofy because the space0 comes before 
 	// instead of after expr so it needs to be told which type to use.
 	let s = return(0).space0();
-	let start = everything(expr, s);
-	
-	ret start;
+	everything(expr, s)
 }
 
 #[test]
