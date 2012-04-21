@@ -12,6 +12,8 @@ Most of the built in parse functions take more than just a state argument. Those
 be bound before the parse function can be composed with other functions. For example, 
 `bind(repeat_one, _, hex_digit)` creates a parser that consumes one or more hexadecimal digits.
 
+The library has been tested with Rust from github as of April 2010 (i.e. post 0.2).
+
 ## Example
 Here is an example of a simple parser which can be used to evaluate mathematical expressions.
 
