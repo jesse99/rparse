@@ -518,14 +518,28 @@ fn forward_ref<T: copy>(parser: @mut parser<T>) -> parser<T>
 	}
 }
 
+#[doc = "Return type of parse function."]
+type parse_status<T: copy> = result::result<T, parse_failed>;
+
+#[doc = "Returned by parse function on error. Line and col are both 1-based."]
+type parse_failed = {file: str, line: uint, col: uint, mesg: str};
+
 #[doc = "Uses parser to parse text. Also see everything function."]
-fn parse<T: copy>(parser: parser<T>, file: str, text: str) -> status<T>
+fn parse<T: copy>(parser: parser<T>, file: str, text: str) -> parse_status<T>
 {
 	let chars = chars_with_eot(text);
 	let input = {file: file, text: chars, index: 0u, line: 1};
-	result::chain_err(parser(input))
-	{|failure|
-		result::err({mesg: "Expected " + failure.mesg with failure})
+	alt parser(input)
+	{
+		result::ok(pass)
+		{
+			result::ok(pass.value)
+		}
+		result::err(failure)
+		{
+			let col = get_col(chars, failure.err_state.index);
+			result::err({file: failure.old_state.file, line: failure.err_state.line as uint, col: col, mesg: failure.mesg})
+		}
 	}
 }
 
@@ -588,7 +602,7 @@ impl primitive_methods<T: copy> for parser<T>
 		tag(self, label)
 	}
 	
-	fn parse(file: str, text: str) -> status<T>
+	fn parse(file: str, text: str) -> parse_status<T>
 	{
 		parse(self, file, text)
 	}

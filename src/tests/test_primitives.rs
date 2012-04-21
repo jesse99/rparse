@@ -1,4 +1,6 @@
 // Test selected individual parse functions (the other tests suffice for most functions).
+import io;
+import io::writer_util;
 import result::*;
 import misc::*;
 import parsers::*;
@@ -268,6 +270,7 @@ fn test_chainr1()
 	assert check_int_ok("2*3/4/2", p, 2);
 	assert check_int_ok("2*3-4", p, 6);
 }
+
 #[test]
 fn test_tag()
 {
@@ -277,5 +280,45 @@ fn test_tag()
 	assert check_str_failed("", p, "Expected bracketed foo", 1);
 	assert check_str_failed("<", p, "Expected 'foo'", 1);
 	assert check_str_failed("<foo", p, "Expected '>'", 1);
+}
+
+#[test]
+fn test_parse()
+{
+	let p = text("<").space0()._then(text("foo").space0())._then(text(">")).tag("Expected bracketed foo");
+	
+	alt parse(p, "unit test", "< foo\t>")
+	{
+		result::ok(s)
+		{
+			if s != ">"
+			{
+				io::stderr().write_line(#fmt["Expected '>' but found '%s'.", s]);
+				assert false;
+			}
+		}
+		result::err({file, line, col, mesg})
+		{
+			io::stderr().write_line(#fmt["Error '%s' on line %u and col %u.", mesg, line, col]);
+			assert false;
+		}
+	}
+	
+	assert check_str_failed("<foo", p, "Expected '>'", 1);
+	alt parse(p, "unit test", "< \n\nfoo\tx")
+	{
+		result::ok(s)
+		{
+			io::stderr().write_line(#fmt["Somehow parsed '%s'.", s]);
+			assert false;
+		}
+		result::err({file, line, col, mesg})
+		{
+			assert file == "unit test";
+			assert line == 3u;
+			assert col == 5u;
+			assert mesg == "Expected '>'";
+		}
+	}
 }
 

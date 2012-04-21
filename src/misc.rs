@@ -112,6 +112,19 @@ fn repeat_char(ch: char, count: uint) -> str
 	ret value;
 }
 
+#[doc(hidden)]
+fn get_col(text: [char], index: uint) -> uint
+{
+	let mut i = index;
+	
+	while i > 0u && text[i-1u] != '\n' && text[i-1u] != '\r'
+	{
+		i -= 1u;
+	}
+	
+	ret index - i + 1u;
+}
+
 // Note that we don't want to escape control characters here because we need
 // one code point to map to one printed character (so our log_ok arrows point to
 // the right character).

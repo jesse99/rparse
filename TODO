@@ -1,32 +1,16 @@
-* Look at some existing parser libraries.
-* Might want to record usage for some key types.
-* Need to be explicit about what is exported.
-* Add a list parser?
-* Work on parser library:
-	- might want ascii and unicode versions of relevent parsers (eg whitespace)
-	- might want a few more specialized parsers (like C whitespace and ascii whitespace)
-* Improve docs
-	- http://brson.github.com/rust/2012/04/14/how-to-rustdoc/
-* Think about adding support for col numbers (probably via a get_col function).
-* Should some of the types be classes?
-	- if nothing else type errors would be a lot shorter
 * Add an install target
 	- consumers should have an update-libraries target
+* Readme should show how import is done
+* May want to try html within the readme.
 * Search for todo.
 * Talk about the theory and limitations.
+	http://blogs.msdn.com/b/lukeh/archive/2007/08/19/monadic-parser-combinators-using-c-3-0.aspx
 * Add to cargo?
-* May want to ask for a code review on mailing list.
+* Think about adding support for col numbers (probably via a get_col function).
 * Might want an example of parsing significant whitespace.
 * Probably better to build as a static library, see #552.
+* Would be nice if there was a way to localize messages:
+	- maybe state could have a fn to map key strings to localized versions
 
-
-
-
-#[cfg(unimplemented)]
-#[doc = "list := elem (sep space elem)*"]
-fn list<T>(input: state, elem: parser<T>, sep: str, space: parser<()>) -> status<[T]>
-{
-	ret result::err({output: input, mesg: "not implemented"});
-}
 
 /Users/jessejones/Documents/Developer/rust.rtf
