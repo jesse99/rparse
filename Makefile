@@ -29,7 +29,7 @@ clean:
 	rm -rf bin
 	
 dist: lib
-	tar --create --compress --exclude \*/.git --exclude \*/.git/\* --file=rparse-0.1.tar.gz \
+	tar --create --compress --exclude \*/.git --exclude \*/.git/\* --file=rparse-0.2.tar.gz \
 		MIT.X11 Makefile README.md src
 
 # ------------------

@@ -1,7 +1,3 @@
-* Release checklist:
-	- create a new branch for the release
-	- update version (both in the Makefile and the readme)
-
 * Talk about the theory and limitations.
 	http://blogs.msdn.com/b/lukeh/archive/2007/08/19/monadic-parser-combinators-using-c-3-0.aspx
 * May want to package the exported items into rparse namespace. See #1238.
@@ -23,7 +19,7 @@
 	- review the front page of the web site
 	- update cargo, see bug 2266
 	- create a new branch for the release
-	- update version (both in the Makefile and the readme)
+	- update version (both in the crate and the readme)
 
 
 /Users/jessejones/Documents/Developer/rust.rtf
