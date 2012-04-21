@@ -16,6 +16,11 @@ check: bin/test-rparse
 check1: bin/test-rparse
 	export RUST_LOG=rparse=3 && ./bin/test-rparse test_x
 
+# Better to use /usr/local/lib but linking it in with -L /usr/local/lib fails because
+# there is a libccore there and in the nested rustc directory.
+install: lib
+	install -p `find bin -name "librparse*" -type f -maxdepth 1` /usr/lib
+
 # ------------------
 # Binary targets 
 # We always build the lib because:
