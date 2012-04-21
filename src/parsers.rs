@@ -228,10 +228,10 @@ fn eot() -> parser<()>
 }
 
 #[doc = "Parses the text and fails if all the text was not consumed. Leading space is allowed.
-Also see parse function.
 
-This is normally the only time leading spaces are parsed and the syntax is a little odd. Use
-something like `return(x).space0()` to create space where x is of type T."]
+This is typically used in conjunction with the parse function. Note that space has to have the
+same type as parser which is backwards from how it is normally used. To get this to work you
+can use a syntax like: `return(x).space0()` where x is of type T."]
 fn everything<T: copy>(parser: parser<T>, space: parser<T>) -> parser<T>
 {
 	sequence3(space, parser, eot()) {|_a, b, _c| result::ok(b)}
