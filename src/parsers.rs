@@ -141,8 +141,8 @@ fn scan1(err_mesg: str, fun: fn@ ([char], uint) -> uint) -> parser<str>
 	}
 }
 
-#[doc = "Returns s if input matches s. Also see literal."]
-fn text(s: str) -> parser<str>
+#[doc = "Returns s if input matches s. Also see literalv."]
+fn literal(s: str) -> parser<str>
 {
 	{|input: state|
 		let mut i = 0u;
@@ -173,19 +173,19 @@ fn text(s: str) -> parser<str>
 	}
 }
 
-#[doc = "Returns value if input matches s. Also see text."]
-fn literal<T: copy>(s: str, value: T) -> parser<T>
+#[doc = "Returns value if input matches s. Also see literal."]
+fn literalv<T: copy>(s: str, value: T) -> parser<T>
 {
 	{|input: state|
-		alt text(s)(input)
+		alt literal(s)(input)
 		{
 			result::ok(pass)
 			{
-				log_ok("literal", input, {new_state: pass.new_state, value: value})
+				log_ok("literalv", input, {new_state: pass.new_state, value: value})
 			}
 			result::err(failure)
 			{
-				log_err(#fmt["literal '%s'", s], input, failure)
+				log_err(#fmt["literalv '%s'", s], input, failure)
 			}
 		}
 	}
@@ -195,8 +195,8 @@ fn literal<T: copy>(s: str, value: T) -> parser<T>
 fn integer() -> parser<int>
 {
 	let digits = match1(is_digit, "Expected digits").then({|s| return(option::get(int::from_str(s)))});
-	let case1 = text("+")._then(digits);
-	let case2 = sequence2(text("-"), digits, {|_o, v| result::ok(-v)});
+	let case1 = literal("+")._then(digits);
+	let case2 = sequence2(literal("-"), digits, {|_o, v| result::ok(-v)});
 	let case3 = digits;
 	alternative([case1, case2, case3])
 }

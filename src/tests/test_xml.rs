@@ -111,12 +111,12 @@ fn content() -> parser<str>
 
 fn xml_parser() -> parser<xml>
 {
-	let quote = text("\"").space0();
-	let eq = text("=").space0();
-	let less = text("<").space0();
-	let greater = text(">").space0();
-	let slash_greater = text("/>").space0();
-	let less_slash = text("</").space0();
+	let quote = literal("\"").space0();
+	let eq = literal("=").space0();
+	let less = literal("<").space0();
+	let greater = literal(">").space0();
+	let slash_greater = literal("/>").space0();
+	let less_slash = literal("</").space0();
 	let name = identifier().space0();
 	
 	let dummy = xxml("dummy", [], [], "");

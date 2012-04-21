@@ -6,7 +6,7 @@ import test_helpers::*;
 #[test]
 fn test_space0()
 {
-	let p = text("x").space0()._then(text("y"));
+	let p = literal("x").space0()._then(literal("y"));
 	
 	assert check_str_ok("xy", p, "y");
 	assert check_str_ok("x y", p, "y");
@@ -20,7 +20,7 @@ fn test_space0()
 #[test]
 fn test_space1()
 {
-	let p = text("x").space1()._then(text("y"));
+	let p = literal("x").space1()._then(literal("y"));
 	
 	assert check_str_ok("x y", p, "y");
 	assert check_str_ok("x \n\t y", p, "y");
@@ -44,12 +44,12 @@ fn test_match1()
 #[test]
 fn test_text()
 {
-	let p = text("<");
+	let p = literal("<");
 	assert check_str_ok("<", p, "<");
 	assert check_str_failed("", p, "Expected '<'", 1);
 	assert check_str_failed(">", p, "Expected '<'", 1);
 	
-	let p = text("++");
+	let p = literal("++");
 	assert check_str_ok("++", p, "++");
 	assert check_str_failed("+-", p, "Expected '++'", 1);
 	assert check_str_failed("", p, "Expected '++'", 1);
@@ -57,9 +57,9 @@ fn test_text()
 }
 
 #[test]
-fn test_literal()
+fn test_literalv()
 {
-	let p = literal("inf", 1000);				// 1000 is pretty big…
+	let p = literalv("inf", 1000);				// 1000 is pretty big…
 	assert check_int_ok("inf", p, 1000);
 	assert check_int_failed("", p, "Expected 'inf'", 1);
 	assert check_int_failed("in", p, "Expected 'inf'", 1);

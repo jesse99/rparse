@@ -8,12 +8,12 @@ fn expr_parser() -> parser<int>
 {
 	// Create parsers for punctuation and integer literals. All of these
 	// parsers allow for zero or more trailing whitespace characters.
-	let plus_sign = text("+").space0();
-	let minus_sign = text("-").space0();
-	let mult_sign = text("*").space0();
-	let div_sign = text("/").space0();
-	let left_paren = text("(").space0();
-	let right_paren = text(")").space0();
+	let plus_sign = literal("+").space0();
+	let minus_sign = literal("-").space0();
+	let mult_sign = literal("*").space0();
+	let div_sign = literal("/").space0();
+	let left_paren = literal("(").space0();
+	let right_paren = literal(")").space0();
 	let int_literal = integer().space0();
 	
 	// Parenthesized expressions require a forward reference to the expr parser
@@ -94,4 +94,20 @@ fn test_expr()
 	assert check_int_ok(" 3\t-2  ", p, 1);
 	assert check_int_ok("2 + 3*4", p, 14);
 	assert check_int_ok("(2 + 3)*4", p, 20);
+}
+
+#[test]
+fn test_usage()
+{
+	alt expr_parser().parse("test", "2+3*5")
+	{
+		result::ok(value)
+		{
+			assert value == 17;
+		}
+		result::err({file, line, col, mesg})
+		{
+			assert false;
+		}
+	}
 }
