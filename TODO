@@ -1,8 +1,6 @@
 2242
 
 * Make sure client code works (can just try the readme example).
-	- do a commit
-	- try using an rc file named after the lib
 	- may want to package sources
 	- may need to get rid of the diamond (merge primitives and parsers?)
 * Readme parse example needs to be updated.
@@ -36,6 +34,7 @@
 	- review README
 	- use git log --oneline > CHANGE_LOG
 	- update CHANGES file
+	- add CHANGES and CHANGE_LOG to dist target
 	- push changes
 	- upload new source package
 	- review the front page of the web site

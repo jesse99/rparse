@@ -21,6 +21,13 @@ check1: bin/test-rparse
 install: lib
 	install -p `find bin -name "librparse*" -type f -maxdepth 1` /usr/lib
 
+clean:
+	rm -rf bin
+	
+dist: lib
+	tar --create --compress --exclude \*/.git --exclude \*/.git/\* --file=rparse-0.1.tar.gz \
+		MIT.X11 Makefile README.md src
+
 # ------------------
 # Binary targets 
 # We always build the lib because:
@@ -31,7 +38,7 @@ install: lib
 # setting an executable's name, but not libraries).
 .PHONY : lib
 lib:
-	$(RUSTC) --out-dir bin -O src/parser.rc
+	$(RUSTC) --out-dir bin -O src/rparse.rc
 
-bin/test-rparse: src/parser.rc src/*.rs src/tests/*.rs
-	$(RUSTC) -g --test -o $@ src/parser.rc
+bin/test-rparse: src/rparse.rc src/*.rs src/tests/*.rs
+	$(RUSTC) -g --test -o $@ src/rparse.rc
