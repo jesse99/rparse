@@ -17,23 +17,26 @@ The library has been tested with Rust from github as of April 2010 (i.e. post 0.
 ## Example
 Here is an example of a simple parser which can be used to evaluate mathematical expressions.
 
+    import rparse::*;
+    import rparse::types::*;
+    
     fn expr_parser() -> parser<int>
     {
         // Create parsers for punctuation and integer literals. All of these
         // parsers allow for zero or more trailing whitespace characters.
-        let plus_sign = text("+").space0();
-        let minus_sign = text("-").space0();
-        let mult_sign = text("*").space0();
-        let div_sign = text("/").space0();
-        let left_paren = text("(").space0();
-        let right_paren = text(")").space0();
+        let plus_sign = literal("+").space0();
+        let minus_sign = literal("-").space0();
+        let mult_sign = literal("*").space0();
+        let div_sign = literal("/").space0();
+        let left_paren = literal("(").space0();
+        let right_paren = literal(")").space0();
         let int_literal = integer().space0();
         
         // Parenthesized expressions require a forward reference to the expr parser
         // so we initialize a function pointer to something of the right type, create
         // a parser using the parser expr_ptr points to, and fixup expr_ptr later.
         let expr_ptr = @mut return(0);
-        let expr_ref = forward_ref(expr_ptr);
+        let expr_ref = forward_ref(expr_ptr); 
         
         // sub_expr := [-+]? '(' expr ')'
         let sub_expr = alternative([
@@ -56,27 +59,25 @@ Here is an example of a simple parser which can be used to evaluate mathematical
         *expr_ptr = expr;
         
         // start := space0 expr EOT
-        // The s syntax is a little goofy because the space0 comes before
+        // The s syntax is a little goofy because the space0 comes before 
         // instead of after expr so it needs to be told which type to use.
         let s = return(0).space0();
-        expr.everything(s)
+        everything(expr, s)
     }
 
 Usage looks like this:
 
-    fn eval(file: str, text: str) -> option::option<int>
+    fn test_usage()
     {
-        let parser = expr_parser();
-        alt parser.parse(file, text)    // file is returned in err_state to make error reporting easier
+        alt expr_parser().parse("test", "2+3*5")
         {
-            result::ok(pass)
+            result::ok(value)
             {
-                ret option::some(pass.value);
+                assert value == 17;
             }
-            result::err(failure)
+            result::err({file, line, col, mesg})
             {
-                io::stderr().write_line(#fmt["Error '%s' on line %u", failure.mesg, failure.err_state.line]);
-                ret option::none;
+                assert false;
             }
         }
     }
