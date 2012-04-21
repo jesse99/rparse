@@ -9,8 +9,6 @@
 use std;
 
 mod misc;
-mod parsers;
-mod primitives;
 mod types;
 
 #[cfg(test)]

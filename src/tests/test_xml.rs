@@ -3,8 +3,6 @@
 // that returns objects instead of evaluating in-place.
 import to_str::to_str;
 import misc::*;
-import parsers::*;
-import primitives::*;
 import result::*;
 import test_helpers::*;
 import types::*;

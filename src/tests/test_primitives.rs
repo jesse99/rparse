@@ -3,8 +3,6 @@ import io;
 import io::writer_util;
 import result::*;
 import misc::*;
-import parsers::*;
-import primitives::*;
 import test_helpers::*;
 import types::*;
 

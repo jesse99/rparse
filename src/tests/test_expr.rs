@@ -1,6 +1,5 @@
 // Test a grammar capable of evaluating simple mathematical expressions.
-import parsers::*;
-import primitives::*;
+//import primitives::*;
 import test_helpers::*;
 import types::*;
 
