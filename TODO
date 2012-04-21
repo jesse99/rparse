@@ -1,11 +1,4 @@
-* Get rid of .DS_store
-* May want to try html within the readme.
-* Talk about the theory and limitations.
-	http://blogs.msdn.com/b/lukeh/archive/2007/08/19/monadic-parser-combinators-using-c-3-0.aspx
 * Release checklist:
-	- search for TODO (in all files)
-	- run unit tests in release
-	- run unit tests in debug
 	- review README
 	- push changes
 	- upload new source package
@@ -14,6 +7,8 @@
 	- create a new branch for the release
 	- update version (both in the make file and the readme)
 
+* Talk about the theory and limitations.
+	http://blogs.msdn.com/b/lukeh/archive/2007/08/19/monadic-parser-combinators-using-c-3-0.aspx
 * May want to package the exported items into rparse namespace. See #1238.
 * Might want an example of parsing significant whitespace.
 * Probably better to build as a static library, see #552.

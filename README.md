@@ -8,10 +8,6 @@ The parse functions all take a state record as input containing the text to be p
 has been parsed. They return a result that is either passed or failed. If passed the result includes a new 
 state record and a generic T value. If failed the result consists of the input state and an error string.
 
-Most of the built in parse functions take more than just a state argument. Those extra arguments must 
-be bound before the parse function can be composed with other functions. For example, 
-`bind(repeat_one, _, hex_digit)` creates a parser that consumes one or more hexadecimal digits.
-
 The library has been tested with Rust from github as of April 2010 (i.e. post 0.2).
 
 ## Example

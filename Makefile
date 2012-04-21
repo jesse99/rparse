@@ -16,6 +16,10 @@ check: bin/test-rparse
 check1: bin/test-rparse
 	export RUST_LOG=rparse=3 && ./bin/test-rparse test_x
 
+# Run unit tests with optimizations enabled (which is how we build the lib).
+check-release: bin/test-rparse-release
+	export RUST_LOG=rparse=1 && ./bin/test-rparse-release
+
 # Better to use /usr/local/lib but linking it in with -L /usr/local/lib fails because
 # there is a libccore there and in the nested rustc directory.
 install: lib
@@ -41,4 +45,7 @@ lib:
 	$(RUSTC) --out-dir bin -O src/rparse.rc
 
 bin/test-rparse: src/rparse.rc src/*.rs src/tests/*.rs
-	$(RUSTC) -g --test -o $@ src/rparse.rc
+	$(RUSTC) -g --test -o $@ $<
+
+bin/test-rparse-release: src/rparse.rc src/*.rs src/tests/*.rs
+	$(RUSTC) -g --test -O -o $@ $<
