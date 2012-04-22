@@ -26,7 +26,7 @@ fn log_ok<T: copy>(fun: str, input: state, pass: succeeded<T>) -> status<T>
 }
 
 #[doc = "Used to log the results of a parse function (at debug level)."]
-fn log_err<T: copy>(fun: str, input: state, failure: failed<T>) -> status<T>
+fn log_err<T: copy>(fun: str, input: state, failure: failed) -> status<T>
 {
 	assert failure.old_state.index == input.index;			// on errors the next parser must begin at the start
 	assert failure.err_state.index >= input.index;			// errors can't be before the input

@@ -560,7 +560,7 @@ fn space0<T: copy>(parser: parser<T>) -> parser<T>
 		{|pass|
 			let mut i = pass.new_state.index;
 			let mut line = pass.new_state.line;
-			while true
+			loop
 			{
 				if input.text[i] == '\r' && input.text[i+1u] == '\n'
 				{

@@ -1,3 +1,19 @@
+* Do a 0.2 release:
+	- make sure readme example works when using rparse
+	- run unit tests in release
+	- run unit tests in debug
+	- review README
+	- use git log --oneline > CHANGE_LOG
+	- update CHANGES file
+	- add CHANGES and CHANGE_LOG to dist target
+	- push changes
+	- upload new source package
+	- review the front page of the web site
+	- update cargo, see bug 2266
+	- create a new branch for the release
+	- update version (both in the crate and the readme)
+
+
 * Talk about the theory and limitations.
 	http://blogs.msdn.com/b/lukeh/archive/2007/08/19/monadic-parser-combinators-using-c-3-0.aspx
 * May want to package the exported items into rparse namespace. See #1238.
@@ -22,5 +38,6 @@
 	- update version (both in the crate and the readme)
 
 
+https://github.com/jesse99/rparse
 /Users/jessejones/Documents/Developer/rust.rtf
 
