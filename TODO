@@ -1,7 +1,4 @@
 * Do a 0.2 release:
-	- push changes
-	- upload new source package
-	- update cargo, see bug 2266
 	- create a new branch for the release
 	- update version (both in the crate and the readme)
 
