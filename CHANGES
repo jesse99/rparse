@@ -1,0 +1,4 @@
+---- rparse 0.2 -------------------------------------------
+b9b2ec9 Fixed two places the Apr 21 rustc complained about
+4fa6588 Fixed date
+269b179 Bumped version number

@@ -30,7 +30,7 @@ clean:
 	
 dist: lib
 	tar --create --compress --exclude \*/.git --exclude \*/.git/\* --file=rparse-0.2.tar.gz \
-		MIT.X11 Makefile README.md src
+		CHANGES MIT.X11 Makefile README.md src
 
 # ------------------
 # Binary targets 
