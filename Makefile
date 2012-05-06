@@ -20,10 +20,8 @@ check1: bin/test-rparse
 check-release: bin/test-rparse-release
 	export RUST_LOG=rparse=1 && ./bin/test-rparse-release
 
-# Better to use /usr/local/lib but linking it in with -L /usr/local/lib fails because
-# there is a libccore there and in the nested rustc directory.
-install: lib
-	install -p `find bin -name "librparse*" -type f -maxdepth 1` /usr/lib
+install:
+	install `find bin -name "librparse*" -type f -maxdepth 1` /usr/local/lib/rust/
 
 clean:
 	rm -rf bin
