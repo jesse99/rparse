@@ -1,3 +1,8 @@
+* Talk about info and debug logging.
+
+* Would be more efficient to use char_range_at instead of converting the text to [char]
+	- is this true given that we want to add EOT? could rely on the embedded null char
+	- getting the col might be a little icky because that requires going backwards
 * Talk about the theory and limitations.
 	http://blogs.msdn.com/b/lukeh/archive/2007/08/19/monadic-parser-combinators-using-c-3-0.aspx
 * May want to package the exported items into rparse namespace. See #1238.
