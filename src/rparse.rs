@@ -605,6 +605,28 @@ fn space1<T: copy>(parser: parser<T>) -> parser<T>
 	}
 }
 
+#[doc = "Consumes a character which must satisfy the predicate.
+Returns the matched character."]
+fn match(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<char>
+{
+	{|input: state|
+		let mut i = input.index;
+		if input.text[i] != EOT && predicate(input.text[i])
+		{
+			i += 1u;
+		}
+		
+		if i > input.index
+		{
+			log_ok("match", input, {new_state: {index: i with input}, value: input.text[input.index]})
+		}
+		else
+		{
+			log_err("match", input, {old_state: input, err_state: {index: i with input}, mesg: err_mesg})
+		}
+	}
+}
+
 #[doc = "Consumes one or more characters matching the predicate.
 Returns the matched characters. 
 
@@ -711,11 +733,11 @@ fn literali(in_s: str) -> parser<str>
 		if i == str::len(s)
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			log_ok("text", input, {new_state: {index: j with input}, value: text})
+			log_ok("literali", input, {new_state: {index: j with input}, value: text})
 		}
 		else
 		{
-			log_err(#fmt["text '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
+			log_err(#fmt["literali '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
 		}
 	}
 }
@@ -743,11 +765,11 @@ fn literal(s: str) -> parser<str>
 		if i == str::len(s)
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			log_ok("text", input, {new_state: {index: j with input}, value: text})
+			log_ok("literal", input, {new_state: {index: j with input}, value: text})
 		}
 		else
 		{
-			log_err(#fmt["text '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
+			log_err(#fmt["literal '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
 		}
 	}
 }
