@@ -686,7 +686,41 @@ fn scan1(err_mesg: str, fun: fn@ ([char], uint) -> uint) -> parser<str>
 	}
 }
 
-#[doc = "Returns s if input matches s. Also see literalv."]
+#[doc = "Returns s if input matches s ignoring case. Also see literal and literalv."]
+fn literali(in_s: str) -> parser<str>
+{
+	let s = str::to_lower(in_s);
+	
+	{|input: state|
+		let mut i = 0u;
+		let mut j = input.index;
+		while i < str::len(s)
+		{
+			let {ch, next} = str::char_range_at(s, i);
+			if ch == lower_char(input.text[j])
+			{
+				i = next;
+				j += 1u;
+			}
+			else
+			{
+				break;
+			}
+		}
+		
+		if i == str::len(s)
+		{
+			let text = str::from_chars(vec::slice(input.text, input.index, j));
+			log_ok("text", input, {new_state: {index: j with input}, value: text})
+		}
+		else
+		{
+			log_err(#fmt["text '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
+		}
+	}
+}
+
+#[doc = "Returns s if input matches s. Also see literali and literalv."]
 fn literal(s: str) -> parser<str>
 {
 	{|input: state|

@@ -103,6 +103,19 @@ pure fn is_whitespace(ch: char) -> bool
 	ret ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
 }
 
+#[doc = "Returns ch as lower case."]
+pure fn lower_char(ch: char) -> char
+{
+	if ch >= 'A' && ch <= 'Z'
+	{
+		('a' as uint + (ch as uint - 'A' as uint)) as char
+	}
+	else
+	{
+		ch
+	}
+}
+
 #[doc = "Returns a string with count ch characters."]
 fn repeat_char(ch: char, count: uint) -> str
 {
