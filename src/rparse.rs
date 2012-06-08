@@ -627,6 +627,24 @@ fn match(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<char>
 	}
 }
 
+#[doc = "Consumes zero or more characters matching the predicate.
+Returns the matched characters. 
+
+Note that this does not increment line."]
+fn match0(predicate: fn@ (char) -> bool) -> parser<str>
+{
+	{|input: state|
+		let mut i = input.index;
+		while input.text[i] != EOT && predicate(input.text[i])
+		{
+			i += 1u;
+		}
+		
+		let text = str::from_chars(vec::slice(input.text, input.index, i));
+		log_ok("match0", input, {new_state: {index: i with input}, value: text})
+	}
+}
+
 #[doc = "Consumes one or more characters matching the predicate.
 Returns the matched characters. 
 
@@ -806,10 +824,9 @@ fn integer() -> parser<int>
 fn identifier() -> parser<str>
 {
 	let prefix = match1(is_identifier_prefix, "Expected identifier");
-	let suffix = match1(is_identifier_suffix, "Expected identifier").repeat0();
-	prefix.then({|p| suffix.then({|s| return(p + str::connect(s, ""))})})
+	let suffix = match0(is_identifier_suffix);
+	prefix.then({|p| suffix.then({|s| return(p + s)})})
 }
-
 
 #[doc = "Returns a parser which matches the end of the input.
 

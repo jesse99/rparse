@@ -1,3 +1,16 @@
+* Run unit tests
+* Commit
+* Probably lit and lits
+* Probably alt_v and seq2
+* identifier_p (takes predicates)
+* match_v (takes vector of predicates)
+* Should be general ways to match with str result and T result
+* Maybe delimited, delimited_e (for escaped) and prefixed
+* Make sure that there is good support for matching lexical elements, including case-insensitive keywords and strings
+* Maybe c_str, c_int, c_float (replace identifier with c_identifier)
+* Cheat sheet: protypes, help, usage		str type, generic type, specialized (ie c), combinators
+* Probably should review parsec3 and/or polyparse
+* Update web page
 * Talk about info and debug logging.
 
 * Would be more efficient to use char_range_at instead of converting the text to [char]
