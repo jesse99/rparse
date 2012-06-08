@@ -5,7 +5,7 @@ import c99_parser::*;
 
 fn expr_parser() -> parser<int>
 {
-	let int_literal = integer().s0();
+	let int_literal = decimal_number().s0();
 	
 	// Parenthesized expressions require a forward reference to the expr parser
 	// so we initialize a function pointer to something of the right type, create
@@ -48,10 +48,11 @@ fn test_factor()
 	assert check_int_failed("", p, "Expected integer or sub-expression", 1);
 	assert check_int_ok("23", p, 23);
 	assert check_int_ok(" 57   ", p, 57);
-	assert check_int_ok("\t\t\n-100", p, -100);
-	assert check_int_ok("+1", p, 1);
-	assert check_int_failed("+", p, "Expected digits or '('", 1);
+	assert check_int_failed("+", p, "Expected '('", 1);
 	assert check_int_failed(" 57   200", p, "Expected EOT", 1);
+	
+	// TODO: https://github.com/mozilla/rust/issues/2546
+	//assert check_int_failed("9999999999999999999999", p, "'9999999999999999999999' is out of range", 1);
 	
 	assert check_int_ok("(23)", p, 23);
 	assert check_int_ok("((23))", p, 23);

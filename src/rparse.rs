@@ -21,7 +21,7 @@ fn fails<T: copy>(mesg: str) -> parser<T>
 fn return<T: copy>(value: T) -> parser<T>
 {
 	{|input: state|
-		log_ok("return", input, {new_state: input, value: value})}
+		log_ok(#fmt["return %?", value], input, {new_state: input, value: value})}
 }
 
 #[doc = "If parser is successful then the function returned by eval is called
@@ -51,6 +51,82 @@ fn then<T: copy, U: copy>(parser1: parser<T>, parser2: parser<U>) -> parser<U>
 			result::chain_err(parser2(pass.new_state))
 			{|failure|
 				log_err("then", input, {old_state: input with failure})
+			}
+		}
+	}
+}
+
+#[doc = "If all the parsers are successful then the matched text is returned."]
+fn seq2_ret_str<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<str>
+{
+	{|input: state|
+		alt p0.then(p1)(input)
+		{
+			result::ok(pass)
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
+				log_ok("seq2_ret_str", input, {new_state: pass.new_state, value: text})
+			}
+			result::err(failure)
+			{
+				log_err("seq2_ret_str", input, {old_state: input with failure})
+			}
+		}
+	}
+}
+
+#[doc = "If all the parsers are successful then the matched text is returned."]
+fn seq3_ret_str<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<str>
+{
+	{|input: state|
+		alt p0.then(p1). then(p2)(input)
+		{
+			result::ok(pass)
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
+				log_ok("seq2_ret_str", input, {new_state: pass.new_state, value: text})
+			}
+			result::err(failure)
+			{
+				log_err("seq2_ret_str", input, {old_state: input with failure})
+			}
+		}
+	}
+}
+
+#[doc = "If all the parsers are successful then the matched text is returned."]
+fn seq4_ret_str<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<str>
+{
+	{|input: state|
+		alt p0.then(p1). then(p2).then(p3)(input)
+		{
+			result::ok(pass)
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
+				log_ok("seq2_ret_str", input, {new_state: pass.new_state, value: text})
+			}
+			result::err(failure)
+			{
+				log_err("seq2_ret_str", input, {old_state: input with failure})
+			}
+		}
+	}
+}
+
+#[doc = "If all the parsers are successful then the matched text is returned."]
+fn seq5_ret_str<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>, p4: parser<T4>) -> parser<str>
+{
+	{|input: state|
+		alt p0.then(p1). then(p2).then(p3).then(p4)(input)
+		{
+			result::ok(pass)
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
+				log_ok("seq2_ret_str", input, {new_state: pass.new_state, value: text})
+			}
+			result::err(failure)
+			{
+				log_err("seq2_ret_str", input, {old_state: input with failure})
 			}
 		}
 	}
@@ -307,6 +383,28 @@ fn seq4_ret3<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: parser<
 		{|_a0, _a1, _a2, a3| result::ok(a3)}
 }
 
+// When using tag it can be useful to use empty messages for interior parsers
+// so we need to handle that case.
+fn or_mesg(mesg1: str, mesg2: str) -> str
+{
+	if str::is_not_empty(mesg1) && str::is_not_empty(mesg2)
+	{
+		mesg1 + " or " + mesg2
+	}
+	else if str::is_not_empty(mesg1)
+	{
+		mesg1
+	}
+	else if str::is_not_empty(mesg2)
+	{
+		mesg2
+	}
+	else
+	{
+		""
+	}
+}
+
 #[doc = "Returns a parser which first tries parser1, and if that fails, parser2."]
 fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 {
@@ -328,11 +426,11 @@ fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 					if str::starts_with(failure2.mesg, "Expected ")
 					{
 						let mesg2 = str::slice(failure2.mesg, str::len("Expected "), str::len(failure2.mesg));
-						log_err("or", input, {mesg: failure1.mesg + " or " + mesg2 with failure2})
+						log_err("or", input, {mesg: or_mesg(failure1.mesg, mesg2) with failure2})
 					}
 					else
 					{
-						log_err("or", input, {mesg: failure1.mesg + " or " + failure2.mesg with failure2})
+						log_err("or", input, {mesg: or_mesg(failure1.mesg, failure2.mesg) with failure2})
 					}
 				}
 			}
@@ -392,19 +490,27 @@ fn or_v<T: copy>(parsers: [parser<T>]) -> parser<T>
 		}
 		else
 		{
-			let mesg = str::connect(errors, " or ");
+			let errs = vec::filter(errors) {|s| str::is_not_empty(s)};
+			let mesg = str::connect(errs, " or ");
 			log_err("or_v", input, {old_state: input, err_state: {index: max_index with input}, mesg: mesg})
 		}
 	}
 }
 
 #[doc = "optional := e?"]
-fn optional<T: copy>(parser: parser<T>, missing: T) -> parser<T>
+fn optional<T: copy>(parser: parser<T>) -> parser<option<T>>
 {
 	{|input: state|
-		result::chain_err(parser(input))
-		{|_failure|
-			log_ok("optional", input, {new_state: input, value: missing})
+		alt parser(input)
+		{
+			result::ok(pass)
+			{
+				log_ok("optional", input, {new_state: pass.new_state, value: option::some(pass.value)})
+			}
+			result::err(_failure)
+			{
+				log_ok("optional", input, {new_state: input, value: option::none})
+			}
 		}
 	}
 }
@@ -563,14 +669,15 @@ fn tag<T: copy>(parser: parser<T>, label: str) -> parser<T>
 	{|input: state|
 		result::chain_err(parser(input))
 		{|failure|
-			if failure.err_state.index == input.index
+			if failure.err_state.index == input.index || str::is_empty(failure.mesg)
 			{
 				log_err("tag", input, {mesg: label with failure})
 			}
 			else
 			{
 				// If we managed to parse something then it is usually better to
-				// use that error message.
+				// use that error message. (If that's not what you want then use
+				// empty strings there).
 				log_err("tag", input, failure)
 			}
 		}
@@ -690,6 +797,48 @@ fn match(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<char>
 	}
 }
 
+#[doc = "Attempts to match any character in chars. If matched the char is returned."]
+fn anyc(chars: str) -> parser<char>
+{
+	{|input: state|
+		let mut i = input.index;
+		if str::find_char(chars, input.text[i]).is_some()
+		{
+			i += 1u;
+		}
+		
+		if i > input.index
+		{
+			log_ok("anyc", input, {new_state: {index: i with input}, value: input.text[input.index]})
+		}
+		else
+		{
+			log_err("anyc", input, {old_state: input, err_state: {index: i with input}, mesg: #fmt["Expected [%s]", chars]})
+		}
+	}
+}
+
+#[doc = "Attempts to match no character in chars. If matched the char is returned."]
+fn noc(chars: str) -> parser<char>
+{
+	{|input: state|
+		let mut i = input.index;
+		if input.text[i] != EOT && str::find_char(chars, input.text[i]).is_none()
+		{
+			i += 1u;
+		}
+		
+		if i > input.index
+		{
+			log_ok("noc", input, {new_state: {index: i with input}, value: input.text[input.index]})
+		}
+		else
+		{
+			log_err("noc", input, {old_state: input, err_state: {index: i with input}, mesg: #fmt["Expected [^%s]", chars]})
+		}
+	}
+}
+
 // It would be a lot more elegant if match0, match1, and co were removed
 // and users relied on composition to build the sort of parsers that they
 // want. However in practice this is not such a good idea:
@@ -725,7 +874,7 @@ fn match0(predicate: fn@ (char) -> bool) -> parser<str>
 #[doc = "Consumes one or more characters matching the predicate.
 Returns the matched characters. 
 
-Note that this does not increment line."]
+Err_mesg should be something like \"Expected digits\". Note that this does not increment line."]
 fn match1(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<str>
 {
 	{|input: state|
@@ -935,6 +1084,16 @@ impl str_methods for str
 		litv(self, value)
 	}
 	
+	fn anyc() -> parser<char>
+	{
+		anyc(self)
+	}
+	
+	fn noc() -> parser<char>
+	{
+		noc(self)
+	}
+	
 	fn s0() -> parser<str>
 	{
 		s0(lit(self))
@@ -965,9 +1124,9 @@ impl parser_methods<T: copy> for parser<T>
 		or(self, parser2)
 	}
 	
-	fn optional<T: copy>(missing: T) -> parser<T>
+	fn optional<T: copy>() -> parser<option<T>>
 	{
-		optional(self, missing)
+		optional(self)
 	}
 	
 	fn r0<T: copy>() -> parser<[T]>

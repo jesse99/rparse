@@ -1,20 +1,8 @@
 #[doc = "Functions that can be used to parse C99 lexical elements (or with languages
 that have similar lexical elements)."];
-//import misc::*;
-//import types::*;
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
-export identifier, integer;
-
-pure fn is_identifier_prefix(ch: char) -> bool
-{
-	ret is_alpha(ch) || ch == '_';
-}
-
-pure fn is_identifier_suffix(ch: char) -> bool
-{
-	ret is_identifier_prefix(ch) || is_digit(ch);
-}
+export identifier, decimal_number, octal_number, hex_number, float_number;
 
 #[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*
 
@@ -26,37 +14,178 @@ fn identifier() -> parser<str>
 	match1_0(is_identifier_prefix, is_identifier_suffix, "Expected identifier")
 }
 
-#[doc = "integer := [+-]? [0-9]+"]
-fn integer() -> parser<int>
+#[doc = "decimal_number := [0-9]+
+
+Technically this is not supposed to match numbers with leading zeros,
+but we do so to make this parser more reusable."]
+fn decimal_number() -> parser<int>
 {
-	let digits = match1(is_digit, "Expected digits").thene({|s| return(option::get(int::from_str(s)))});
-	let case1 = lit("+").then(digits);
-	let case2 = seq2(lit("-"), digits, {|_o, v| result::ok(-v)});
-	let case3 = digits;
-	or_v([case1, case2, case3])
+	match1(is_digit, "Expected decimal number").thene()
+		{|text|
+			alt int::from_str(text)
+			{
+				option::some(value)
+				{
+					return(value)
+				}
+				_
+				{
+					fails(#fmt["'%s' is out of range", text])
+				}
+			}
+		}
 }
 
-// replace match0(p) with match(p).r0()?
-// invert
-// match_any and match_none
-// add a comment about inverse matching and EOT
+#[doc = "octal_number := 0 [0-7]*"]
+fn octal_number() -> parser<int>
+{
+	match1_0({|c| c == '0'}, is_octal, "Expected octal number").thene()
+		{|text|
+			alt from_base_8(text)
+			{
+				result::ok(value)
+				{
+					return(value)
+				}
+				result::err(mesg)
+				{
+					fails(mesg)
+				}
+			}
+		}
+}
 
-// add (or move) unit tests for identifier and integer
-// integer unit tests will probably need to be revised
-// do we even need unit tests? maybe for floats?
+#[doc = "hex_number := 0[xX] [0-9a-fA-F]+"]
+fn hex_number() -> parser<int>
+{
+	let prefix = "0".lit().then(or("x".lit(), "X".lit())).tag("Expected hex number");
+	let digits = match1(is_hex, "Expected hex number").thene()
+		{|text|
+			alt from_base_16(text)
+			{
+				result::ok(value)
+				{
+					return(value)
+				}
+				result::err(mesg)
+				{
+					fails(mesg)
+				}
+			}
+		};
+	
+	seq2_ret1(prefix, digits)
+}
 
-// decimal_number		non-zero-digit	digit*
-// octal_number			0	[0-7]+
-// hex_number			0[xX]	[0-9a-fA-F]+
-// integer_literal			decimal | octal | hex (u|U|l|L|ll|LL)?
+#[doc = "float_number := float1 | float2 | float3
 
-// exponent := [eE] [+-]? digit-sequence
-// float_number := [0-9]+? '.' [0-9]+ exponent?
-// float_number := [0-9]+ '.' exponent?
-// float_number := [0-9]+ exponent
+// float1 := [0-9]* '.' [0-9]+ exponent?
+// float2 := [0-9]+ '.' exponent?
+// float3 := [0-9]+ exponent
+// exponent := [eE] [+-]? [0-9]+"]
+fn float_number() -> parser<f64>
+{
+	let exponent = seq3_ret_str("eE".anyc(), "+-".anyc().optional(), match1(is_digit, ""));
+	
+	let float1 = seq4_ret_str(match0(is_digit), ".".lit(), match1(is_digit, ""), exponent.optional());
+	let float2 = seq3_ret_str(match1(is_digit, ""), ".".lit(), exponent.optional());
+	let float3 = seq2_ret_str(match1(is_digit, ""), exponent);
+	
+	let number = or_v([float1, float2, float3]).tag("Expected float number");
+	
+	number.thene()
+		{|text|
+			str::as_c_str(text)
+			{|ptr|
+				return(libc::strtod(ptr, ptr::null()) as f64)
+			}
+		}
+}
 
-// float_literal			float_number  [flFL]?
-//    skipped hex float constants
+// ---- Helpers ---------------------------------------------------------------
+pure fn is_identifier_prefix(ch: char) -> bool
+{
+	ret is_alpha(ch) || ch == '_';
+}
+
+pure fn is_identifier_suffix(ch: char) -> bool
+{
+	ret is_identifier_prefix(ch) || is_digit(ch);
+}
+
+pure fn is_octal(ch: char) -> bool
+{
+	ret ch >= '0' && ch <= '7';
+}
+
+pure fn is_hex(ch: char) -> bool
+{
+	ret (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
+}
+
+fn from_base_8(text: str) -> result::result<int, str>
+{
+	let mut power = 1;
+	let mut result = 0;
+	
+	let mut i = str::len(text);
+	while i > 0u
+	{
+		i -= 1u;
+		
+		let delta = (text[i] - ('0' as u8)) as int;
+		if power*delta < int::max_value - result
+		{
+			result += power*delta;
+		}
+		else
+		{
+			ret result::err("Octal number is too large");
+		}
+		power *= 8;
+	}
+	
+	ret result::ok(result);
+}
+
+fn from_base_16(text: str) -> result::result<int, str>
+{
+	let mut power = 1;
+	let mut result = 0;
+	
+	let mut i = str::len(text);
+	while i > 0u
+	{
+		i -= 1u;
+		
+		let ch = text[i] as char;
+		let delta = 
+			if ch >= '0' && ch <= '9'
+			{
+				(text[i] - ('0' as u8)) as int
+			}
+			else if ch >= 'a' && ch <= 'f'
+			{
+				10 + (text[i] - ('a' as u8)) as int
+			}
+			else
+			{
+				10 + (text[i] - ('A' as u8)) as int
+			};
+		if power*delta < int::max_value - result
+		{
+			result += power*delta;
+		}
+		else
+		{
+			ret result::err("Hex number is too large");
+		}
+		power *= 16;
+	}
+	
+	ret result::ok(result);
+}
+
 // char_literal
 // string_literal
 // comment				these don't nest

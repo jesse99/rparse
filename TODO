@@ -1,9 +1,7 @@
 * Add c_parser functions:
  	- get rid of identifier and integer
  	- update cheat sheet
-* Make sure that there is good support for matching lexical elements, 
-   including case-insensitive keywords and strings
-* How should err_mesg args be formatted?
+ * Add lit_v.
 * Can we organize the code like the cheat sheet does?
 * Probably should review parsec3 and/or polyparse
 * Update web page

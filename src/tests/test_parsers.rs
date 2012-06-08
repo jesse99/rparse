@@ -68,7 +68,7 @@ fn test_literalv()
 fn test_everything()
 {
 	let s = return(0).s0();
-	let p = everything(integer(), s);
+	let p = everything(decimal_number(), s);
 	
 	assert check_int_ok("2", p, 2);
 	assert check_int_ok("   \t3", p, 3);

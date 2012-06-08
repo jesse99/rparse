@@ -124,8 +124,8 @@ fn test_seq()
 {
 	let prefix = match1(is_identifier_prefix, "Expected identifier");
 	let suffix = match1(is_identifier_suffix, "Expected identifier").r0();
-	let trailer = match1(is_identifier_trailer, "Expected identifier").optional("");
-	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + c)});
+	let trailer = match1(is_identifier_trailer, "Expected identifier").optional();
+	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + option::get_default(c, ""))});
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -197,15 +197,6 @@ fn test_or_v()
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;
 }
-#[test]
-fn test_optional()
-{
-	let p = "x".lit().optional("z");
-	
-	assert check_str_ok("x", p, "x");
-	assert check_str_ok("b", p, "z");
-	assert check_str_ok("", p, "z");
-}
 
 #[test]
 fn test__repeat0()
@@ -255,7 +246,7 @@ pure fn is_identifier_trailer(ch: char) -> bool
 #[test]
 fn test_chainl1()
 {
-	let factor = integer();
+	let factor = decimal_number();
 	let op = "*".lit().or("/".lit());
 	let p = factor.chainl1(op, {|lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs}});
 	
@@ -269,7 +260,7 @@ fn test_chainl1()
 #[test]
 fn test_chainr1()
 {
-	let factor = integer();
+	let factor = decimal_number();
 	let op = "*".lit().or("/".lit());
 	let p = factor.chainr1(op, {|lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs}});
 	
