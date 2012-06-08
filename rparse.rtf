@@ -63,6 +63,7 @@
 \f1\i0\fs24 \cf0 \
 
 \f0\fs28 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
@@ -74,8 +75,29 @@
 \b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 , 
 \i \cf2 err_mesg:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Consumes one or more characters matching the predicate.
+\f1\i0\fs24 \cf0 \
+\
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b match1_0
+\b0 (
+\i \cf2 prefix:
+\i0 \cf0  
+\b \cf2 fn
+\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 , 
+\i \cf2 suffix:
+\i0 \cf0  
+\b \cf2 fn
+\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 , 
+\i \cf2 err_mesg:
+\i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 str\cf0 >\
+
+\i \cf4 Consumes one or more prefix chars and zero or more suffix chars.
 \f1\i0\fs24 \cf0 \
 \
 

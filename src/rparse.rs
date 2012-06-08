@@ -733,6 +733,14 @@ fn match1(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<str>
 	}
 }
 
+#[doc = "match1_0 := prefix+ suffix*"]
+fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool, err_mesg: str) -> parser<str>
+{
+	let prefix = match1(prefix, err_mesg);
+	let suffix = match0(suffix);
+	prefix.thene({|p| suffix.thene({|s| return(p + s)})})
+}
+
 #[doc = "Calls fun with an index into the characters to be parsed until it returns zero characters.
 Returns the matched characters. 
 
@@ -886,9 +894,7 @@ fn integer() -> parser<int>
 #[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*"]
 fn identifier() -> parser<str>
 {
-	let prefix = match1(is_identifier_prefix, "Expected identifier");
-	let suffix = match0(is_identifier_suffix);
-	prefix.thene({|p| suffix.thene({|s| return(p + s)})})
+	match1_0(is_identifier_prefix, is_identifier_suffix, "Expected identifier")
 }
 
 #[doc = "Returns a parser which matches the end of the input.
