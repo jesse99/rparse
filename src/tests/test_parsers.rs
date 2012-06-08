@@ -1,12 +1,9 @@
-//import misc::*;
-//import parsers::*;
-//import primitives::*;
 import test_helpers::*;
 
 #[test]
-fn test_space0()
+fn test_s0()
 {
-	let p = literal("x").space0()._then(literal("y"));
+	let p = "x".lit().s0()._then("y".lit());
 	
 	assert check_str_ok("xy", p, "y");
 	assert check_str_ok("x y", p, "y");
@@ -18,9 +15,9 @@ fn test_space0()
 }
 
 #[test]
-fn test_space1()
+fn test_s1()
 {
-	let p = literal("x").space1()._then(literal("y"));
+	let p = "x".lit().s1()._then("y".lit());
 	
 	assert check_str_ok("x y", p, "y");
 	assert check_str_ok("x \n\t y", p, "y");
@@ -44,12 +41,12 @@ fn test_match1()
 #[test]
 fn test_text()
 {
-	let p = literal("<");
+	let p = "<".lit();
 	assert check_str_ok("<", p, "<");
 	assert check_str_failed("", p, "Expected '<'", 1);
 	assert check_str_failed(">", p, "Expected '<'", 1);
 	
-	let p = literal("++");
+	let p = "++".lit();
 	assert check_str_ok("++", p, "++");
 	assert check_str_failed("+-", p, "Expected '++'", 1);
 	assert check_str_failed("", p, "Expected '++'", 1);
@@ -59,7 +56,7 @@ fn test_text()
 #[test]
 fn test_literalv()
 {
-	let p = literalv("inf", 1000);				// 1000 is pretty big…
+	let p = "inf".litv(1000);				// 1000 is pretty big…
 	assert check_int_ok("inf", p, 1000);
 	assert check_int_failed("", p, "Expected 'inf'", 1);
 	assert check_int_failed("in", p, "Expected 'inf'", 1);
@@ -94,7 +91,7 @@ fn test_identifier()
 #[test]
 fn test_everything()
 {
-	let s = return(0).space0();
+	let s = return(0).s0();
 	let p = everything(integer(), s);
 	
 	assert check_int_ok("2", p, 2);

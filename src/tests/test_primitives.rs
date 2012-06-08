@@ -94,7 +94,7 @@ fn test_then()
 #[test]
 fn test__then()
 {
-	let p = literal("<")._then(literal("foo"))._then(literal(">"));
+	let p = "<".lit()._then("foo".lit())._then(">".lit());
 	
 	assert check_str_ok("<foo>", p, ">");
 	assert check_str_failed("", p, "Expected '<'", 1);
@@ -109,12 +109,12 @@ fn test__then()
 
 
 #[test]
-fn test_sequence()
+fn test_seq()
 {
 	let prefix = match1(is_identifier_prefix, "Expected identifier");
 	let suffix = match1(is_identifier_suffix, "Expected identifier").repeat0();
 	let trailer = match1(is_identifier_trailer, "Expected identifier").optional("");
-	let p = sequence3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + c)});
+	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + c)});
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -124,7 +124,7 @@ fn test_sequence()
 	assert check_str_ok("spanky123xy", p, "spanky123xy");
 	assert check_str_failed("", p, "Expected identifier", 1);
 	
-	let p = sequence2(literal("a"), literal("b"), {|x, y| result::ok(x+y)});
+	let p = seq2("a".lit(), "b".lit(), {|x, y| result::ok(x+y)});
 	let text = chars_with_eot("az");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;
@@ -172,9 +172,9 @@ fn test_or()
 }
 
 #[test]
-fn test_alternative()
+fn test_or_v()
 {
-	let p = alternative([literal("a"), literal("bb"), literal("c")]);
+	let p = or_v(["a".lit(), "bb".lit(), "c".lit()]);
 	
 	assert check_str_ok("a", p, "a");
 	assert check_str_ok("bb", p, "bb");
@@ -189,7 +189,7 @@ fn test_alternative()
 #[test]
 fn test_optional()
 {
-	let p = literal("x").optional("z");
+	let p = "x".lit().optional("z");
 	
 	assert check_str_ok("x", p, "x");
 	assert check_str_ok("b", p, "z");
@@ -199,7 +199,7 @@ fn test_optional()
 #[test]
 fn test__repeat0()
 {
-	let p = literal("b").repeat0();
+	let p = "b".lit().repeat0();
 	
 	assert check_str_array_ok("", p, []);
 	assert check_str_array_ok("b", p, ["b"]);
@@ -211,7 +211,7 @@ fn test__repeat0()
 #[test]
 fn test__repeat1()
 {
-	let p = literal("b").repeat1("b's");
+	let p = "b".lit().repeat1("b's");
 	
 	assert check_str_array_ok("b", p, ["b"]);
 	assert check_str_array_ok("bb", p, ["b", "b"]);
@@ -224,7 +224,7 @@ fn test__repeat1()
 #[test]
 fn test_list()
 {
-	let p = literal("b").list(literal(","));
+	let p = "b".lit().list(",".lit());
 	
 	assert check_str_array_ok("b", p, ["b"]);
 	assert check_str_array_ok("b,b", p, ["b", "b"]);
@@ -245,7 +245,7 @@ pure fn is_identifier_trailer(ch: char) -> bool
 fn test_chainl1()
 {
 	let factor = integer();
-	let op = literal("*").or(literal("/"));
+	let op = "*".lit().or("/".lit());
 	let p = factor.chainl1(op, {|lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs}});
 	
 	assert check_int_ok("2", p, 2);
@@ -259,7 +259,7 @@ fn test_chainl1()
 fn test_chainr1()
 {
 	let factor = integer();
-	let op = literal("*").or(literal("/"));
+	let op = "*".lit().or("/".lit());
 	let p = factor.chainr1(op, {|lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs}});
 	
 	assert check_int_ok("2", p, 2);
@@ -272,7 +272,7 @@ fn test_chainr1()
 #[test]
 fn test_tag()
 {
-	let p = literal("<")._then(literal("foo"))._then(literal(">")).tag("Expected bracketed foo");
+	let p = "<".lit()._then("foo".lit())._then(">".lit()).tag("Expected bracketed foo");
 	
 	assert check_str_ok("<foo>", p, ">");
 	assert check_str_failed("", p, "Expected bracketed foo", 1);
@@ -283,7 +283,7 @@ fn test_tag()
 #[test]
 fn test_parse()
 {
-	let p = literal("<").space0()._then(literal("foo").space0())._then(literal(">")).tag("Expected bracketed foo");
+	let p = "<".lit().s0()._then("foo".lit().s0())._then(">".lit()).tag("Expected bracketed foo");
 	
 	alt parse(p, "unit test", "< foo\t>")
 	{

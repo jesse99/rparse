@@ -27,7 +27,7 @@ fn return<T: copy>(value: T) -> parser<T>
 #[doc = "If parser is successful then the function returned by eval is called
 with parser's result. If parser fails eval is not called.
 
-Often used to translate parsed values: `p().then({|v| return(blah::from_whatever(v))})`"]
+Often used to translate parsed values: `p().then({|pvalue| return(2*pvalue)})`"]
 fn then<T: copy, U: copy>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> parser<U>
 {
 	{|input: state|
@@ -56,8 +56,8 @@ fn _then<T: copy, U: copy>(parser1: parser<T>, parser2: parser<U>) -> parser<U>
 	}
 }
 
-#[doc = "sequence2 := e0 e1"]
-fn sequence2<T0: copy, T1: copy, R: copy>
+#[doc = "seq2 := e0 e1"]
+fn seq2<T0: copy, T1: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> result::result<R, str>) -> parser<R>
 {
 	parser0.then() {|a0|
@@ -76,8 +76,8 @@ fn sequence2<T0: copy, T1: copy, R: copy>
 	}}
 }
 
-#[doc = "sequence3 := e0 e1 e2"]
-fn sequence3<T0: copy, T1: copy, T2: copy, R: copy>
+#[doc = "seq3 := e0 e1 e2"]
+fn seq3<T0: copy, T1: copy, T2: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> result::result<R, str>) -> parser<R>
 {
 	parser0.then() {|a0|
@@ -97,8 +97,8 @@ fn sequence3<T0: copy, T1: copy, T2: copy, R: copy>
 	}}}
 }
 
-#[doc = "sequence4 := e0 e1 e2 e3"]
-fn sequence4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
+#[doc = "seq4 := e0 e1 e2 e3"]
+fn seq4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::result<R, str>) -> parser<R>
 {
 	parser0.then() {|a0|
@@ -119,8 +119,8 @@ fn sequence4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
 	}}}}
 }
 
-#[doc = "sequence5 := e0 e1 e2 e3 e4"]
-fn sequence5<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, R: copy>
+#[doc = "seq5 := e0 e1 e2 e3 e4"]
+fn seq5<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::result<R, str>) -> parser<R>
 {
 	parser0.then() {|a0|
@@ -142,8 +142,8 @@ fn sequence5<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, R: copy>
 	}}}}}
 }
 
-#[doc = "sequence6 := e0 e1 e2 e3 e4 e5"]
-fn sequence6<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, R: copy>
+#[doc = "seq6 := e0 e1 e2 e3 e4 e5"]
+fn seq6<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::result<R, str>) -> parser<R>
 {
 	parser0.then() {|a0|
@@ -166,8 +166,8 @@ fn sequence6<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, R: copy
 	}}}}}}
 }
 
-#[doc = "sequence7 := e0 e1 e2 e3 e4 e5 e6"]
-fn sequence7<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, R: copy>
+#[doc = "seq7 := e0 e1 e2 e3 e4 e5 e6"]
+fn seq7<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::result<R, str>) -> parser<R>
 {
 	parser0.then() {|a0|
@@ -191,8 +191,8 @@ fn sequence7<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: cop
 	}}}}}}}
 }
 
-#[doc = "sequence8 := e0 e1 e2 e3 e4 e5 e6 e7"]
-fn sequence8<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, R: copy>
+#[doc = "seq8 := e0 e1 e2 e3 e4 e5 e6 e7"]
+fn seq8<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::result<R, str>) -> parser<R>
 {
 	parser0.then() {|a0|
@@ -217,8 +217,8 @@ fn sequence8<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: cop
 	}}}}}}}}
 }
 
-#[doc = "sequence9 := e0 e1 e2 e3 e4 e5 e6 e7 e8"]
-fn sequence9<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, T8: copy, R: copy>
+#[doc = "seq9 := e0 e1 e2 e3 e4 e5 e6 e7 e8"]
+fn seq9<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, T8: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, parser8: parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::result<R, str>) -> parser<R>
 {
 	parser0.then() {|a0|
@@ -277,10 +277,10 @@ fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 	}
 }
 
-#[doc = "alternative := e0 | e1 | …
+#[doc = "or_v := e0 | e1 | …
 
 This is a version of or that is nicer to use when there are more than two alternatives."]
-fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
+fn or_v<T: copy>(parsers: [parser<T>]) -> parser<T>
 {
 	// A recursive algorithm would be a lot simpler, but it's not clear how that could
 	// produce good error messages.
@@ -297,7 +297,7 @@ fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
 			{
 				result::ok(pass)
 				{
-					result = option::some(log_ok("alternative", input, pass));
+					result = option::some(log_ok("or_v", input, pass));
 				}
 				result::err(failure)
 				{
@@ -330,7 +330,7 @@ fn alternative<T: copy>(parsers: [parser<T>]) -> parser<T>
 		else
 		{
 			let mesg = str::connect(errors, " or ");
-			log_err("alternative", input, {old_state: input, err_state: {index: max_index with input}, mesg: mesg})
+			log_err("or_v", input, {old_state: input, err_state: {index: max_index with input}, mesg: mesg})
 		}
 	}
 }
@@ -550,11 +550,11 @@ fn parse<T: copy>(parser: parser<T>, file: str, text: str) -> parse_status<T>
 
 // ----------------------------------------------------------------------------
 // Functions used to create parse functions that actually consume input.
-#[doc = "space0 := e [ \t\r\n]*"]
-fn space0<T: copy>(parser: parser<T>) -> parser<T>
+#[doc = "s0 := e [ \t\r\n]*"]
+fn s0<T: copy>(parser: parser<T>) -> parser<T>
 {
 	// It would be simpler to write this with scan0, but scan0 is relatively inefficient
-	// and space0 is typically called a lot.
+	// and s0 is typically called a lot.
 	{|input: state|
 		result::chain(parser(input))
 		{|pass|
@@ -582,24 +582,24 @@ fn space0<T: copy>(parser: parser<T>) -> parser<T>
 				i += 1u;
 			}
 			
-			log_ok("space0", input, {new_state: {index: i, line: line with pass.new_state}, value: pass.value})
+			log_ok("s0", input, {new_state: {index: i, line: line with pass.new_state}, value: pass.value})
 		}
 	}
 }
 
-#[doc = "space1 := e [ \t\r\n]+"]
-fn space1<T: copy>(parser: parser<T>) -> parser<T>
+#[doc = "s1 := e [ \t\r\n]+"]
+fn s1<T: copy>(parser: parser<T>) -> parser<T>
 {
 	{|input: state|
-		result::chain(space0(parser)(input))
+		result::chain(s0(parser)(input))
 		{|pass|
 			if option::is_some(str::find_char(" \t\r\n", input.text[pass.new_state.index - 1u]))	// little cheesy, but saves us from adding a helper fn
 			{
-				log_ok("space1", input, pass)
+				log_ok("s1", input, pass)
 			}
 			else
 			{
-				log_err("space1", input, {old_state: input, err_state: pass.new_state, mesg: "Expected whitespace"})
+				log_err("s1", input, {old_state: input, err_state: pass.new_state, mesg: "Expected whitespace"})
 			}
 		}
 	}
@@ -726,8 +726,8 @@ fn scan1(err_mesg: str, fun: fn@ ([char], uint) -> uint) -> parser<str>
 	}
 }
 
-#[doc = "Returns s if input matches s ignoring case. Also see literal and literalv."]
-fn literali(in_s: str) -> parser<str>
+#[doc = "Returns s if input matches s ignoring case. Also see lit and litv."]
+fn liti(in_s: str) -> parser<str>
 {
 	let s = str::to_lower(in_s);
 	
@@ -751,17 +751,17 @@ fn literali(in_s: str) -> parser<str>
 		if i == str::len(s)
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			log_ok("literali", input, {new_state: {index: j with input}, value: text})
+			log_ok("liti", input, {new_state: {index: j with input}, value: text})
 		}
 		else
 		{
-			log_err(#fmt["literali '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
+			log_err(#fmt["liti '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
 		}
 	}
 }
 
-#[doc = "Returns s if input matches s. Also see literali and literalv."]
-fn literal(s: str) -> parser<str>
+#[doc = "Returns s if input matches s. Also see liti and litv."]
+fn lit(s: str) -> parser<str>
 {
 	{|input: state|
 		let mut i = 0u;
@@ -783,28 +783,28 @@ fn literal(s: str) -> parser<str>
 		if i == str::len(s)
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			log_ok("literal", input, {new_state: {index: j with input}, value: text})
+			log_ok("lit", input, {new_state: {index: j with input}, value: text})
 		}
 		else
 		{
-			log_err(#fmt["literal '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
+			log_err(#fmt["lit '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
 		}
 	}
 }
 
-#[doc = "Returns value if input matches s. Also see literal."]
-fn literalv<T: copy>(s: str, value: T) -> parser<T>
+#[doc = "Returns value if input matches s. Also see lit."]
+fn litv<T: copy>(s: str, value: T) -> parser<T>
 {
 	{|input: state|
-		alt literal(s)(input)
+		alt lit(s)(input)
 		{
 			result::ok(pass)
 			{
-				log_ok("literalv", input, {new_state: pass.new_state, value: value})
+				log_ok("litv", input, {new_state: pass.new_state, value: value})
 			}
 			result::err(failure)
 			{
-				log_err(#fmt["literalv '%s'", s], input, failure)
+				log_err(#fmt["litv '%s'", s], input, failure)
 			}
 		}
 	}
@@ -814,10 +814,10 @@ fn literalv<T: copy>(s: str, value: T) -> parser<T>
 fn integer() -> parser<int>
 {
 	let digits = match1(is_digit, "Expected digits").then({|s| return(option::get(int::from_str(s)))});
-	let case1 = literal("+")._then(digits);
-	let case2 = sequence2(literal("-"), digits, {|_o, v| result::ok(-v)});
+	let case1 = lit("+")._then(digits);
+	let case2 = seq2(lit("-"), digits, {|_o, v| result::ok(-v)});
 	let case3 = digits;
-	alternative([case1, case2, case3])
+	or_v([case1, case2, case3])
 }
 
 #[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*"]
@@ -849,10 +849,34 @@ fn eot() -> parser<()>
 
 This is typically used in conjunction with the parse function. Note that space has to have the
 same type as parser which is backwards from how it is normally used. To get this to work you
-can use a syntax like: `return(x).space0()` where x is of type T."]
+can use a syntax like: `return(x).s0()` where x is of type T."]
 fn everything<T: copy>(parser: parser<T>, space: parser<T>) -> parser<T>
 {
-	sequence3(space, parser, eot()) {|_a, b, _c| result::ok(b)}
+	seq3(space, parser, eot()) {|_a, b, _c| result::ok(b)}
+}
+
+#[doc = "Methods that treat a string as a literal."]
+impl str_methods for str
+{
+	fn lit() -> parser<str>
+	{
+		lit(self)
+	}
+	
+	fn litv<T: copy>(value: T) -> parser<T>
+	{
+		litv(self, value)
+	}
+	
+	fn s0() -> parser<str>
+	{
+		s0(lit(self))
+	}
+	
+	fn s1() -> parser<str>
+	{
+		s1(lit(self))
+	}
 }
 
 #[doc = "These work the same as the functions of the same name, but tend
@@ -920,16 +944,16 @@ impl parse_methods<T: copy> for parser<T>
 	}
 	
 	// ---------------------------------------------------------------------------
-	fn space0<T: copy>() -> parser<T>
+	fn s0<T: copy>() -> parser<T>
 	{
-		space0(self)
+		s0(self)
 	}
 	
-	fn space1<T: copy>() -> parser<T>
+	fn s1<T: copy>() -> parser<T>
 	{
-		space1(self)
+		s1(self)
 	}
-
+	
 	fn everything<T: copy>(space: parser<T>) -> parser<T>
 	{
 		everything(self, space)

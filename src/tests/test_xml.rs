@@ -109,32 +109,26 @@ fn content() -> parser<str>
 
 fn xml_parser() -> parser<xml>
 {
-	let quote = literal("\"").space0();
-	let eq = literal("=").space0();
-	let less = literal("<").space0();
-	let greater = literal(">").space0();
-	let slash_greater = literal("/>").space0();
-	let less_slash = literal("</").space0();
-	let name = identifier().space0();
+	let name = identifier().s0();
 	
 	let dummy = xxml("dummy", [], [], "");
 	let element_ptr = @mut return(dummy);
 	let element_ref = forward_ref(element_ptr);
 	
 	// attribute := name '=' '"' string_body '"'
-	let attribute = sequence5(name, eq, quote, string_body(), quote)
+	let attribute = seq5(name, "=".s0(), "\"".s0(), string_body(), "\"".s0())
 	{|name, _a2, _a3, body, _a5|
 		result::ok({name: name, value: body})
 	};
 	
 	// empty_element := '<' name attribute* '/>'
-	let empty_element = sequence4(less, name, attribute.repeat0(), slash_greater)
+	let empty_element = seq4("<".s0(), name, attribute.repeat0(), "/>".s0())
 	{|_a1, name, attrs, _a4|
 		result::ok(xxml(name, attrs, [], ""))
 	};
 	
 	// complex_element := '<' name attribute* '>' element* content '</' name '>'
-	let complex_element = sequence9(less, name, attribute.repeat0(), greater, element_ref.repeat0(), content(), less_slash, name, greater)
+	let complex_element = seq9("<".s0(), name, attribute.repeat0(), ">".s0(), element_ref.repeat0(), content(), "</".s0(), name, ">".s0())
 	{|_a1, name1, attrs, _a4, children, chars, _a5, name2, _a7|
 		if name1 == name2
 		{
@@ -150,8 +144,8 @@ fn xml_parser() -> parser<xml>
 	let element = empty_element.or(complex_element);
 	*element_ptr = element;
 	
-	// start := space0 element EOT
-	let s = return(dummy).space0();
+	// start := s0 element EOT
+	let s = return(dummy).s0();
 	everything(element, s)
 }
 
@@ -193,3 +187,7 @@ fn test_x()
 	let p = xml_parser();
 	assert check_xml_ok("<trivial/>", "<trivial></trivial>", p);
 }
+
+
+
+

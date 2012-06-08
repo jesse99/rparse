@@ -1,7 +1,10 @@
-* Run unit tests
-* Commit
-* Probably lit and lits
-* Probably alt_v and seq2
+* Replace _then with
+	seq2_ret1
+	seq2_ret2
+	
+	seq3_ret1
+	seq3_ret2
+	seq3_ret3
 * identifier_p (takes predicates)
 * match_v (takes vector of predicates)
 * Should be general ways to match with str result and T result
