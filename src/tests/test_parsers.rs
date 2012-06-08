@@ -3,7 +3,7 @@ import test_helpers::*;
 #[test]
 fn test_s0()
 {
-	let p = "x".lit().s0()._then("y".lit());
+	let p = "x".lit().s0().then("y".lit());
 	
 	assert check_str_ok("xy", p, "y");
 	assert check_str_ok("x y", p, "y");
@@ -17,7 +17,7 @@ fn test_s0()
 #[test]
 fn test_s1()
 {
-	let p = "x".lit().s1()._then("y".lit());
+	let p = "x".lit().s1().then("y".lit());
 	
 	assert check_str_ok("x y", p, "y");
 	assert check_str_ok("x \n\t y", p, "y");

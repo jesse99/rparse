@@ -27,15 +27,15 @@ fn return<T: copy>(value: T) -> parser<T>
 #[doc = "If parser is successful then the function returned by eval is called
 with parser's result. If parser fails eval is not called.
 
-Often used to translate parsed values: `p().then({|pvalue| return(2*pvalue)})`"]
-fn then<T: copy, U: copy>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> parser<U>
+Often used to translate parsed values: `p().thene({|pvalue| return(2*pvalue)})`"]
+fn thene<T: copy, U: copy>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> parser<U>
 {
 	{|input: state|
 		result::chain(parser(input))
 		{|pass|
 			result::chain_err(eval(pass.value)(pass.new_state))
 			{|failure|
-				log_err("then", input, {old_state: input with failure})
+				log_err("thene", input, {old_state: input with failure})
 			}
 		}
 	}
@@ -43,14 +43,14 @@ fn then<T: copy, U: copy>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> pars
 
 #[doc = "If parser1 is successful is successful then parser2 is called (and the value from parser1
 is ignored). If parser1 fails parser2 is not called."]
-fn _then<T: copy, U: copy>(parser1: parser<T>, parser2: parser<U>) -> parser<U>
+fn then<T: copy, U: copy>(parser1: parser<T>, parser2: parser<U>) -> parser<U>
 {
 	{|input: state|
 		result::chain(parser1(input))
 		{|pass|
 			result::chain_err(parser2(pass.new_state))
 			{|failure|
-				log_err("_then", input, {old_state: input with failure})
+				log_err("then", input, {old_state: input with failure})
 			}
 		}
 	}
@@ -60,8 +60,8 @@ fn _then<T: copy, U: copy>(parser1: parser<T>, parser2: parser<U>) -> parser<U>
 fn seq2<T0: copy, T1: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then() {|a0|
-	parser1.then() {|a1|
+	parser0.thene() {|a0|
+	parser1.thene() {|a1|
 		alt eval(a0, a1)
 		{
 			result::ok(value)
@@ -80,9 +80,9 @@ fn seq2<T0: copy, T1: copy, R: copy>
 fn seq3<T0: copy, T1: copy, T2: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then() {|a0|
-	parser1.then() {|a1|
-	parser2.then() {|a2|
+	parser0.thene() {|a0|
+	parser1.thene() {|a1|
+	parser2.thene() {|a2|
 		alt eval(a0, a1, a2)
 		{
 			result::ok(value)
@@ -101,10 +101,10 @@ fn seq3<T0: copy, T1: copy, T2: copy, R: copy>
 fn seq4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then() {|a0|
-	parser1.then() {|a1|
-	parser2.then() {|a2|
-	parser3.then() {|a3|
+	parser0.thene() {|a0|
+	parser1.thene() {|a1|
+	parser2.thene() {|a2|
+	parser3.thene() {|a3|
 		alt eval(a0, a1, a2, a3)
 		{
 			result::ok(value)
@@ -123,11 +123,11 @@ fn seq4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
 fn seq5<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then() {|a0|
-	parser1.then() {|a1|
-	parser2.then() {|a2|
-	parser3.then() {|a3|
-	parser4.then() {|a4|
+	parser0.thene() {|a0|
+	parser1.thene() {|a1|
+	parser2.thene() {|a2|
+	parser3.thene() {|a3|
+	parser4.thene() {|a4|
 		alt eval(a0, a1, a2, a3, a4)
 		{
 			result::ok(value)
@@ -146,12 +146,12 @@ fn seq5<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, R: copy>
 fn seq6<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then() {|a0|
-	parser1.then() {|a1|
-	parser2.then() {|a2|
-	parser3.then() {|a3|
-	parser4.then() {|a4|
-	parser5.then() {|a5|
+	parser0.thene() {|a0|
+	parser1.thene() {|a1|
+	parser2.thene() {|a2|
+	parser3.thene() {|a3|
+	parser4.thene() {|a4|
+	parser5.thene() {|a5|
 		alt eval(a0, a1, a2, a3, a4, a5)
 		{
 			result::ok(value)
@@ -170,13 +170,13 @@ fn seq6<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, R: copy>
 fn seq7<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then() {|a0|
-	parser1.then() {|a1|
-	parser2.then() {|a2|
-	parser3.then() {|a3|
-	parser4.then() {|a4|
-	parser5.then() {|a5|
-	parser6.then() {|a6|
+	parser0.thene() {|a0|
+	parser1.thene() {|a1|
+	parser2.thene() {|a2|
+	parser3.thene() {|a3|
+	parser4.thene() {|a4|
+	parser5.thene() {|a5|
+	parser6.thene() {|a6|
 		alt eval(a0, a1, a2, a3, a4, a5, a6)
 		{
 			result::ok(value)
@@ -195,14 +195,14 @@ fn seq7<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, R:
 fn seq8<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then() {|a0|
-	parser1.then() {|a1|
-	parser2.then() {|a2|
-	parser3.then() {|a3|
-	parser4.then() {|a4|
-	parser5.then() {|a5|
-	parser6.then() {|a6|
-	parser7.then() {|a7|
+	parser0.thene() {|a0|
+	parser1.thene() {|a1|
+	parser2.thene() {|a2|
+	parser3.thene() {|a3|
+	parser4.thene() {|a4|
+	parser5.thene() {|a5|
+	parser6.thene() {|a6|
+	parser7.thene() {|a7|
 		alt eval(a0, a1, a2, a3, a4, a5, a6, a7)
 		{
 			result::ok(value)
@@ -221,15 +221,15 @@ fn seq8<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7
 fn seq9<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, T8: copy, R: copy>
 	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, parser8: parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::result<R, str>) -> parser<R>
 {
-	parser0.then() {|a0|
-	parser1.then() {|a1|
-	parser2.then() {|a2|
-	parser3.then() {|a3|
-	parser4.then() {|a4|
-	parser5.then() {|a5|
-	parser6.then() {|a6|
-	parser7.then() {|a7|
-	parser8.then() {|a8|
+	parser0.thene() {|a0|
+	parser1.thene() {|a1|
+	parser2.thene() {|a2|
+	parser3.thene() {|a3|
+	parser4.thene() {|a4|
+	parser5.thene() {|a5|
+	parser6.thene() {|a6|
+	parser7.thene() {|a7|
+	parser8.thene() {|a8|
 		alt eval(a0, a1, a2, a3, a4, a5, a6, a7, a8)
 		{
 			result::ok(value)
@@ -397,7 +397,7 @@ fn repeat1<T: copy>(parser: parser<T>, err_mesg: str) -> parser<[T]>
 Values for each parsed e are returned."]
 fn list<T: copy, U: copy>(parser: parser<T>, sep: parser<U>) -> parser<[T]>
 {
-	let term = sep._then(parser).repeat0();
+	let term = sep.then(parser).repeat0();
 	
 	{|input: state|
 		result::chain(parser(input))
@@ -421,7 +421,7 @@ fn list<T: copy, U: copy>(parser: parser<T>, sep: parser<U>) -> parser<[T]>
 #[doc(hidden)]
 fn chain_suffix<T: copy, U: copy>(parser: parser<T>, op: parser<U>) -> parser<[(U, T)]>
 {
-	let q = op.then({|operator| parser.then({|value| return((operator, value))})});
+	let q = op.thene({|operator| parser.thene({|value| return((operator, value))})});
 	q.repeat0()
 }
 
@@ -813,8 +813,8 @@ fn litv<T: copy>(s: str, value: T) -> parser<T>
 #[doc = "integer := [+-]? [0-9]+"]
 fn integer() -> parser<int>
 {
-	let digits = match1(is_digit, "Expected digits").then({|s| return(option::get(int::from_str(s)))});
-	let case1 = lit("+")._then(digits);
+	let digits = match1(is_digit, "Expected digits").thene({|s| return(option::get(int::from_str(s)))});
+	let case1 = lit("+").then(digits);
 	let case2 = seq2(lit("-"), digits, {|_o, v| result::ok(-v)});
 	let case3 = digits;
 	or_v([case1, case2, case3])
@@ -825,7 +825,7 @@ fn identifier() -> parser<str>
 {
 	let prefix = match1(is_identifier_prefix, "Expected identifier");
 	let suffix = match0(is_identifier_suffix);
-	prefix.then({|p| suffix.then({|s| return(p + s)})})
+	prefix.thene({|p| suffix.thene({|s| return(p + s)})})
 }
 
 #[doc = "Returns a parser which matches the end of the input.
@@ -883,14 +883,14 @@ impl str_methods for str
 to make the code look a bit better."]
 impl parse_methods<T: copy> for parser<T>
 {
-	fn then<T: copy, U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
+	fn thene<T: copy, U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
 	{
-		then(self, eval)
+		thene(self, eval)
 	}
 	
-	fn _then<T: copy, U: copy>(parser2: parser<U>) -> parser<U>
+	fn then<T: copy, U: copy>(parser2: parser<U>) -> parser<U>
 	{
-		_then(self, parser2)
+		then(self, parser2)
 	}
 	
 	fn or<T: copy>(parser2: parser<T>) -> parser<T>

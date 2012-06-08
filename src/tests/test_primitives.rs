@@ -72,9 +72,9 @@ fn parse_num(op: char) -> parser<int>
 }
 
 #[test]
-fn test_then()
+fn test_thene()
 {
-	let p = parse_unary().then({|c| parse_num(c)});
+	let p = parse_unary().thene({|c| parse_num(c)});
 	
 	assert check_int_ok("-9", p, -9);
 	assert check_int_ok("+3", p, 3);
@@ -92,9 +92,9 @@ fn test_then()
 }
 
 #[test]
-fn test__then()
+fn test_then()
 {
-	let p = "<".lit()._then("foo".lit())._then(">".lit());
+	let p = "<".lit().then("foo".lit()).then(">".lit());
 	
 	assert check_str_ok("<foo>", p, ">");
 	assert check_str_failed("", p, "Expected '<'", 1);
@@ -272,7 +272,7 @@ fn test_chainr1()
 #[test]
 fn test_tag()
 {
-	let p = "<".lit()._then("foo".lit())._then(">".lit()).tag("Expected bracketed foo");
+	let p = "<".lit().then("foo".lit()).then(">".lit()).tag("Expected bracketed foo");
 	
 	assert check_str_ok("<foo>", p, ">");
 	assert check_str_failed("", p, "Expected bracketed foo", 1);
@@ -283,7 +283,7 @@ fn test_tag()
 #[test]
 fn test_parse()
 {
-	let p = "<".lit().s0()._then("foo".lit().s0())._then(">".lit()).tag("Expected bracketed foo");
+	let p = "<".lit().s0().then("foo".lit().s0()).then(">".lit()).tag("Expected bracketed foo");
 	
 	alt parse(p, "unit test", "< foo\t>")
 	{

@@ -132,12 +132,10 @@
 \i \cf4 Returns value if input matches s
 \f1\fs24 \cf0 .
 \f0\i0\fs28 \
-\pard\pardeftab480\pardirnatural
 
-\f1\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
+\f1\fs24 \
 
-\f0\b\fs48 \cf0 specialized parsers\
+\f0\b\fs48 specialized parsers\
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -156,12 +154,10 @@
 
 \i \cf4 Matches [+-]? [0-9]+.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
-\f1\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
+\f1\fs24 \
 
-\f0\b\fs48 \cf0 parser combinators\
+\f0\b\fs48 parser combinators\
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -277,7 +273,6 @@
 \i0 \cf0  parser<T>, 
 \i \cf2 parser2:
 \i0 \cf0  parser<T>) -> parser<T>\
-\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
@@ -289,7 +284,6 @@
 \b0 \cf0 >(
 \i \cf2 parsers:
 \i0 \cf0  [parser<T>]) -> parser<T>\
-\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
@@ -374,7 +368,7 @@
 
 \b \cf2 fn
 \b0 \cf0  
-\b then
+\b thene
 \b0 <
 \i \cf2 T:
 \i0 \cf0  
@@ -391,7 +385,7 @@
 \b \cf2 fn
 \b0 \cf0 @ (T) -> parser<U>) -> parser<U>\
 
-\i \cf4 p().then(\{|pvalue| return(2*pvalue)\})
+\i \cf4 p().thene(\{|pvalue| return(2*pvalue)\})
 \f1\i0\fs24 \cf0 \
 \
 
@@ -419,7 +413,6 @@
 \i \cf2 value:
 \i0 \cf0  T) -> parser<T>\
 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf2 impl
 \b0 \cf0  
@@ -427,8 +420,7 @@
 \b0\fs28  
 \b \cf2 for
 \b0 \cf0  \cf3 str\cf0 \
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b lit
@@ -454,10 +446,8 @@
 \b0 \cf0  
 \b s1
 \b0 () -> parser<\cf3 str\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
 
-\f1\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
+\f1\fs24 \
 
 \f0\b\fs28 \cf2 impl
 \b0 \cf0  
@@ -469,11 +459,10 @@
 \b0 \cf0 > 
 \b \cf2 for
 \b0 \cf0  parser<T>\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
-\b then
+\b thene
 \b0 <
 \i \cf2 T:
 \i0 \cf0  
@@ -490,7 +479,7 @@
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
-\b _then
+\b then
 \b0 <
 \i \cf2 T:
 \i0 \cf0  
