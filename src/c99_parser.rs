@@ -11,7 +11,7 @@ fn identifier() -> parser<str>
 {
 	// Supposed to support universal character names too, e.g.
 	// fo\u006F is a valid C99 identifier.
-	match1_0(is_identifier_prefix, is_identifier_suffix, "Expected identifier")
+	match1_0(is_identifier_prefix, is_identifier_suffix).tag("Expected identifier")
 }
 
 #[doc = "decimal_number := [0-9]+
@@ -20,7 +20,7 @@ Technically this is not supposed to match numbers with leading zeros,
 but we do so to make this parser more reusable."]
 fn decimal_number() -> parser<int>
 {
-	match1(is_digit, "Expected decimal number").thene()
+	match1(is_digit).tag("Expected decimal number").thene()
 		{|text|
 			alt int::from_str(text)
 			{
@@ -39,7 +39,7 @@ fn decimal_number() -> parser<int>
 #[doc = "octal_number := 0 [0-7]*"]
 fn octal_number() -> parser<int>
 {
-	match1_0({|c| c == '0'}, is_octal, "Expected octal number").thene()
+	match1_0({|c| c == '0'}, is_octal).tag("Expected octal number").thene()
 		{|text|
 			alt from_base_8(text)
 			{
@@ -59,7 +59,7 @@ fn octal_number() -> parser<int>
 fn hex_number() -> parser<int>
 {
 	let prefix = "0".lit().then(or("x".lit(), "X".lit())).tag("Expected hex number");
-	let digits = match1(is_hex, "Expected hex number").thene()
+	let digits = match1(is_hex).tag("Expected hex number").thene()
 		{|text|
 			alt from_base_16(text)
 			{
@@ -85,11 +85,11 @@ fn hex_number() -> parser<int>
 // exponent := [eE] [+-]? [0-9]+"]
 fn float_number() -> parser<f64>
 {
-	let exponent = seq3_ret_str("eE".anyc(), "+-".anyc().optional(), match1(is_digit, ""));
+	let exponent = seq3_ret_str("eE".anyc(), "+-".anyc().optional(), match1(is_digit));
 	
-	let float1 = seq4_ret_str(match0(is_digit), ".".lit(), match1(is_digit, ""), exponent.optional());
-	let float2 = seq3_ret_str(match1(is_digit, ""), ".".lit(), exponent.optional());
-	let float3 = seq2_ret_str(match1(is_digit, ""), exponent);
+	let float1 = seq4_ret_str(match0(is_digit), ".".lit(), match1(is_digit), exponent.optional()).tag("");
+	let float2 = seq3_ret_str(match1(is_digit), ".".lit(), exponent.optional()).tag("");
+	let float3 = seq2_ret_str(match1(is_digit), exponent).tag("");
 	
 	let number = or_v([float1, float2, float3]).tag("Expected float number");
 	

@@ -122,10 +122,10 @@ fn test_then()
 #[test]
 fn test_seq()
 {
-	let prefix = match1(is_identifier_prefix, "Expected identifier");
-	let suffix = match1(is_identifier_suffix, "Expected identifier").r0();
-	let trailer = match1(is_identifier_trailer, "Expected identifier").optional();
-	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + option::get_default(c, ""))});
+	let prefix = match1(is_identifier_prefix);
+	let suffix = match1(is_identifier_suffix).r0();
+	let trailer = match1(is_identifier_trailer).optional();
+	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + option::get_default(c, ""))}).tag("Expected identifier");
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -213,7 +213,7 @@ fn test__repeat0()
 #[test]
 fn test__repeat1()
 {
-	let p = "b".lit().r1("b's");
+	let p = "b".lit().r1().tag("b's");
 	
 	assert check_str_array_ok("b", p, ["b"]);
 	assert check_str_array_ok("bb", p, ["b", "b"]);

@@ -32,7 +32,7 @@ fn test_s1()
 #[test]
 fn test_match1()
 {
-	let p = match1(is_digit, "Expected digits");
+	let p = match1(is_digit).tag("Expected digits");
 	assert check_str_ok("123", p, "123");
 	assert check_str_ok("123x", p, "123");
 	assert check_str_failed("", p, "Expected digits", 1);

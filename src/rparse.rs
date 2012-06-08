@@ -546,7 +546,7 @@ fn r0<T: copy>(parser: parser<T>) -> parser<[T]>
 #[doc = "r1 := e+
 
 Values for each parsed e are returned."]
-fn r1<T: copy>(parser: parser<T>, err_mesg: str) -> parser<[T]>
+fn r1<T: copy>(parser: parser<T>) -> parser<[T]>
 {
 	{|input: state|
 		let pass = result::get(parser.r0()(input));
@@ -556,7 +556,7 @@ fn r1<T: copy>(parser: parser<T>, err_mesg: str) -> parser<[T]>
 		}
 		else
 		{
-			log_err("r1", input, {old_state: input, err_state: pass.new_state, mesg: err_mesg})
+			log_err("r1", input, {old_state: input, err_state: pass.new_state, mesg: ""})
 		}
 	}
 }
@@ -663,13 +663,18 @@ fn chainr1<T: copy, U: copy>(parser: parser<T>, op: parser<U>, eval: fn@ (T, U, 
 	}
 }
 	
-#[doc = "If parser completely fails to parse then use label as the error message."]
+#[doc = "If label is not empty then it is used if the parser completely failed to parse or if its error
+message was empty. Otherwise it suppresses errors from the parser (in favor of a later tag function)."]
 fn tag<T: copy>(parser: parser<T>, label: str) -> parser<T>
 {
 	{|input: state|
 		result::chain_err(parser(input))
 		{|failure|
-			if failure.err_state.index == input.index || str::is_empty(failure.mesg)
+			if str::is_empty(label)
+			{
+				log_err("tag", input, {mesg: "" with failure})
+			}
+			else if failure.err_state.index == input.index || str::is_empty(failure.mesg)
 			{
 				log_err("tag", input, {mesg: label with failure})
 			}
@@ -777,7 +782,7 @@ fn s1<T: copy>(parser: parser<T>) -> parser<T>
 
 #[doc = "Consumes a character which must satisfy the predicate.
 Returns the matched character."]
-fn match(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<char>
+fn match(predicate: fn@ (char) -> bool) -> parser<char>
 {
 	{|input: state|
 		let mut i = input.index;
@@ -792,7 +797,7 @@ fn match(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<char>
 		}
 		else
 		{
-			log_err("match", input, {old_state: input, err_state: {index: i with input}, mesg: err_mesg})
+			log_err("match", input, {old_state: input, err_state: {index: i with input}, mesg: ""})
 		}
 	}
 }
@@ -874,8 +879,8 @@ fn match0(predicate: fn@ (char) -> bool) -> parser<str>
 #[doc = "Consumes one or more characters matching the predicate.
 Returns the matched characters. 
 
-Err_mesg should be something like \"Expected digits\". Note that this does not increment line."]
-fn match1(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<str>
+Note that this does not increment line."]
+fn match1(predicate: fn@ (char) -> bool) -> parser<str>
 {
 	{|input: state|
 		let mut i = input.index;
@@ -891,15 +896,15 @@ fn match1(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<str>
 		}
 		else
 		{
-			log_err("match1", input, {old_state: input, err_state: {index: i with input}, mesg: err_mesg})
+			log_err("match1", input, {old_state: input, err_state: {index: i with input}, mesg: ""})
 		}
 	}
 }
 
 #[doc = "match1_0 := prefix+ suffix*"]
-fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool, err_mesg: str) -> parser<str>
+fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> parser<str>
 {
-	let prefix = match1(prefix, err_mesg);
+	let prefix = match1(prefix);
 	let suffix = match0(suffix);
 	prefix.thene({|p| suffix.thene({|s| return(p + s)})})
 }
@@ -943,7 +948,7 @@ fn scan0(fun: fn@ ([char], uint) -> uint) -> parser<str>
 }
 
 #[doc = "Like scan0 except that at least one character must be consumed."]
-fn scan1(err_mesg: str, fun: fn@ ([char], uint) -> uint) -> parser<str>
+fn scan1(fun: fn@ ([char], uint) -> uint) -> parser<str>
 {
 	{|input: state|
 		result::chain(scan0(fun)(input))
@@ -954,7 +959,7 @@ fn scan1(err_mesg: str, fun: fn@ ([char], uint) -> uint) -> parser<str>
 			}
 			else
 			{
-				log_err("scan1", input, {old_state: input, err_state: pass.new_state, mesg: err_mesg})
+				log_err("scan1", input, {old_state: input, err_state: pass.new_state, mesg: ""})
 			}
 		}
 	}
@@ -1134,9 +1139,9 @@ impl parser_methods<T: copy> for parser<T>
 		r0(self)
 	}
 	
-	fn r1<T: copy>(err_mesg: str) -> parser<[T]>
+	fn r1<T: copy>() -> parser<[T]>
 	{
-		r1(self, err_mesg)
+		r1(self)
 	}
 	
 	fn list<T: copy, U: copy>(sep: parser<U>) -> parser<[T]>

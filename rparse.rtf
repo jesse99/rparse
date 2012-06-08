@@ -15,15 +15,12 @@
 \i \cf2 predicate:
 \i0 \cf0  
 \b \cf2 fn
-\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 , 
-\i \cf2 err_mesg:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 char\cf0 >\
+\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 char\cf0 >\
 
 \i \cf4 Consumes a character which must satisfy the predicate
 \f1\fs24 \cf0 .
 \i0 \
 \
-\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -31,12 +28,10 @@
 \b0 (
 \i \cf2 chars:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 char\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 Attempts to match any character in chars. If matched the char is returned.
 \f1\i0\fs24 \cf0 \
 \
-\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -44,15 +39,12 @@
 \b0 (
 \i \cf2 chars:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 char\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 Attempts to match no character in chars. If matched the char is returned.
 \f1\i0\fs24 \cf0 \
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
-\cf0 \
-\pard\pardeftab480\pardirnatural
+\
 
-\f0\b\fs48 \cf0 str parsers
+\f0\b\fs48 str parsers
 \fs36 \
 
 \fs28 \cf2 fn
@@ -102,16 +94,9 @@
 \i \cf2 predicate:
 \i0 \cf0  
 \b \cf2 fn
-\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 , 
-\i \cf2 err_mesg:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 str\cf0 >\
-\pard\pardeftab480\pardirnatural
+\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 str\cf0 >\
 
 \i \cf4 Consumes one or more characters matching the predicate.
-\f1\i0\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
-
-\f0\i\fs28 \cf4 Err_mesg should be something like "Expected foo".
 \f1\i0\fs24 \cf0 \
 \
 
@@ -126,9 +111,7 @@
 \i \cf2 suffix:
 \i0 \cf0  
 \b \cf2 fn
-\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 , 
-\i \cf2 err_mesg:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 str\cf0 >\
+\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 str\cf0 >\
 
 \i \cf4 Consumes one or more prefix chars and zero or more suffix chars.
 \f1\i0\fs24 \cf0 \
@@ -155,8 +138,6 @@
 \b0 \cf0  
 \b scan1
 \b0 (
-\i \cf2 err_mesg:
-\i0 \cf0  \cf3 str\cf0 , 
 \i \cf2 fun:
 \i0 \cf0  
 \b \cf2 fn
@@ -168,7 +149,6 @@
 \f0\i\fs28 \cf4 Increments line.
 \f1\i0\fs24 \cf0 \
 \
-\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -176,12 +156,10 @@
 \b0 (
 \i \cf2 parsers:
 \i0 \cf0  [parser<\cf5 str\cf0 >]) -> parser<str>\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
 
-\f1\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
+\f1\fs24 \
 
-\f0\b\fs48 \cf0 generic parsers\
+\f0\b\fs48 generic parsers\
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -394,9 +372,7 @@
 \b \cf2 copy
 \b0 \cf0 >(
 \i \cf2 parser:
-\i0 \cf0  parser<T>, 
-\i \cf2 err_mesg:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<[T]>\
+\i0 \cf0  parser<T>) -> parser<[T]>\
 
 \b \cf2 fn
 \b0 \cf0  
@@ -473,11 +449,12 @@
 \i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Use a label like: "Expected foo".
-\f1\i0\fs24 \cf0 \
+\i \cf4 If label is not empty then it is used if the parser completely failed to parse or if its error message was empty. \
+Otherwise it suppresses errors from the parser (in favor of a later tag function).
+\f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\fs28 \cf0 \
+\f0\i0\fs28 \cf0 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -524,20 +501,17 @@
 \b0 \cf0 >(
 \i \cf2 value:
 \i0 \cf0  T) -> parser<T>\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b anyc
 \b0 () -> parser<\cf3 char\cf0 >\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b noc
 \b0 () -> parser<\cf3 char\cf0 >\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b s0
@@ -629,9 +603,7 @@
 \i \cf2 T:
 \i0 \cf0  
 \b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 err_mesg:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<[T]>\
+\b0 \cf0 >() -> parser<[T]>\
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
