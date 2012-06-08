@@ -6,6 +6,7 @@ import misc::*;
 import result::*;
 import test_helpers::*;
 import types::*;
+import c99_parser::*;
 
 type attribute = {name: str, value: str};
 
@@ -122,13 +123,13 @@ fn xml_parser() -> parser<xml>
 	};
 	
 	// empty_element := '<' name attribute* '/>'
-	let empty_element = seq4("<".s0(), name, attribute.repeat0(), "/>".s0())
+	let empty_element = seq4("<".s0(), name, attribute.r0(), "/>".s0())
 	{|_a1, name, attrs, _a4|
 		result::ok(xxml(name, attrs, [], ""))
 	};
 	
 	// complex_element := '<' name attribute* '>' element* content '</' name '>'
-	let complex_element = seq9("<".s0(), name, attribute.repeat0(), ">".s0(), element_ref.repeat0(), content(), "</".s0(), name, ">".s0())
+	let complex_element = seq9("<".s0(), name, attribute.r0(), ">".s0(), element_ref.r0(), content(), "</".s0(), name, ">".s0())
 	{|_a1, name1, attrs, _a4, children, chars, _a5, name2, _a7|
 		if name1 == name2
 		{

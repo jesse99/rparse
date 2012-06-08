@@ -79,18 +79,6 @@ pure fn is_alphanum(ch: char) -> bool
 	ret is_alpha(ch) || is_digit(ch);
 }
 
-#[doc = "Returns true if ch is_alpha or '_'."]
-pure fn is_identifier_prefix(ch: char) -> bool
-{
-	ret is_alpha(ch) || ch == '_';
-}
-
-#[doc = "Returns true if ch is_alpha, is_digit, or '_'."]
-pure fn is_identifier_suffix(ch: char) -> bool
-{
-	ret is_identifier_prefix(ch) || is_digit(ch);
-}
-
 #[doc = "Returns true if ch is 7-bit ASCII and not a control character."]
 pure fn is_print(ch: char) -> bool
 {

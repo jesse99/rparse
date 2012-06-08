@@ -1,10 +1,10 @@
-* identifier_p (takes predicates)
-* match_v (takes vector of predicates)
-* Should be general ways to match with str result and T result
-* Maybe delimited, delimited_e (for escaped) and prefixed
-* Make sure that there is good support for matching lexical elements, including case-insensitive keywords and strings
-* Maybe c_str, c_int, c_float (replace identifier with c_identifier)
-* Cheat sheet: protypes, help, usage		str type, generic type, specialized (ie c), combinators
+* Add c_parser functions:
+ 	- get rid of identifier and integer
+ 	- update cheat sheet
+* Make sure that there is good support for matching lexical elements, 
+   including case-insensitive keywords and strings
+* How should err_mesg args be formatted?
+* Can we organize the code like the cheat sheet does?
 * Probably should review parsec3 and/or polyparse
 * Update web page
 * Talk about info and debug logging.

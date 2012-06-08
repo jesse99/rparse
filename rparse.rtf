@@ -61,8 +61,13 @@
 
 \i \cf4 Consumes zero or more characters matching the predicate.
 \f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
-\f0\fs28 \
+\f0\i\fs28 \cf4 Match functions do not increment line.
+\f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\fs28 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
@@ -156,8 +161,35 @@
 \f0\i0\fs28 \
 
 \f1\fs24 \
+\pard\pardeftab480\pardirnatural
 
-\f0\b\fs48 specialized parsers\
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b fails
+\b0 <
+\i \cf2 T:
+\i0 \cf0  
+\b \cf2 copy
+\b0 \cf0 >(
+\i \cf2 mesg:
+\i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
+
+\b \cf2 fn
+\b0 \cf0  
+\b return
+\b0 <
+\i \cf2 T:
+\i0 \cf0  
+\b \cf2 copy
+\b0 \cf0 >(
+\i \cf2 value:
+\i0 \cf0  T) -> parser<T>\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs48 \cf0 C99 parsers\
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -179,7 +211,7 @@
 
 \f1\fs24 \
 
-\f0\b\fs48 parser combinators\
+\f0\b\fs48 combinators\
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -309,7 +341,7 @@
 
 \b \cf2 fn
 \b0 \cf0  
-\b repeat0
+\b r0
 \b0 <
 \i \cf2 T:
 \i0 \cf0  
@@ -320,7 +352,7 @@
 
 \b \cf2 fn
 \b0 \cf0  
-\b repeat1
+\b r1
 \b0 <
 \i \cf2 T:
 \i0 \cf0  
@@ -430,32 +462,7 @@
 \f1\i0\fs24 \cf0 \
 \
 
-\f0\b\fs48 misc\
-
-\fs28 \cf2 fn
-\b0 \cf0  
-\b fails
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 mesg:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b return
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 value:
-\i0 \cf0  T) -> parser<T>\
-\
-
-\b \cf2 impl
+\f0\b\fs28 \cf2 impl
 \b0 \cf0  
 \b\fs48 str_methods
 \b0\fs28  
@@ -492,7 +499,7 @@
 
 \f0\b\fs28 \cf2 impl
 \b0 \cf0  
-\b\fs48 parse_methods
+\b\fs48 parser_methods
 \b0\fs28 <
 \i \cf2 T:
 \i0 \cf0  
@@ -557,7 +564,7 @@
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
-\b repeat0
+\b r0
 \b0 <
 \i \cf2 T:
 \i0 \cf0  
@@ -566,7 +573,7 @@
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
-\b repeat1
+\b r1
 \b0 <
 \i \cf2 T:
 \i0 \cf0  

@@ -5,6 +5,17 @@ import result::*;
 import misc::*;
 import test_helpers::*;
 import types::*;
+import c99_parser::*;
+
+pure fn is_identifier_prefix(ch: char) -> bool
+{
+	ret is_alpha(ch) || ch == '_';
+}
+
+pure fn is_identifier_suffix(ch: char) -> bool
+{
+	ret is_identifier_prefix(ch) || is_digit(ch);
+}
 
 #[test]
 fn test_fails()
@@ -112,7 +123,7 @@ fn test_then()
 fn test_seq()
 {
 	let prefix = match1(is_identifier_prefix, "Expected identifier");
-	let suffix = match1(is_identifier_suffix, "Expected identifier").repeat0();
+	let suffix = match1(is_identifier_suffix, "Expected identifier").r0();
 	let trailer = match1(is_identifier_trailer, "Expected identifier").optional("");
 	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + c)});
 	
@@ -199,7 +210,7 @@ fn test_optional()
 #[test]
 fn test__repeat0()
 {
-	let p = "b".lit().repeat0();
+	let p = "b".lit().r0();
 	
 	assert check_str_array_ok("", p, []);
 	assert check_str_array_ok("b", p, ["b"]);
@@ -211,7 +222,7 @@ fn test__repeat0()
 #[test]
 fn test__repeat1()
 {
-	let p = "b".lit().repeat1("b's");
+	let p = "b".lit().r1("b's");
 	
 	assert check_str_array_ok("b", p, ["b"]);
 	assert check_str_array_ok("bb", p, ["b", "b"]);

@@ -409,10 +409,10 @@ fn optional<T: copy>(parser: parser<T>, missing: T) -> parser<T>
 	}
 }
 
-#[doc = "repeat0 := e*
+#[doc = "r0 := e*
 
 Values for each parsed e are returned."]
-fn repeat0<T: copy>(parser: parser<T>) -> parser<[T]>
+fn r0<T: copy>(parser: parser<T>) -> parser<[T]>
 {
 	{|input: state|
 		let mut output = input;
@@ -433,24 +433,24 @@ fn repeat0<T: copy>(parser: parser<T>) -> parser<[T]>
 				}
 			}
 		}
-		log_ok("repeat0", input, {new_state: output, value: values})
+		log_ok("r0", input, {new_state: output, value: values})
 	}
 }
 
-#[doc = "repeat1 := e+
+#[doc = "r1 := e+
 
 Values for each parsed e are returned."]
-fn repeat1<T: copy>(parser: parser<T>, err_mesg: str) -> parser<[T]>
+fn r1<T: copy>(parser: parser<T>, err_mesg: str) -> parser<[T]>
 {
 	{|input: state|
-		let pass = result::get(parser.repeat0()(input));
+		let pass = result::get(parser.r0()(input));
 		if pass.new_state.index > input.index
 		{
-			log_ok("repeat1", input, pass)
+			log_ok("r1", input, pass)
 		}
 		else
 		{
-			log_err("repeat1", input, {old_state: input, err_state: pass.new_state, mesg: err_mesg})
+			log_err("r1", input, {old_state: input, err_state: pass.new_state, mesg: err_mesg})
 		}
 	}
 }
@@ -460,7 +460,7 @@ fn repeat1<T: copy>(parser: parser<T>, err_mesg: str) -> parser<[T]>
 Values for each parsed e are returned."]
 fn list<T: copy, U: copy>(parser: parser<T>, sep: parser<U>) -> parser<[T]>
 {
-	let term = sep.then(parser).repeat0();
+	let term = sep.then(parser).r0();
 	
 	{|input: state|
 		result::chain(parser(input))
@@ -485,7 +485,7 @@ fn list<T: copy, U: copy>(parser: parser<T>, sep: parser<U>) -> parser<[T]>
 fn chain_suffix<T: copy, U: copy>(parser: parser<T>, op: parser<U>) -> parser<[(U, T)]>
 {
 	let q = op.thene({|operator| parser.thene({|value| return((operator, value))})});
-	q.repeat0()
+	q.r0()
 }
 
 #[doc = "chainl1 := e (op e)*
@@ -881,22 +881,6 @@ fn litv<T: copy>(s: str, value: T) -> parser<T>
 	}
 }
 
-#[doc = "integer := [+-]? [0-9]+"]
-fn integer() -> parser<int>
-{
-	let digits = match1(is_digit, "Expected digits").thene({|s| return(option::get(int::from_str(s)))});
-	let case1 = lit("+").then(digits);
-	let case2 = seq2(lit("-"), digits, {|_o, v| result::ok(-v)});
-	let case3 = digits;
-	or_v([case1, case2, case3])
-}
-
-#[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*"]
-fn identifier() -> parser<str>
-{
-	match1_0(is_identifier_prefix, is_identifier_suffix, "Expected identifier")
-}
-
 #[doc = "Returns a parser which matches the end of the input.
 
 Typically clients will use the everything method instead of calling this directly."]
@@ -950,7 +934,7 @@ impl str_methods for str
 
 #[doc = "These work the same as the functions of the same name, but tend
 to make the code look a bit better."]
-impl parse_methods<T: copy> for parser<T>
+impl parser_methods<T: copy> for parser<T>
 {
 	fn thene<T: copy, U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
 	{
@@ -972,14 +956,14 @@ impl parse_methods<T: copy> for parser<T>
 		optional(self, missing)
 	}
 	
-	fn repeat0<T: copy>() -> parser<[T]>
+	fn r0<T: copy>() -> parser<[T]>
 	{
-		repeat0(self)
+		r0(self)
 	}
 	
-	fn repeat1<T: copy>(err_mesg: str) -> parser<[T]>
+	fn r1<T: copy>(err_mesg: str) -> parser<[T]>
 	{
-		repeat1(self, err_mesg)
+		r1(self, err_mesg)
 	}
 	
 	fn list<T: copy, U: copy>(sep: parser<U>) -> parser<[T]>
