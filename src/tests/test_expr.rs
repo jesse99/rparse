@@ -1,5 +1,4 @@
 // Test a grammar capable of evaluating simple mathematical expressions.
-//import primitives::*;
 import test_helpers::*;
 import types::*;
 
@@ -15,9 +14,9 @@ fn expr_parser() -> parser<int>
 	
 	// sub_expr := [-+]? '(' expr ')'
 	let sub_expr = or_v([
-		seq4("+".s0(), "(".s0(), expr_ref, ")".s0()) {|_a, _b, c, _d| result::ok(c)},
-		seq4("-".s0(), "(".s0(), expr_ref, ")".s0())  {|_a, _b, c, _d| result::ok(-c)},
-		seq3("(".s0(), expr_ref, ")".s0())              {|_a, b, _c| result::ok(b)}]);
+		seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
+		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene({|v| return(-v)}),
+		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]);
 	
 	// factor := integer | sub_expr
 	// The tag provides better error messages if the factor parser fails

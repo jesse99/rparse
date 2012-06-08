@@ -244,6 +244,69 @@ fn seq9<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7
 	}}}}}}}}}
 }
 
+#[doc = "seq2 := e0 e1"]
+fn seq2_ret0<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<T0>
+{
+	seq2(p0, p1)
+		{|a0, _a1| result::ok(a0)}
+}
+
+#[doc = "seq2 := e0 e1"]
+fn seq2_ret1<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<T1>
+{
+	seq2(p0, p1)
+		{|_a0, a1| result::ok(a1)}
+}
+
+#[doc = "seq3 := e0 e1 e2"]
+fn seq3_ret0<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<T0>
+{
+	seq3(p0, p1, p2)
+		{|a0, _a1, _a2| result::ok(a0)}
+}
+
+#[doc = "seq3 := e0 e1 e2"]
+fn seq3_ret1<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<T1>
+{
+	seq3(p0, p1, p2)
+		{|_a0, a1, _a2| result::ok(a1)}
+}
+
+#[doc = "seq3 := e0 e1 e2"]
+fn seq3_ret2<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<T2>
+{
+	seq3(p0, p1, p2)
+		{|_a0, _a1, a2| result::ok(a2)}
+}
+
+#[doc = "seq4 := e0 e1 e2 e3"]
+fn seq4_ret0<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<T0>
+{
+	seq4(p0, p1, p2, p3)
+		{|a0, _a1, _a2, _a3| result::ok(a0)}
+}
+
+#[doc = "seq4 := e0 e1 e2 e3"]
+fn seq4_ret1<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<T1>
+{
+	seq4(p0, p1, p2, p3)
+		{|_a0, a1, _a2, _a3| result::ok(a1)}
+}
+
+#[doc = "seq4 := e0 e1 e2 e3"]
+fn seq4_ret2<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<T2>
+{
+	seq4(p0, p1, p2, p3)
+		{|_a0, _a1, a2, _a3| result::ok(a2)}
+}
+
+#[doc = "seq4 := e0 e1 e2 e3"]
+fn seq4_ret3<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<T3>
+{
+	seq4(p0, p1, p2, p3)
+		{|_a0, _a1, _a2, a3| result::ok(a3)}
+}
+
 #[doc = "Returns a parser which first tries parser1, and if that fails, parser2."]
 fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 {
@@ -959,3 +1022,6 @@ impl parse_methods<T: copy> for parser<T>
 		everything(self, space)
 	}
 }
+
+
+
