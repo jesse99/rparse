@@ -690,6 +690,20 @@ fn match(predicate: fn@ (char) -> bool, err_mesg: str) -> parser<char>
 	}
 }
 
+// It would be a lot more elegant if match0, match1, and co were removed
+// and users relied on composition to build the sort of parsers that they
+// want. However in practice this is not such a good idea:
+// 1) Matching is a very common operation, but instead of something simple
+// like:
+//    match0(p)
+// users would have to write something like:
+//    match(p).r0().str()
+// 2) Generating an array of characters and then converting them into a string
+// is much slower than updating a mutable string.
+// 3) Debugging a parser is simpler if users can use higher level building
+// blocks (TODO: though maybe we can somehow ignore or collapse low
+// level parsers when logging).
+
 #[doc = "Consumes zero or more characters matching the predicate.
 Returns the matched characters. 
 
