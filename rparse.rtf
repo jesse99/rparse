@@ -205,28 +205,129 @@
 \f1\fs24 \
 
 \f0\b\fs48 C99 parsers\
+\pard\pardeftab480\pardirnatural
 
 \fs28 \cf2 fn
 \b0 \cf0  
 \b identifier
 \b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
-\i \cf4 Matches [a-zA-Z_] [a-zA-Z0-9_]*.
+\i \cf4 [a-zA-Z_] [a-zA-Z0-9_]*.
 \f1\i0\fs24 \cf0 \
 
 \f0\fs28 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
-\b integer
+\b decimal_number
 \b0 () -> parser<\cf3 int\cf0 >\
+\pard\pardeftab480\pardirnatural
 
-\i \cf4 Matches [+-]? [0-9]+.
+\i \cf4 [0-9]+.
 \i0 \cf0 \
 
 \f1\fs24 \
+\pard\pardeftab480\pardirnatural
 
-\f0\b\fs48 combinators\
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b octal_number
+\b0 () -> parser<\cf3 int\cf0 >\
+\pard\pardeftab480\pardirnatural
+
+\i \cf4 0 [0-7]*
+\i0 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b hex_number
+\b0 () -> parser<\cf3 int\cf0 >\
+\pard\pardeftab480\pardirnatural
+
+\i \cf4 0[xX] [0-9a-fA-F]+
+\i0 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b float_number
+\b0 () -> parser<\cf3 f64\cf0 >\
+\pard\pardeftab480\pardirnatural
+
+\i \cf4 float1 | float2 | float3\
+\
+float1 := [0-9]* '.' [0-9]+ exponent?\
+float2 := [0-9]+ '.' exponent?\
+float3 := [0-9]+ exponent\
+exponent := [eE] [+-]? [0-9]+\
+\pard\pardeftab480\pardirnatural
+
+\f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b char_literal
+\b0 () -> parser<\cf3 char\cf0 >\
+\pard\pardeftab480\pardirnatural
+
+\i \cf4 char_literal := '\\\\'' c_char_sequence '\\\\''\
+\
+c_char_sequence := [^'\\n\\r\\\\]\
+c_char_sequence := escape_sequence
+\f1\i0\fs24 \cf0 \
+\
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b string_literal
+\b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
+
+\i \cf4 string_literal := '\\"' s_char* '\\"'\
+\
+s_char := [^\\"\\n\\r\\\\]\
+s_char := escape_sequence
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\i0 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b comment
+\b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
+
+\i \cf4 '/*' ([^*] | '*' [^/])* '*/'
+\f1\i0\fs24 \cf0 \
+\
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
+\b0 \cf0  
+\b line_comment
+\b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
+
+\i \cf4 '//' [^\\r\\n]*\
+\pard\pardeftab480\pardirnatural
+
+\f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs48 \cf0 combinators\
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -351,6 +452,23 @@
 \b0 \cf0 >(
 \i \cf2 parsers:
 \i0 \cf0  [parser<T>]) -> parser<T>\
+\pard\pardeftab480\pardirnatural
+
+\b \cf2 fn
+\b0 \cf0  
+\b r
+\b0 <
+\i \cf2 T:
+\i0 \cf0  
+\b \cf2 copy
+\b0 \cf0 >(
+\i \cf2 parser:
+\i0 \cf0  parser<T>, 
+\i \cf2 n:
+\i0 \cf0  \cf3 uint\cf0 , 
+\i \cf2 m:
+\i0 \cf0  \cf3 uint\cf0 ) -> parser<[T]>\
+\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
@@ -586,7 +704,22 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \i0 \cf0  
 \b \cf2 copy
 \b0 \cf0 >() -> parser<option<T>>\
-\cb6 	
+\pard\pardeftab480\pardirnatural
+\cf0 \cb6 	
+\b \cf2 \cb1 fn
+\b0 \cf0  
+\b r
+\b0 <
+\i \cf2 T:
+\i0 \cf0  
+\b \cf2 copy
+\b0 \cf0 >(
+\i \cf2 n:
+\i0 \cf0  \cf3 uint\cf0 , 
+\i \cf2 m:
+\i0 \cf0  \cf3 uint\cf0 ) -> parser<[T]>\
+\pard\pardeftab480\pardirnatural
+\cf0 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b r0

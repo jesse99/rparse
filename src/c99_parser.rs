@@ -80,10 +80,10 @@ fn hex_number() -> parser<int>
 
 #[doc = "float_number := float1 | float2 | float3
 
-// float1 := [0-9]* '.' [0-9]+ exponent?
-// float2 := [0-9]+ '.' exponent?
-// float3 := [0-9]+ exponent
-// exponent := [eE] [+-]? [0-9]+"]
+float1 := [0-9]* '.' [0-9]+ exponent?
+float2 := [0-9]+ '.' exponent?
+float3 := [0-9]+ exponent
+exponent := [eE] [+-]? [0-9]+"]
 fn float_number() -> parser<f64>
 {
 	let exponent = seq3_ret_str("eE".anyc(), "+-".anyc().optional(), match1(is_digit));

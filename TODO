@@ -1,7 +1,3 @@
-* Add c_parser functions:
- 	- get rid of identifier and integer
- 	- update cheat sheet
-* Add lit_v.
 * Probably should add r(N, M)
 * Can we organize the code like the cheat sheet does?
 * Probably should review parsec3 and/or polyparse

@@ -515,10 +515,8 @@ fn optional<T: copy>(parser: parser<T>) -> parser<option<T>>
 	}
 }
 
-#[doc = "r0 := e*
-
-Values for each parsed e are returned."]
-fn r0<T: copy>(parser: parser<T>) -> parser<[T]>
+#[doc = "Succeeds if parser matches input n to m times (inclusive)."]
+fn r<T: copy>(parser: parser<T>, n: uint, m: uint) -> parser<[T]>
 {
 	{|input: state|
 		let mut output = input;
@@ -539,8 +537,25 @@ fn r0<T: copy>(parser: parser<T>) -> parser<[T]>
 				}
 			}
 		}
-		log_ok("r0", input, {new_state: output, value: values})
+		
+		let count = vec::len(values);
+		if n <= count && count <= m
+		{
+			log_ok("r", input, {new_state: output, value: values})
+		}
+		else
+		{
+			log_err("r", input, {old_state: input, err_state: output, mesg: ""})
+		}
 	}
+}
+
+#[doc = "r0 := e*
+
+Values for each parsed e are returned."]
+fn r0<T: copy>(parser: parser<T>) -> parser<[T]>
+{
+	r(parser, 0u, uint::max_value)
 }
 
 #[doc = "r1 := e+
@@ -548,17 +563,7 @@ fn r0<T: copy>(parser: parser<T>) -> parser<[T]>
 Values for each parsed e are returned."]
 fn r1<T: copy>(parser: parser<T>) -> parser<[T]>
 {
-	{|input: state|
-		let pass = result::get(parser.r0()(input));
-		if pass.new_state.index > input.index
-		{
-			log_ok("r1", input, pass)
-		}
-		else
-		{
-			log_err("r1", input, {old_state: input, err_state: pass.new_state, mesg: ""})
-		}
-	}
+	r(parser, 1u, uint::max_value)
 }
 
 #[doc = "list := e (sep e)*
@@ -1132,6 +1137,11 @@ impl parser_methods<T: copy> for parser<T>
 	fn optional<T: copy>() -> parser<option<T>>
 	{
 		optional(self)
+	}
+	
+	fn r<T: copy>(n: uint, m: uint) -> parser<[T]>
+	{
+		r(self, n, m)
 	}
 	
 	fn r0<T: copy>() -> parser<[T]>
