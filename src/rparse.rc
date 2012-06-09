@@ -12,7 +12,11 @@
 use std;
 
 mod c99_parser;
+mod char_parsers;
+mod combinators;
+mod generic_parsers;
 mod misc;
+mod str_parsers;
 mod types;
 
 #[cfg(test)]

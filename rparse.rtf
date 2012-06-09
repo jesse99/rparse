@@ -156,10 +156,12 @@
 \b0 (
 \i \cf2 parsers:
 \i0 \cf0  [parser<\cf5 str\cf0 >]) -> parser<str>\
+\pard\pardeftab480\pardirnatural
 
-\f1\fs24 \
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
-\f0\b\fs48 generic parsers\
+\f0\b\fs48 \cf0 generic parsers\
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -177,8 +179,10 @@
 \i \cf4 Returns value if input matches s
 \f1\fs24 \cf0 .
 \f0\i0\fs28 \
+\pard\pardeftab480\pardirnatural
 
-\f1\fs24 \
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -201,45 +205,43 @@
 \b0 \cf0 >(
 \i \cf2 value:
 \i0 \cf0  T) -> parser<T>\
-
-\f1\fs24 \
-
-\f0\b\fs48 C99 parsers\
 \pard\pardeftab480\pardirnatural
+
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs48 \cf0 C99 parsers\
 
 \fs28 \cf2 fn
 \b0 \cf0  
 \b identifier
 \b0 () -> parser<\cf3 str\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 [a-zA-Z_] [a-zA-Z0-9_]*.
 \f1\i0\fs24 \cf0 \
 
 \f0\fs28 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
 \b decimal_number
 \b0 () -> parser<\cf3 int\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 [0-9]+.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
-\f1\fs24 \
+\f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
 \b octal_number
 \b0 () -> parser<\cf3 int\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 0 [0-7]*
 \i0 \cf0 \
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -248,11 +250,10 @@
 \b0 \cf0  
 \b hex_number
 \b0 () -> parser<\cf3 int\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 0[xX] [0-9a-fA-F]+
 \i0 \cf0 \
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -261,7 +262,6 @@
 \b0 \cf0  
 \b float_number
 \b0 () -> parser<\cf3 f64\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 float1 | float2 | float3\
 \
@@ -278,7 +278,6 @@ exponent := [eE] [+-]? [0-9]+\
 \b0 \cf0  
 \b char_literal
 \b0 () -> parser<\cf3 char\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 char_literal := '\\\\'' c_char_sequence '\\\\''\
 \
@@ -286,13 +285,11 @@ c_char_sequence := [^'\\n\\r\\\\]\
 c_char_sequence := escape_sequence
 \f1\i0\fs24 \cf0 \
 \
-\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
 \b string_literal
 \b0 () -> parser<\cf3 str\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 string_literal := '\\"' s_char* '\\"'\
 \
@@ -308,18 +305,15 @@ s_char := escape_sequence
 \b0 \cf0  
 \b comment
 \b0 () -> parser<\cf3 str\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 '/*' ([^*] | '*' [^/])* '*/'
 \f1\i0\fs24 \cf0 \
 \
-\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
 \b line_comment
 \b0 () -> parser<\cf3 str\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 '//' [^\\r\\n]*\
 \pard\pardeftab480\pardirnatural
@@ -370,23 +364,6 @@ s_char := escape_sequence
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ (T, U, T) -> T) -> parser<T>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b chain_suffix
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>, 
-\i \cf2 op:
-\i0 \cf0  parser<U>) -> parser<[(U, T)]>\
 
 \b \cf2 fn
 \b0 \cf0  
@@ -452,7 +429,6 @@ s_char := escape_sequence
 \b0 \cf0 >(
 \i \cf2 parsers:
 \i0 \cf0  [parser<T>]) -> parser<T>\
-\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
@@ -468,7 +444,6 @@ s_char := escape_sequence
 \i0 \cf0  \cf3 uint\cf0 , 
 \i \cf2 m:
 \i0 \cf0  \cf3 uint\cf0 ) -> parser<[T]>\
-\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
@@ -565,16 +540,36 @@ s_char := escape_sequence
 \i0 \cf0  parser<T>, 
 \i \cf2 label:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 If label is not empty then it is used if the parser completely failed to parse or if its error message was empty. \
 Otherwise it suppresses errors from the parser (in favor of a later tag function).
 \f1\fs24 \cf0 \
+
+\f0\i0\fs28 \
 \pard\pardeftab480\pardirnatural
 
-\f0\i0\fs28 \cf0 \
-
 \b \cf2 fn
+\b0 \cf0  
+\b then
+\b0 <
+\i \cf2 T:
+\i0 \cf0  
+\b \cf2 copy
+\b0 \cf0 , 
+\i \cf2 U:
+\i0 \cf0  
+\b \cf2 copy
+\b0 \cf0 >(
+\i \cf2 parser1:
+\i0 \cf0  parser<T>, 
+\i \cf2 parser2:
+\i0 \cf0  parser<U>) -> parser<U>\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
 \b0 \cf0  
 \b thene
 \b0 <
@@ -639,8 +634,10 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b0 \cf0  
 \b s1
 \b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
-\f1\fs24 \
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 impl
 \b0 \cf0  
@@ -704,8 +701,7 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \i0 \cf0  
 \b \cf2 copy
 \b0 \cf0 >() -> parser<option<T>>\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b r
@@ -718,8 +714,7 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \i0 \cf0  \cf3 uint\cf0 , 
 \i \cf2 m:
 \i0 \cf0  \cf3 uint\cf0 ) -> parser<[T]>\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b r0

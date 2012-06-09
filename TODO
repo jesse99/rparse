@@ -1,4 +1,5 @@
 * Can we organize the code like the cheat sheet does?
+ * Rename c99_parser.
 * Probably should review parsec3 and/or polyparse
 * Update web page
 * Talk about info and debug logging.
