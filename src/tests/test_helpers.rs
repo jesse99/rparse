@@ -2,8 +2,6 @@
 import io;
 import io::writer_util;
 import result = result::result;
-import misc::*;
-import types::*;
 
 fn check_char_ok(inText: str, parser: parser<char>, expected: char) -> bool
 {

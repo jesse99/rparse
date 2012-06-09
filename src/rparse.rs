@@ -1,6 +1,6 @@
 #[doc = "Functions and methods used to construct and compose parsers."];
 
-import c99_parser::*;
+import c99_parsers::*;
 import char_parsers::*;
 import combinators::*;
 import generic_parsers::*;

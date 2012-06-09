@@ -11,7 +11,7 @@
 
 use std;
 
-mod c99_parser;
+mod c99_parsers;
 mod char_parsers;
 mod combinators;
 mod generic_parsers;

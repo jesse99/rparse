@@ -2,10 +2,7 @@
 import io;
 import io::writer_util;
 import result::*;
-import misc::*;
 import test_helpers::*;
-import types::*;
-import c99_parser::*;
 
 pure fn is_identifier_prefix(ch: char) -> bool
 {

@@ -1,6 +1,4 @@
-import c99_parser::*;
 import test_helpers::*;
-
 
 #[test]
 fn test_identifier()

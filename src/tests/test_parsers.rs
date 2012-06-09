@@ -1,5 +1,4 @@
 import test_helpers::*;
-import c99_parser::*;
 
 #[test]
 fn test_s0()

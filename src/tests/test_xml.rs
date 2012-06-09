@@ -2,11 +2,8 @@
 // standards compliant or even very useful. Instead it is designed to test a parser
 // that returns objects instead of evaluating in-place.
 import to_str::to_str;
-import misc::*;
 import result::*;
 import test_helpers::*;
-import types::*;
-import c99_parser::*;
 
 type attribute = {name: str, value: str};
 
