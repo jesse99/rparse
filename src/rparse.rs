@@ -6,7 +6,6 @@ import combinators::*;
 import generic_parsers::*;
 import str_parsers::*;
 import misc::*;
-//import types::*;
 
 // c99_parsers
 export identifier, decimal_number, octal_number, hex_number, float_number, char_literal, string_literal, comment, line_comment;
@@ -91,6 +90,11 @@ impl str_methods for str
 	fn lit() -> parser<str>
 	{
 		lit(self)
+	}
+	
+	fn liti() -> parser<str>
+	{
+		liti(self)
 	}
 	
 	fn litv<T: copy>(value: T) -> parser<T>
