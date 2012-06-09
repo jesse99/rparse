@@ -32,8 +32,6 @@ fn expr_parser() -> parser<int>
 	*expr_ptr = expr;
 	
 	// start := s0 expr EOT
-	// The s syntax is a little goofy because the s0 comes before 
-	// instead of after expr so it needs to be told which type to use.
 	let s = return(0).s0();
 	everything(expr, s)
 }
