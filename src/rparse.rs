@@ -21,6 +21,9 @@ export parser, state, status, succeeded, failed;
 // generic_parsers
 export litv, fails, return;
 
+// misc
+export log_ok, log_err, EOT, is_alpha, is_digit, is_alphanum, is_print, is_whitespace;
+
 // str_parsers
 export liti, lit, match0, match1, match1_0, scan0, scan1, seq2_ret_str, seq3_ret_str, seq4_ret_str, seq5_ret_str;
 
