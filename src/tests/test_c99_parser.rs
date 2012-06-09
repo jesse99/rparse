@@ -69,3 +69,38 @@ fn test_float_number()
 	assert check_float_failed("0", p, "Expected float number", 1);
 	assert check_float_failed("0x.0", p, "Expected float number", 1);
 }
+
+#[test]
+fn test_char_literal()
+{
+	let p = char_literal();
+	
+	assert check_char_ok("'x'", p, 'x');
+	assert check_char_ok("'\\n'", p, '\n');
+	assert check_char_ok("'\\52'", p, '*');
+	assert check_char_ok("'\\x2A'", p, '*');
+	assert check_char_ok("'\\u002A'", p, '*');
+	assert check_char_failed("'\\q'", p, "Expected escape character", 1);
+	assert check_char_failed("'xx'", p, "Expected '''", 1);
+}
+
+#[test]
+fn test_string_literal()
+{
+	let p = string_literal();
+	
+	assert check_str_ok("\"\"", p, "");
+	assert check_str_ok("\"xyz\"", p, "xyz");
+	assert check_str_ok("\"a\\nx\"", p, "a\nx");
+	assert check_str_failed("\"xx", p, "Expected '\"'", 1);
+}
+
+#[test]
+fn test_comment()
+{
+	let p = comment();
+	
+	assert check_str_ok("/**/", p, "");
+	assert check_str_ok("/* blah */", p, " blah ");
+	assert check_str_failed("/* xxx\nyyy\nzz", p, "Expected '*/'", 3);
+}
