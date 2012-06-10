@@ -146,7 +146,7 @@ fn scan0(fun: fn@ ([char], uint) -> uint) -> parser<str>
 			let count = fun(input.text, i);
 			if count > 0u && input.text[i] != EOT		// EOT check makes it easier to write funs that do stuff like matching chars that are not something
 			{
-				uint::range(0u, count)
+				for uint::range(0u, count)
 				{|_k|
 					if input.text[i] == '\r'
 					{

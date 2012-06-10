@@ -109,7 +109,7 @@ fn repeat_char(ch: char, count: uint) -> str
 {
 	let mut value = "";
 	str::reserve(value, count);
-	uint::range(0u, count) {|_i| str::push_char(value, ch);}
+	for uint::range(0u, count) {|_i| str::push_char(value, ch);}
 	ret value;
 }
 

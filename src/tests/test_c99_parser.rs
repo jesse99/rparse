@@ -57,12 +57,12 @@ fn test_float_number()
 {
 	let p = float_number();
 	
-	assert check_float_ok("0.1", p, 0.1);
-	assert check_float_ok("0.1e2", p, 10.0);
-	assert check_float_ok("0.1e-1", p, 0.01);
-	assert check_float_ok("2.", p, 2.0);
-	assert check_float_ok("2.e3", p, 2000.0);
-	assert check_float_ok("1e3", p, 1000.0);
+	assert check_float_ok("0.1", p, 0.1f64);
+	assert check_float_ok("0.1e2", p, 10.0f64);
+	assert check_float_ok("0.1e-1", p, 0.01f64);
+	assert check_float_ok("2.", p, 2.0f64);
+	assert check_float_ok("2.e3", p, 2000.0f64);
+	assert check_float_ok("1e3", p, 1000.0f64);
 	assert check_float_failed("x", p, "Expected float number", 1);
 	assert check_float_failed("0", p, "Expected float number", 1);
 	assert check_float_failed("0x.0", p, "Expected float number", 1);

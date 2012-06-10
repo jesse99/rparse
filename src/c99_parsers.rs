@@ -10,7 +10,7 @@ export identifier, decimal_number, octal_number, hex_number, float_number,
 Note that match1_0 can be used to easily implement custom identifier parsers."]
 fn identifier() -> parser<str>
 {
-	// Supposed to support universal character names too, e.g.
+	// Supposed to support universal character names too, e.g.  
 	// fo\u006F is a valid C99 identifier.
 	match1_0(is_identifier_prefix, is_identifier_suffix).tag("Expected identifier")
 }

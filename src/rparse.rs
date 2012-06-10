@@ -127,62 +127,62 @@ impl str_methods for str
 to make the code look a bit better."]
 impl parser_methods<T: copy> for parser<T>
 {
-	fn thene<T: copy, U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
+	fn thene<U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
 	{
 		thene(self, eval)
 	}
 	
-	fn then<T: copy, U: copy>(parser2: parser<U>) -> parser<U>
+	fn then<U: copy>(parser2: parser<U>) -> parser<U>
 	{
 		then(self, parser2)
 	}
 	
-	fn or<T: copy>(parser2: parser<T>) -> parser<T>
+	fn or(parser2: parser<T>) -> parser<T>
 	{
 		or(self, parser2)
 	}
 	
-	fn optional<T: copy>() -> parser<option<T>>
+	fn optional() -> parser<option<T>>
 	{
 		optional(self)
 	}
 	
-	fn r<T: copy>(n: uint, m: uint) -> parser<[T]>
+	fn r(n: uint, m: uint) -> parser<[T]>
 	{
 		r(self, n, m)
 	}
 	
-	fn r0<T: copy>() -> parser<[T]>
+	fn r0() -> parser<[T]>
 	{
 		r0(self)
 	}
 	
-	fn r1<T: copy>() -> parser<[T]>
+	fn r1() -> parser<[T]>
 	{
 		r1(self)
 	}
 	
-	fn list<T: copy, U: copy>(sep: parser<U>) -> parser<[T]>
+	fn list<U: copy>(sep: parser<U>) -> parser<[T]>
 	{
 		list(self, sep)
 	}
 	
-	fn chain_suffix<T: copy, U: copy>(op: parser<U>) -> parser<[(U, T)]>
+	fn chain_suffix<U: copy>(op: parser<U>) -> parser<[(U, T)]>
 	{
 		chain_suffix(self, op)
 	}
 	
-	fn chainl1<T: copy, U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
+	fn chainl1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
 	{
 		chainl1(self, op, eval)
 	}
 	
-	fn chainr1<T: copy, U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
+	fn chainr1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
 	{
 		chainr1(self, op, eval)
 	}
 	
-	fn tag<T: copy>(label: str) -> parser<T>
+	fn tag(label: str) -> parser<T>
 	{
 		tag(self, label)
 	}
@@ -193,17 +193,17 @@ impl parser_methods<T: copy> for parser<T>
 	}
 	
 	// ---------------------------------------------------------------------------
-	fn s0<T: copy>() -> parser<T>
+	fn s0() -> parser<T>
 	{
 		s0(self)
 	}
 	
-	fn s1<T: copy>() -> parser<T>
+	fn s1() -> parser<T>
 	{
 		s1(self)
 	}
 	
-	fn everything<T: copy>(space: parser<T>) -> parser<T>
+	fn everything(space: parser<T>) -> parser<T>
 	{
 		everything(self, space)
 	}
