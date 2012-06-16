@@ -603,7 +603,9 @@ fn s1<T: copy>(parser: parser<T>) -> parser<T>
 
 
 #[doc = "If label is not empty then it is used if the parser completely failed to parse or if its error
-message was empty. Otherwise it suppresses errors from the parser (in favor of a later tag function)."]
+message was empty. Otherwise it suppresses errors from the parser (in favor of a later tag function).
+
+Note that this can also be useful when debugging parsers."]
 fn tag<T: copy>(parser: parser<T>, label: str) -> parser<T>
 {
 	{|input: state|

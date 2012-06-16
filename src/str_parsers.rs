@@ -131,6 +131,24 @@ fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> parser<st
 	prefix.thene({|p| suffix.thene({|s| return(p + s)})})
 }
 
+#[doc = "optional := e?"]
+fn optional_str(parser: parser<str>) -> parser<str>
+{
+	{|input: state|
+		alt parser(input)
+		{
+			result::ok(pass)
+			{
+				log_ok("optional", input, {new_state: pass.new_state, value: pass.value})
+			}
+			result::err(_failure)
+			{
+				log_ok("optional", input, {new_state: input, value: ""})
+			}
+		}
+	}
+}
+
 #[doc = "Calls fun with an index into the characters to be parsed until it returns zero characters.
 Returns the matched characters. 
 

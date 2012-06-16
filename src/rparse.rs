@@ -10,6 +10,9 @@ import misc::*;
 // c99_parsers
 export identifier, decimal_number, octal_number, hex_number, float_number, char_literal, string_literal, comment, line_comment;
 
+// char parsers
+export match, anyc, noc;
+
 // combinators
 export chainl1, chainr1, forward_ref, list, optional, or_v, r, r0, r1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seq9,
 	seq2_ret0, seq2_ret1, seq3_ret0, seq3_ret1, seq3_ret2, seq4_ret0, seq4_ret1, seq4_ret2, seq4_ret3, s0, s1, tag, then, thene;
@@ -24,7 +27,7 @@ export litv, fails, return;
 export log_ok, log_err, EOT, is_alpha, is_digit, is_alphanum, is_print, is_whitespace;
 
 // str_parsers
-export liti, lit, match0, match1, match1_0, scan0, scan1, seq2_ret_str, seq3_ret_str, seq4_ret_str, seq5_ret_str;
+export liti, lit, match0, match1, match1_0, optional_str, scan0, scan1, seq2_ret_str, seq3_ret_str, seq4_ret_str, seq5_ret_str;
 
 // types
 export parser, state, status, succeeded, failed;
@@ -120,6 +123,14 @@ impl str_methods for str
 	fn s1() -> parser<str>
 	{
 		s1(lit(self))
+	}
+}
+
+impl str_parser_methods for parser<str>
+{
+	fn optional_str() -> parser<str>
+	{
+		optional_str(self)
 	}
 }
 
