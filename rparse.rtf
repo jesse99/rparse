@@ -134,6 +134,26 @@
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
+\b scan
+\b0 (
+\i \cf2 fun:
+\i0 \cf0  
+\b \cf2 fn
+\b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
+
+\i \cf4 Calls fun once and returns the result.
+\f1\i0\fs24 \cf0 \
+
+\f0\i\fs28 \cf4 All scan functions increments line.
+\f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\fs28 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\b \cf2 fn
+\b0 \cf0  
 \b scan0
 \b0 (
 \i \cf2 fun:
@@ -142,9 +162,6 @@
 \b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
 
 \i \cf4 Calls fun with an index into the characters to be parsed until it returns zero characters.
-\f1\i0\fs24 \cf0 \
-
-\f0\i\fs28 \cf4 Increments line.
 \f1\i0\fs24 \cf0 \
 
 \f0\fs28 \
@@ -159,9 +176,6 @@
 \b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
 
 \i \cf4 Calls fun with an index into the characters to be parsed until it returns zero characters.
-\f1\i0\fs24 \cf0 \
-
-\f0\i\fs28 \cf4 Increments line.
 \f1\i0\fs24 \cf0 \
 \
 

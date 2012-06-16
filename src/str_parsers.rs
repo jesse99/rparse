@@ -149,6 +149,40 @@ fn optional_str(parser: parser<str>) -> parser<str>
 	}
 }
 
+#[doc = "Calls fun once and matches the number of characters returned by fun. 
+
+This does increment line."]
+fn scan(fun: fn@ ([char], uint) -> uint) -> parser<str>
+{
+	{|input: state|
+		let mut i = input.index;
+		let mut line = input.line;
+		
+		let count = fun(input.text, i);
+		if count > 0u && input.text[i] != EOT		// EOT check makes it easier to write funs that do stuff like matching chars that are not something
+		{
+			for uint::range(0u, count)
+			{|_k|
+				if input.text[i] == '\r'
+				{
+					line += 1;
+				}
+				else if input.text[i] == '\n' && (i == 0u || input.text[i-1u] != '\r')
+				{
+					line += 1;
+				}
+				i += 1u;
+			}
+			let text = str::from_chars(vec::slice(input.text, input.index, i));
+			log_ok("scan", input, {new_state: {index: i, line: line with input}, value: text})
+		}
+		else
+		{
+			log_ok("scan", input, {new_state: {index: i, line: line with input}, value: ""})
+		}
+	}
+}
+
 #[doc = "Calls fun with an index into the characters to be parsed until it returns zero characters.
 Returns the matched characters. 
 
