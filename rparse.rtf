@@ -351,8 +351,25 @@ s_char := escape_sequence
 \pard\pardeftab480\pardirnatural
 
 \f0\b\fs48 \cf0 combinators\
+\pard\pardeftab480\pardirnatural
 
 \fs28 \cf2 fn
+\b0 \cf0  
+\b annotate
+\b0 <
+\i \cf2 T:
+\i0 \cf0  
+\b \cf2 copy
+\b0 \cf0 >(
+\i \cf2 parser:
+\i0 \cf0  parser<T>, 
+\i \cf2 text:
+\i0 \cf0  \cf3 str\cf0 ) -> parser<T>	
+\i \cf4 used for debugging
+\i0 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\b \cf2 fn
 \b0 \cf0  
 \b chainl1
 \b0 <
@@ -543,7 +560,9 @@ s_char := escape_sequence
 \b \cf2 copy
 \b0 \cf0 >(
 \i \cf2 parser:
-\i0 \cf0  parser<T>) -> parser<T>\
+\i0 \cf0  parser<T>) -> parser<T>	
+\i \cf4 allow 0 or more trailing whitespace
+\i0 \cf0 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -554,10 +573,15 @@ s_char := escape_sequence
 \b \cf2 copy
 \b0 \cf0 >(
 \i \cf2 parser:
-\i0 \cf0  parser<T>) -> parser<T>\
-\
+\i0 \cf0  parser<T>) -> parser<T>	
+\i \cf4 require 1 or more trailing whitespace
+\i0 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
 
-\b \cf2 fn
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf2 fn
 \b0 \cf0  
 \b tag
 \b0 <
@@ -571,10 +595,14 @@ s_char := escape_sequence
 \i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
 
 \i \cf4 If label is not empty then it is used if the parser completely failed to parse or if its error message was empty. \
-Otherwise it suppresses errors from the parser (in favor of a later tag function).
-\f1\fs24 \cf0 \
+Otherwise it suppresses errors from the parser (in favor of a later tag function).\
+\pard\pardeftab480\pardirnatural
 
-\f0\i0\fs28 \
+\i0 \cf4 Should be of the form "Expected foo". 
+\f1\i\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\i0\fs28 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \b \cf2 fn

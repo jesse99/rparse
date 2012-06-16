@@ -602,10 +602,28 @@ fn s1<T: copy>(parser: parser<T>) -> parser<T>
 }
 
 
+#[doc = "Adds custom text to rules as they match or fail to match."]
+fn annotate<T: copy>(parser: parser<T>, text: str) -> parser<T>
+{
+	{|input: state|
+		alt parser(input)
+		{
+			result::ok(pass)
+			{
+				log_ok(text, input, pass)
+			}
+			result::err(failure)
+			{
+				log_err(text, input, failure)
+			}
+		}
+	}
+}
+
 #[doc = "If label is not empty then it is used if the parser completely failed to parse or if its error
 message was empty. Otherwise it suppresses errors from the parser (in favor of a later tag function).
 
-Note that this can also be useful when debugging parsers."]
+Should be of the form \"Expected foo\"."]
 fn tag<T: copy>(parser: parser<T>, label: str) -> parser<T>
 {
 	{|input: state|

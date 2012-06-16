@@ -14,7 +14,7 @@ export identifier, decimal_number, octal_number, hex_number, float_number, char_
 export match, anyc, noc;
 
 // combinators
-export chainl1, chainr1, forward_ref, list, optional, or_v, r, r0, r1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seq9,
+export chainl1, chainr1, annotate, forward_ref, list, optional, or_v, r, r0, r1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seq9,
 	seq2_ret0, seq2_ret1, seq3_ret0, seq3_ret1, seq3_ret2, seq4_ret0, seq4_ret1, seq4_ret2, seq4_ret3, s0, s1, tag, then, thene;
 
 // generic_parsers
@@ -191,6 +191,11 @@ impl parser_methods<T: copy> for parser<T>
 	fn chainr1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
 	{
 		chainr1(self, op, eval)
+	}
+	
+	fn annotate(text: str) -> parser<T>
+	{
+		annotate(self, text)
 	}
 	
 	fn tag(label: str) -> parser<T>
