@@ -182,7 +182,7 @@ fn test_or()
 #[test]
 fn test_or_v()
 {
-	let p = or_v(["a".lit(), "bb".lit(), "c".lit()]);
+	let p = or_v(["a".lit(), "bb".lit(), "c".lit()]/~);
 	
 	assert check_str_ok("a", p, "a");
 	assert check_str_ok("bb", p, "bb");
@@ -200,11 +200,11 @@ fn test__repeat0()
 {
 	let p = "b".lit().r0();
 	
-	assert check_str_array_ok("", p, []);
-	assert check_str_array_ok("b", p, ["b"]);
-	assert check_str_array_ok("bb", p, ["b", "b"]);
-	assert check_str_array_ok("bbb", p, ["b", "b", "b"]);
-	assert check_str_array_ok("c", p, []);
+	assert check_str_array_ok("", p, []/~);
+	assert check_str_array_ok("b", p, ["b"]/~);
+	assert check_str_array_ok("bb", p, ["b", "b"]/~);
+	assert check_str_array_ok("bbb", p, ["b", "b", "b"]/~);
+	assert check_str_array_ok("c", p, []/~);
 }
 
 #[test]
@@ -212,9 +212,9 @@ fn test__repeat1()
 {
 	let p = "b".lit().r1().tag("b's");
 	
-	assert check_str_array_ok("b", p, ["b"]);
-	assert check_str_array_ok("bb", p, ["b", "b"]);
-	assert check_str_array_ok("bbb", p, ["b", "b", "b"]);
+	assert check_str_array_ok("b", p, ["b"]/~);
+	assert check_str_array_ok("bb", p, ["b", "b"]/~);
+	assert check_str_array_ok("bbb", p, ["b", "b", "b"]/~);
 	
 	assert check_str_array_failed("", p, "b's", 1);
 	assert check_str_array_failed("c", p, "b's", 1);
@@ -225,10 +225,10 @@ fn test_list()
 {
 	let p = "b".lit().list(",".lit());
 	
-	assert check_str_array_ok("b", p, ["b"]);
-	assert check_str_array_ok("b,b", p, ["b", "b"]);
-	assert check_str_array_ok("b,b,b", p, ["b", "b", "b"]);
-	assert check_str_array_ok("b,b,c", p, ["b", "b"]);
+	assert check_str_array_ok("b", p, ["b"]/~);
+	assert check_str_array_ok("b,b", p, ["b", "b"]/~);
+	assert check_str_array_ok("b,b,b", p, ["b", "b", "b"]/~);
+	assert check_str_array_ok("b,b,c", p, ["b", "b"]/~);
 	
 	assert check_str_array_failed("", p, "Expected 'b'", 1);
 	assert check_str_array_failed("c", p, "Expected 'b'", 1);

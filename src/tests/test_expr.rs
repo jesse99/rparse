@@ -15,7 +15,7 @@ fn expr_parser() -> parser<int>
 	let sub_expr = or_v([
 		seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
 		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene({|v| return(-v)}),
-		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]);
+		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]/~);
 	
 	// factor := integer | sub_expr
 	// The tag provides better error messages if the factor parser fails

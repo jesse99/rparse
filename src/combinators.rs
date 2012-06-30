@@ -5,7 +5,7 @@ the parsers they are invoked with normally will)."];
 
 // chain_suffix := (op e)*
 #[doc(hidden)]
-fn chain_suffix<T: copy, U: copy>(parser: parser<T>, op: parser<U>) -> parser<[(U, T)]>
+fn chain_suffix<T: copy, U: copy>(parser: parser<T>, op: parser<U>) -> parser<[(U, T)]/~>
 {
 	let q = op.thene({|operator| parser.thene({|value| return((operator, value))})});
 	q.r0()
@@ -58,7 +58,7 @@ fn chainr1<T: copy, U: copy>(parser: parser<T>, op: parser<U>, eval: fn@ (T, U, 
 						
 						// [op1, op2] and [e1, e2] and e3
 						let e3 = vec::last(parsers);
-						let parsers = [e1] + vec::slice(parsers, 0u, vec::len(parsers) - 1u);
+						let parsers = [e1]/~ + vec::slice(parsers, 0u, vec::len(parsers) - 1u);
 						
 						// [(e1 op1), (e2 op2)] and e3
 						let terms = vec::zip(parsers, ops);
@@ -90,7 +90,7 @@ fn forward_ref<T: copy>(parser: @mut parser<T>) -> parser<T>
 #[doc = "list := e (sep e)*
 
 Values for each parsed e are returned."]
-fn list<T: copy, U: copy>(parser: parser<T>, sep: parser<U>) -> parser<[T]>
+fn list<T: copy, U: copy>(parser: parser<T>, sep: parser<U>) -> parser<[T]/~>
 {
 	let term = sep.then(parser).r0();
 	
@@ -101,7 +101,7 @@ fn list<T: copy, U: copy>(parser: parser<T>, sep: parser<U>) -> parser<[T]>
 			{
 				result::ok(pass2)
 				{
-					log_ok("list", input, {value: [pass.value] + pass2.value with pass2})
+					log_ok("list", input, {value: [pass.value]/~ + pass2.value with pass2})
 				}
 				result::err(failure)
 				{
@@ -188,7 +188,7 @@ fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 #[doc = "or_v := e0 | e1 | …
 
 This is a version of or that is nicer to use when there are more than two alternatives."]
-fn or_v<T: copy>(parsers: [parser<T>]) -> parser<T>
+fn or_v<T: copy>(parsers: [parser<T>]/~) -> parser<T>
 {
 	// A recursive algorithm would be a lot simpler, but it's not clear how that could
 	// produce good error messages.
@@ -196,7 +196,7 @@ fn or_v<T: copy>(parsers: [parser<T>]) -> parser<T>
 	
 	{|input: state|
 		let mut result: option<status<T>> = none;
-		let mut errors = [];
+		let mut errors = []/~;
 		let mut max_index = uint::max_value;
 		let mut i = 0u;
 		while i < vec::len(parsers) && option::is_none(result)
@@ -211,7 +211,7 @@ fn or_v<T: copy>(parsers: [parser<T>]) -> parser<T>
 				{
 					if failure.err_state.index > max_index || max_index == uint::max_value
 					{
-						errors = [failure.mesg];
+						errors = [failure.mesg]/~;
 						max_index = failure.err_state.index;
 					}
 					else if failure.err_state.index == max_index
@@ -245,11 +245,11 @@ fn or_v<T: copy>(parsers: [parser<T>]) -> parser<T>
 }
 
 #[doc = "Succeeds if parser matches input n to m times (inclusive)."]
-fn r<T: copy>(parser: parser<T>, n: uint, m: uint) -> parser<[T]>
+fn r<T: copy>(parser: parser<T>, n: uint, m: uint) -> parser<[T]/~>
 {
 	{|input: state|
 		let mut output = input;
-		let mut values = [];
+		let mut values = []/~;
 		loop
 		{
 			alt parser(output)
@@ -282,7 +282,7 @@ fn r<T: copy>(parser: parser<T>, n: uint, m: uint) -> parser<[T]>
 #[doc = "r0 := e*
 
 Values for each parsed e are returned."]
-fn r0<T: copy>(parser: parser<T>) -> parser<[T]>
+fn r0<T: copy>(parser: parser<T>) -> parser<[T]/~>
 {
 	r(parser, 0u, uint::max_value)
 }
@@ -290,7 +290,7 @@ fn r0<T: copy>(parser: parser<T>) -> parser<[T]>
 #[doc = "r1 := e+
 
 Values for each parsed e are returned."]
-fn r1<T: copy>(parser: parser<T>) -> parser<[T]>
+fn r1<T: copy>(parser: parser<T>) -> parser<[T]/~>
 {
 	r(parser, 1u, uint::max_value)
 }

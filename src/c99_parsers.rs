@@ -92,7 +92,7 @@ fn float_number() -> parser<f64>
 	let float2 = seq3_ret_str(match1(is_digit), ".".lit(), exponent.optional()).tag("");
 	let float3 = seq2_ret_str(match1(is_digit), exponent).tag("");
 	
-	let number = or_v([float1, float2, float3]).tag("Expected float number");
+	let number = or_v([float1, float2, float3]/~).tag("Expected float number");
 	
 	number.thene()
 		{|text|
@@ -342,7 +342,7 @@ fn escape_sequence() -> parser<char>
 	let case2 = seq2_ret1("\\".lit(), octal_digits().thene({|n| return(n as char)}));
 	let case3 = seq2_ret1("\\x".lit(), hex_digits().thene({|n| return(n as char)}));
 	let case4 = universal_character_name();
-	or_v([case1, case2, case3, case4]).tag("")
+	or_v([case1, case2, case3, case4]/~).tag("")
 }
 
 // universal-character-name := '\\u' hex-digit{4}

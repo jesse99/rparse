@@ -116,7 +116,6 @@
 \i \cf4 Consumes one or more prefix chars and zero or more suffix chars.
 \f1\i0\fs24 \cf0 \
 \
-\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -124,13 +123,10 @@
 \b0 (
 \i \cf2 parser:
 \i0 \cf0  parser<\cf3 str\cf0 >) -> parser<\cf3 str\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 Like optional but returns "" on no match.
 \f1\i0\fs24 \cf0 \
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
-\cf0 \
-\pard\pardeftab480\pardirnatural
+\
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -140,17 +136,14 @@
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
-\pard\pardeftab480\pardirnatural
 
 \i \cf4 Calls fun once and returns the result.
 \f1\i0\fs24 \cf0 \
 
 \f0\i\fs28 \cf4 All scan functions increments line.
 \f1\i0\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
 
-\f0\fs28 \cf0 \
-\pard\pardeftab480\pardirnatural
+\f0\fs28 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -185,12 +178,12 @@
 \b0 (
 \i \cf2 parsers:
 \i0 \cf0  [parser<\cf5 str\cf0 >]) -> parser<str>\
-\pard\pardeftab480\pardirnatural
 
-\f1\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
+\i \cf4 Returns text that matched the parsers.
+\f1\i0\fs24 \cf0 \
+\
 
-\f0\b\fs48 \cf0 generic parsers\
+\f0\b\fs48 generic parsers\
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -351,7 +344,6 @@ s_char := escape_sequence
 \pard\pardeftab480\pardirnatural
 
 \f0\b\fs48 \cf0 combinators\
-\pard\pardeftab480\pardirnatural
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -367,7 +359,6 @@ s_char := escape_sequence
 \i0 \cf0  \cf3 str\cf0 ) -> parser<T>	
 \i \cf4 used for debugging
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf2 fn
 \b0 \cf0  
@@ -439,7 +430,9 @@ s_char := escape_sequence
 \i \cf2 parser:
 \i0 \cf0  parser<T>, 
 \i \cf2 sep:
-\i0 \cf0  parser<U>) -> parser<[T]>\
+\i0 \cf0  parser<U>) -> parser<[T]>	
+\i \cf4 often used with thene
+\i0 \cf0 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -576,7 +569,7 @@ s_char := escape_sequence
 \i0 \cf0  parser<T>) -> parser<T>	
 \i \cf4 require 1 or more trailing whitespace
 \i0 \cf0 \
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -596,14 +589,11 @@ s_char := escape_sequence
 
 \i \cf4 If label is not empty then it is used if the parser completely failed to parse or if its error message was empty. \
 Otherwise it suppresses errors from the parser (in favor of a later tag function).\
-\pard\pardeftab480\pardirnatural
 
-\i0 \cf4 Should be of the form "Expected foo". 
+\i0 Should be of the form "Expected foo". 
 \f1\i\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
 
-\f0\i0\fs28 \cf0 \
-\pard\pardeftab480\pardirnatural
+\f0\i0\fs28 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -621,7 +611,7 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \i0 \cf0  parser<T>, 
 \i \cf2 parser2:
 \i0 \cf0  parser<U>) -> parser<U>\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -645,7 +635,7 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b \cf2 fn
 \b0 \cf0 @ (T) -> parser<U>) -> parser<U>\
 
-\i \cf4 p().thene(\{|pvalue| return(2*pvalue)\})
+\i \cf4 p().thene \{|pvalue| return(2*pvalue)\}
 \f1\i0\fs24 \cf0 \
 \
 
@@ -655,14 +645,12 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b0\fs28  
 \b \cf2 for
 \b0 \cf0  \cf3 str\cf0 \
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b lit
 \b0 () -> parser<\cf3 str\cf0 >\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b liti

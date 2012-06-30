@@ -158,27 +158,27 @@ impl parser_methods<T: copy> for parser<T>
 		optional(self)
 	}
 	
-	fn r(n: uint, m: uint) -> parser<[T]>
+	fn r(n: uint, m: uint) -> parser<[T]/~>
 	{
 		r(self, n, m)
 	}
 	
-	fn r0() -> parser<[T]>
+	fn r0() -> parser<[T]/~>
 	{
 		r0(self)
 	}
 	
-	fn r1() -> parser<[T]>
+	fn r1() -> parser<[T]/~>
 	{
 		r1(self)
 	}
 	
-	fn list<U: copy>(sep: parser<U>) -> parser<[T]>
+	fn list<U: copy>(sep: parser<U>) -> parser<[T]/~>
 	{
 		list(self, sep)
 	}
 	
-	fn chain_suffix<U: copy>(op: parser<U>) -> parser<[(U, T)]>
+	fn chain_suffix<U: copy>(op: parser<U>) -> parser<[(U, T)]/~>
 	{
 		chain_suffix(self, op)
 	}
