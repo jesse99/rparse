@@ -1,3 +1,12 @@
+Built with: d7823de5e2bfc749c2fb4fcfe4d65d54b28e3a92
+
+* Experiment with better logging:
+	- remove old logging
+	- use dedicated function(s) to log
+		debug/dbg/note/annotate/log or info/debug/error
+	- can we replace tag with something that also logs?
+	- update examples
+	- update readme
 * Might want to replace list wih sepBy functions (see parsec3).
 * Update web page
 * Talk about info and debug logging.
