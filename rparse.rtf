@@ -7,6 +7,7 @@
 
 \f0\b\fs48 \cf0 char parsers
 \fs36 \
+\pard\pardeftab480\pardirnatural
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -16,11 +17,13 @@
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 char\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Consumes a character which must satisfy the predicate
 \f1\fs24 \cf0 .
 \i0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -28,10 +31,12 @@
 \b0 (
 \i \cf2 chars:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 char\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Attempts to match any character in chars. If matched the char is returned.
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -39,6 +44,7 @@
 \b0 (
 \i \cf2 chars:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 char\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Attempts to match no character in chars. If matched the char is returned.
 \f1\i0\fs24 \cf0 \
@@ -46,6 +52,7 @@
 
 \f0\b\fs48 str parsers
 \fs36 \
+\pard\pardeftab480\pardirnatural
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -53,11 +60,13 @@
 \b0 (
 \i \cf2 s:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Returns s if input matches s ignoring case.
 \f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
-\f0\fs28 \
+\f0\fs28 \cf0 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -65,10 +74,12 @@
 \b0 (
 \i \cf2 s:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Returns s if input matches s.
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -78,14 +89,16 @@
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Consumes zero or more characters matching the predicate.
 \f1\i0\fs24 \cf0 \
 
 \f0\i\fs28 \cf4 Match functions do not increment line.
 \f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
-\f0\fs28 \
+\f0\fs28 \cf0 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -95,10 +108,12 @@
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Consumes one or more characters matching the predicate.
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -112,10 +127,12 @@
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Consumes one or more prefix chars and zero or more suffix chars.
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -123,10 +140,12 @@
 \b0 (
 \i \cf2 parser:
 \i0 \cf0  parser<\cf3 str\cf0 >) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Like optional but returns "" on no match.
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -136,14 +155,16 @@
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Calls fun once and returns the result.
 \f1\i0\fs24 \cf0 \
 
 \f0\i\fs28 \cf4 All scan functions increments line.
 \f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
-\f0\fs28 \
+\f0\fs28 \cf0 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -153,11 +174,13 @@
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Calls fun with an index into the characters to be parsed until it returns zero characters.
 \f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
-\f0\fs28 \
+\f0\fs28 \cf0 \
 
 \b \cf2 fn
 \b0 \cf0  
@@ -167,10 +190,12 @@
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Calls fun with an index into the characters to be parsed until it returns zero characters.
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
@@ -178,12 +203,14 @@
 \b0 (
 \i \cf2 parsers:
 \i0 \cf0  [parser<\cf5 str\cf0 >]) -> parser<str>\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Returns text that matched the parsers.
 \f1\i0\fs24 \cf0 \
 \
 
 \f0\b\fs48 generic parsers\
+\pard\pardeftab480\pardirnatural
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -197,6 +224,7 @@
 \i0 \cf0  \cf3 str\cf0 , 
 \i \cf2 value:
 \i0 \cf0  T) -> parser<T>\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 Returns value if input matches s
 \f1\fs24 \cf0 .
@@ -233,21 +261,25 @@
 \pard\pardeftab480\pardirnatural
 
 \f0\b\fs48 \cf0 C99 parsers\
+\pard\pardeftab480\pardirnatural
 
 \fs28 \cf2 fn
 \b0 \cf0  
 \b identifier
 \b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 [a-zA-Z_] [a-zA-Z0-9_]*.
 \f1\i0\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
 
-\f0\fs28 \
+\f0\fs28 \cf0 \
 
 \b \cf2 fn
 \b0 \cf0  
 \b decimal_number
 \b0 () -> parser<\cf3 int\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 [0-9]+.
 \i0 \cf0 \
@@ -260,6 +292,7 @@
 \b0 \cf0  
 \b octal_number
 \b0 () -> parser<\cf3 int\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 0 [0-7]*
 \i0 \cf0 \
@@ -272,6 +305,7 @@
 \b0 \cf0  
 \b hex_number
 \b0 () -> parser<\cf3 int\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 0[xX] [0-9a-fA-F]+
 \i0 \cf0 \
@@ -284,6 +318,7 @@
 \b0 \cf0  
 \b float_number
 \b0 () -> parser<\cf3 f64\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 float1 | float2 | float3\
 \
@@ -300,6 +335,7 @@ exponent := [eE] [+-]? [0-9]+\
 \b0 \cf0  
 \b char_literal
 \b0 () -> parser<\cf3 char\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 char_literal := '\\\\'' c_char_sequence '\\\\''\
 \
@@ -307,11 +343,13 @@ c_char_sequence := [^'\\n\\r\\\\]\
 c_char_sequence := escape_sequence
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
 \b string_literal
 \b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 string_literal := '\\"' s_char* '\\"'\
 \
@@ -327,15 +365,18 @@ s_char := escape_sequence
 \b0 \cf0  
 \b comment
 \b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 '/*' ([^*] | '*' [^/])* '*/'
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 fn
 \b0 \cf0  
 \b line_comment
 \b0 () -> parser<\cf3 str\cf0 >\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 '//' [^\\r\\n]*\
 \pard\pardeftab480\pardirnatural
@@ -344,6 +385,7 @@ s_char := escape_sequence
 \pard\pardeftab480\pardirnatural
 
 \f0\b\fs48 \cf0 combinators\
+\pard\pardeftab480\pardirnatural
 
 \fs28 \cf2 fn
 \b0 \cf0  
@@ -586,11 +628,13 @@ s_char := escape_sequence
 \i0 \cf0  parser<T>, 
 \i \cf2 label:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 If label is not empty then it is used if the parser completely failed to parse or if its error message was empty. \
 Otherwise it suppresses errors from the parser (in favor of a later tag function).\
+\pard\pardeftab480\pardirnatural
 
-\i0 Should be of the form "Expected foo". 
+\i0 \cf4 Should be of the form "Expected foo". 
 \f1\i\fs24 \cf0 \
 
 \f0\i0\fs28 \
@@ -634,10 +678,12 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \i0 \cf0  
 \b \cf2 fn
 \b0 \cf0 @ (T) -> parser<U>) -> parser<U>\
+\pard\pardeftab480\pardirnatural
 
 \i \cf4 p().thene \{|pvalue| return(2*pvalue)\}
 \f1\i0\fs24 \cf0 \
 \
+\pard\pardeftab480\pardirnatural
 
 \f0\b\fs28 \cf2 impl
 \b0 \cf0  
@@ -706,10 +752,6 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b0 \cf0  
 \b thene
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
 \i \cf2 U:
 \i0 \cf0  
 \b \cf2 copy
@@ -723,10 +765,6 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b0 \cf0  
 \b then
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
 \i \cf2 U:
 \i0 \cf0  
 \b \cf2 copy
@@ -737,31 +775,19 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b or
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
+\b0 (
 \i \cf2 parser2:
 \i0 \cf0  parser<T>) -> parser<T>\
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b optional
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >() -> parser<option<T>>\
+\b0 () -> parser<option<T>>\
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b r
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
+\b0 (
 \i \cf2 n:
 \i0 \cf0  \cf3 uint\cf0 , 
 \i \cf2 m:
@@ -770,29 +796,17 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b r0
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >() -> parser<[T]>\
+\b0 () -> parser<[T]>\
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b r1
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >() -> parser<[T]>\
+\b0 () -> parser<[T]>\
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b list
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
 \i \cf2 U:
 \i0 \cf0  
 \b \cf2 copy
@@ -804,10 +818,6 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b0 \cf0  
 \b chain_suffix
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
 \i \cf2 U:
 \i0 \cf0  
 \b \cf2 copy
@@ -819,10 +829,6 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b0 \cf0  
 \b chainl1
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
 \i \cf2 U:
 \i0 \cf0  
 \b \cf2 copy
@@ -838,10 +844,6 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b0 \cf0  
 \b chainr1
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
 \i \cf2 U:
 \i0 \cf0  
 \b \cf2 copy
@@ -856,11 +858,7 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b tag
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
+\b0 (
 \i \cf2 label:
 \i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
 \cb6 	
@@ -877,29 +875,19 @@ Otherwise it suppresses errors from the parser (in favor of a later tag function
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b s0
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >() -> parser<T>\
+\b0 () -> parser<T>\
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b s1
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >() -> parser<T>\
+\b0 () -> parser<T>\
 \cb6 	
 \b \cf2 \cb1 fn
 \b0 \cf0  
 \b everything
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
+\b \cf2 U: copy
 \b0 \cf0 >(
 \i \cf2 space:
-\i0 \cf0  parser<T>) -> parser<T>\
+\i0 \cf0  parser<U>) -> parser<T>\
 }

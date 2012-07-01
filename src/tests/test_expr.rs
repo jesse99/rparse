@@ -33,7 +33,7 @@ fn expr_parser() -> parser<int>
 	
 	// start := s0 expr EOT
 	let s = return(0).s0();
-	everything(expr, s)
+	expr.everything(s)
 }
 
 #[test]

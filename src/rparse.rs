@@ -80,11 +80,10 @@ fn eot() -> parser<()>
 #[doc = "Parses the text and fails if all the text was not consumed. Leading space is allowed.
 
 This is typically used in conjunction with the parse function. Note that space has to have the
-same type as parser which is backwards from how it is normally used. To get this to work you
-can use a syntax like: `return(x).s0()` where x is of type T."]
-fn everything<T: copy>(parser: parser<T>, space: parser<T>) -> parser<T>
+same type as parser which is backwards from how it is normally used."]
+fn everything<T: copy, U: copy>(parser: parser<T>, space: parser<U>) -> parser<T>
 {
-	seq3(space, parser, eot()) {|_a, b, _c| result::ok(b)}
+	seq3_ret1(space, parser, eot())
 }
 
 #[doc = "Methods that treat a string as a literal."]
@@ -219,7 +218,7 @@ impl parser_methods<T: copy> for parser<T>
 		s1(self)
 	}
 	
-	fn everything(space: parser<T>) -> parser<T>
+	fn everything<U: copy>(space: parser<U>) -> parser<T>
 	{
 		everything(self, space)
 	}

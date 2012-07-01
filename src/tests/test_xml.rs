@@ -144,7 +144,7 @@ fn xml_parser() -> parser<xml>
 	
 	// start := s0 element EOT
 	let s = return(dummy).s0();
-	everything(element, s)
+	element.everything(s)
 }
 
 #[test]
