@@ -14,8 +14,8 @@ export identifier, decimal_number, octal_number, hex_number, float_number, char_
 export match, anyc, noc;
 
 // combinators
-export chainl1, chainr1, annotate, forward_ref, list, optional, or_v, r, r0, r1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seq9,
-	seq2_ret0, seq2_ret1, seq3_ret0, seq3_ret1, seq3_ret2, seq4_ret0, seq4_ret1, seq4_ret2, seq4_ret3, s0, s1, tag, then, thene;
+export chainl1, chainr1, forward_ref, list, optional, or_v, r, r0, r1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seq9,
+	seq2_ret0, seq2_ret1, seq3_ret0, seq3_ret1, seq3_ret2, seq4_ret0, seq4_ret1, seq4_ret2, seq4_ret3, s0, s1, then, thene;
 
 // generic_parsers
 export parser, state, status, succeeded, failed;
@@ -24,7 +24,7 @@ export parser, state, status, succeeded, failed;
 export litv, fails, return;
 
 // misc
-export log_ok, log_err, EOT, is_alpha, is_digit, is_alphanum, is_print, is_whitespace;
+export EOT, is_alpha, is_digit, is_alphanum, is_print, is_whitespace;
 
 // str_parsers
 export liti, lit, match0, match1, match1_0, optional_str, scan, scan0, scan1, seq2_ret_str, seq3_ret_str, seq4_ret_str, seq5_ret_str;
@@ -68,11 +68,11 @@ fn eot() -> parser<()>
 	{|input: state|
 		if input.text[input.index] == EOT
 		{
-			log_ok("eot", input, {new_state: {index: input.index + 1u with input}, value: ()})
+			result::ok({new_state: {index: input.index + 1u with input}, value: ()})
 		}
 		else
 		{
-			log_err("eot", input, {old_state: input, err_state: input, mesg: "Expected EOT"})
+			result::err({old_state: input, err_state: input, mesg: "EOT"})
 		}
 	}
 }
@@ -192,14 +192,79 @@ impl parser_methods<T: copy> for parser<T>
 		chainr1(self, op, eval)
 	}
 	
-	fn annotate(text: str) -> parser<T>
+	#[doc = "Logs the result of the previous parser.
+	
+	If it was successful then the log is at INFO level. Otherwise it is at DEBUG level."]
+	fn note(mesg: str) -> parser<T>
 	{
-		annotate(self, text)
+		{|input: state|
+			alt self(input)
+			{
+				result::ok(pass)
+				{
+					// Note that we make multiple calls to munge_chars which is fairly slow, but
+					// we only do that when actually logging: when info or debug logging is off
+					// the munge_chars calls aren't evaluated.
+					assert pass.new_state.index >= input.index;			// can't go backwards on success (but no progress is fine, eg e*)
+					if pass.new_state.index > input.index
+					{
+						#info("%s", munge_chars(input.text));
+						#info("%s^ %s parsed '%s'", repeat_char(' ', pass.new_state.index), mesg, str::slice(munge_chars(input.text), input.index, pass.new_state.index));
+					}
+					else
+					{
+						#info("%s", munge_chars(input.text));
+						#info("%s^ %s passed", repeat_char(' ', pass.new_state.index), mesg);
+					}
+					result::ok(pass)
+				}
+				result::err(failure)
+				{
+					assert failure.old_state.index == input.index;			// on errors the next parser must begin at the start
+					assert failure.err_state.index >= input.index;			// errors can't be before the input
+					
+					#debug("%s", munge_chars(input.text));
+					if failure.err_state.index > input.index 
+					{
+						#debug("%s^%s! %s failed", repeat_char('-', input.index), repeat_char(' ', failure.err_state.index - input.index), mesg);
+					}
+					else
+					{
+						#debug("%s^ %s failed", repeat_char('-', input.index), mesg);
+					}
+					result::err(failure)
+				}
+			}
+		}
 	}
 	
-	fn tag(label: str) -> parser<T>
+	#[doc = "Like note except that the mesg is also used for error reporting.
+	
+	If label is not empty then it is used if the previous parser completely failed to parse or if its error
+	message was empty. Otherwise it suppresses errors from the parser (in favor of a later err function).
+	Non-empty labels should look like \"expression\" or \"statement\"."]
+	fn err(label: str) -> parser<T>
 	{
-		tag(self, label)
+		{|input: state|
+			result::chain_err((self.note(label))(input))
+			{|failure|
+				if str::is_empty(label)
+				{
+					result::err({mesg: "" with failure})
+				}
+				else if failure.err_state.index == input.index || str::is_empty(failure.mesg)
+				{
+					result::err({mesg: label with failure})
+				}
+				else
+				{
+					// If we managed to parse something then it is usually better to
+					// use that error message. (If that's not what you want then use
+					// empty strings there).
+					result::err(failure)
+				}
+			}
+		}
 	}
 	
 	fn parse(file: str, text: str) -> parse_status<T>

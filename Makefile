@@ -14,7 +14,7 @@ check: bin/test-rparse
 	export RUST_LOG=rparse=1 && ./bin/test-rparse
 
 check1: bin/test-rparse
-	export RUST_LOG=rparse=3 && ./bin/test-rparse test_float_number
+	export RUST_LOG=rparse=3 && ./bin/test-rparse test_log
 
 # Run unit tests with optimizations enabled (which is how we build the lib).
 check-release: bin/test-rparse-release

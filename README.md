@@ -15,40 +15,40 @@ Here is an example of a simple parser which can be used to evaluate mathematical
 
     import rparse::*;
     
-	fn expr_parser() -> parser<int>
-	{
-	    let int_literal = decimal_number().s0();
-	    
-	    // Parenthesized expressions require a forward reference to the expr parser
-	    // so we initialize a function pointer to something of the right type, create
-	    // a parser using the parser expr_ptr points to, and fixup expr_ptr later.
-	    let expr_ptr = @mut return(0);
-	    let expr_ref = forward_ref(expr_ptr);
-	    
-	    // sub_expr := [-+]? '(' expr ')'
-	    let sub_expr = or_v([
-	        seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
-	        seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene({|v| return(-v)}),
-	        seq3_ret1(             "(".s0(), expr_ref, ")".s0())]);
-	    
-	    // factor := integer | sub_expr
-	    // The tag provides better error messages if the factor parser fails
-	    // on the very first character.
-	    let factor = int_literal.or(sub_expr).tag("Expected integer or sub-expression");
-	    
-	    // term := factor ([*/] factor)*
-	    let term = factor.chainl1("*".s0().or("/".s0()))
-	        {|lhs, op, rhs| if op == "*" {lhs*rhs} else {lhs/rhs}};
-	    
-	    // expr := term ([+-] term)*
-	    let expr = term.chainl1("+".s0().or("-".s0()))
-	        {|lhs, op, rhs| if op == "+" {lhs + rhs} else {lhs - rhs}};
-	    *expr_ptr = expr;
-	    
-	    // start := s0 expr EOT
-	    let s = return(0).s0();
-	    expr.everything(s)
-	}
+    fn expr_parser() -> parser<int>
+    {
+        let int_literal = decimal_number().s0();
+        
+        // Parenthesized expressions require a forward reference to the expr parser
+        // so we initialize a function pointer to something of the right type, create
+        // a parser using the parser expr_ptr points to, and fixup expr_ptr later.
+        let expr_ptr = @mut return(0);
+        let expr_ref = forward_ref(expr_ptr);
+        
+        // sub_expr := [-+]? '(' expr ')'
+        // The err function provides better error messages if the factor parser fails
+        // on the very first character.
+        let sub_expr = or_v([
+            seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
+            seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene({|v| return(-v)}),
+            seq3_ret1(             "(".s0(), expr_ref, ")".s0())]/~).err("sub-expression");
+        
+        // factor := integer | sub_expr
+        let factor = int_literal.or(sub_expr);
+        
+        // term := factor ([*/] factor)*
+        let term = factor.chainl1("*".s0().or("/".s0()))
+            {|lhs, op, rhs| if op == "*" {lhs*rhs} else {lhs/rhs}};
+        
+        // expr := term ([+-] term)*
+        let expr = term.chainl1("+".s0().or("-".s0()))
+            {|lhs, op, rhs| if op == "+" {lhs + rhs} else {lhs - rhs}};
+        *expr_ptr = expr;
+        
+        // start := s0 expr EOT
+        let s = return(0).s0();
+        expr.everything(s)
+    }
 
 Usage looks like this:
 

@@ -1,6 +1,6 @@
 // If the version is changed also change the dist target in the Makefile.
 #[link(name = "rparse", 
-	vers = "0.4", 
+	vers = "0.5",
 	uuid = "0188129D-F459-4EA4-A928-A5BA5632EF2E",
 	url = "https://github.com/jesse99/rparse")];
 #[crate_type = "lib"];

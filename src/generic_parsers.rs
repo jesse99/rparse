@@ -8,11 +8,11 @@ fn litv<T: copy>(s: str, value: T) -> parser<T>
 		{
 			result::ok(pass)
 			{
-				log_ok("litv", input, {new_state: pass.new_state, value: value})
+				result::ok({new_state: pass.new_state, value: value})
 			}
 			result::err(failure)
 			{
-				log_err(#fmt["litv '%s'", s], input, failure)
+				result::err(failure)
 			}
 		}
 	}
@@ -22,13 +22,15 @@ fn litv<T: copy>(s: str, value: T) -> parser<T>
 fn fails<T: copy>(mesg: str) -> parser<T>
 {
 	{|input: state|
-		log_err("fails", input, {old_state: input, err_state: input, mesg: mesg})}
+		result::err({old_state: input, err_state: input, mesg: mesg})
+	}
 }
 
 #[doc = "Returns a parser which always succeeds, but does not consume any input."]
 fn return<T: copy>(value: T) -> parser<T>
 {
 	{|input: state|
-		log_ok(#fmt["return %?", value], input, {new_state: input, value: value})}
+		result::ok({new_state: input, value: value})
+	}
 }
 

@@ -24,11 +24,11 @@ fn chainl1<T: copy, U: copy>(parser: parser<T>, op: parser<U>, eval: fn@ (T, U, 
 				result::ok(pass2)
 				{
 					let value = vec::foldl(pass.value, pass2.value, {|lhs, rhs| eval(lhs, tuple::first(rhs), tuple::second(rhs))});
-					log_ok("chainl1", input, {new_state: pass2.new_state, value: value})
+					result::ok({new_state: pass2.new_state, value: value})
 				}
 				result::err(failure)
 				{
-					log_err("chainl1", input, {old_state: input with failure})
+					result::err({old_state: input with failure})
 				}
 			}
 		}
@@ -64,16 +64,16 @@ fn chainr1<T: copy, U: copy>(parser: parser<T>, op: parser<U>, eval: fn@ (T, U, 
 						let terms = vec::zip(parsers, ops);
 						
 						let value = vec::foldr(terms, e3, {|lhs, rhs| eval(tuple::first(lhs), tuple::second(lhs), rhs)});
-						log_ok("chainr1", input, {new_state: pass2.new_state, value: value})
+						result::ok({new_state: pass2.new_state, value: value})
 					}
 					else
 					{
-						log_ok("chainr1", input, {new_state: pass2.new_state, value: pass.value})
+						result::ok({new_state: pass2.new_state, value: pass.value})
 					}
 				}
 				result::err(failure)
 				{
-					log_err("chainr1", input, {old_state: input with failure})
+					result::err({old_state: input with failure})
 				}
 			}
 		}
@@ -101,11 +101,11 @@ fn list<T: copy, U: copy>(parser: parser<T>, sep: parser<U>) -> parser<[T]/~>
 			{
 				result::ok(pass2)
 				{
-					log_ok("list", input, {value: [pass.value]/~ + pass2.value with pass2})
+					result::ok({value: [pass.value]/~ + pass2.value with pass2})
 				}
 				result::err(failure)
 				{
-					log_err("list", input, {old_state: input with failure})
+					result::err({old_state: input with failure})
 				}
 			}
 		}
@@ -120,11 +120,11 @@ fn optional<T: copy>(parser: parser<T>) -> parser<option<T>>
 		{
 			result::ok(pass)
 			{
-				log_ok("optional", input, {new_state: pass.new_state, value: option::some(pass.value)})
+				result::ok({new_state: pass.new_state, value: option::some(pass.value)})
 			}
 			result::err(_failure)
 			{
-				log_ok("optional", input, {new_state: input, value: option::none})
+				result::ok({new_state: input, value: option::none})
 			}
 		}
 	}
@@ -162,23 +162,15 @@ fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 			{|failure2|
 				if failure1.err_state.index > failure2.err_state.index
 				{
-					log_err("or", input, failure1)
+					result::err(failure1)
 				}
 				else if failure1.err_state.index < failure2.err_state.index
 				{
-					log_err("or", input, failure2)
+					result::err(failure2)
 				}
 				else
 				{
-					if str::starts_with(failure2.mesg, "Expected ")
-					{
-						let mesg2 = str::slice(failure2.mesg, str::len("Expected "), str::len(failure2.mesg));
-						log_err("or", input, {mesg: or_mesg(failure1.mesg, mesg2) with failure2})
-					}
-					else
-					{
-						log_err("or", input, {mesg: or_mesg(failure1.mesg, failure2.mesg) with failure2})
-					}
+					result::err({mesg: or_mesg(failure1.mesg, failure2.mesg) with failure2})
 				}
 			}
 		}
@@ -205,7 +197,7 @@ fn or_v<T: copy>(parsers: [parser<T>]/~) -> parser<T>
 			{
 				result::ok(pass)
 				{
-					result = option::some(log_ok("or_v", input, pass));
+					result = option::some(result::ok(pass));
 				}
 				result::err(failure)
 				{
@@ -216,15 +208,7 @@ fn or_v<T: copy>(parsers: [parser<T>]/~) -> parser<T>
 					}
 					else if failure.err_state.index == max_index
 					{
-						if str::starts_with(failure.mesg, "Expected ")
-						{
-							let mesg = str::slice(failure.mesg, str::len("Expected "), str::len(failure.mesg));
-							vec::push(errors, mesg);
-						}
-						else
-						{
-							vec::push(errors, failure.mesg);
-						}
+						vec::push(errors, failure.mesg);
 					}
 				}
 			}
@@ -239,7 +223,7 @@ fn or_v<T: copy>(parsers: [parser<T>]/~) -> parser<T>
 		{
 			let errs = vec::filter(errors) {|s| str::is_not_empty(s)};
 			let mesg = str::connect(errs, " or ");
-			log_err("or_v", input, {old_state: input, err_state: {index: max_index with input}, mesg: mesg})
+			result::err({old_state: input, err_state: {index: max_index with input}, mesg: mesg})
 		}
 	}
 }
@@ -270,11 +254,11 @@ fn r<T: copy>(parser: parser<T>, n: uint, m: uint) -> parser<[T]/~>
 		let count = vec::len(values);
 		if n <= count && count <= m
 		{
-			log_ok("r", input, {new_state: output, value: values})
+			result::ok({new_state: output, value: values})
 		}
 		else
 		{
-			log_err("r", input, {old_state: input, err_state: output, mesg: ""})
+			result::err({old_state: input, err_state: output, mesg: ""})
 		}
 	}
 }
@@ -578,7 +562,7 @@ fn s0<T: copy>(parser: parser<T>) -> parser<T>
 				i += 1u;
 			}
 			
-			log_ok("s0", input, {new_state: {index: i, line: line with pass.new_state}, value: pass.value})
+			result::ok({new_state: {index: i, line: line with pass.new_state}, value: pass.value})
 		}
 	}
 }
@@ -591,62 +575,16 @@ fn s1<T: copy>(parser: parser<T>) -> parser<T>
 		{|pass|
 			if option::is_some(str::find_char(" \t\r\n", input.text[pass.new_state.index - 1u]))	// little cheesy, but saves us from adding a helper fn
 			{
-				log_ok("s1", input, pass)
+				result::ok(pass)
 			}
 			else
 			{
-				log_err("s1", input, {old_state: input, err_state: pass.new_state, mesg: "Expected whitespace"})
+				result::err({old_state: input, err_state: pass.new_state, mesg: "whitespace"})
 			}
 		}
 	}
 }
 
-
-#[doc = "Adds custom text to rules as they match or fail to match."]
-fn annotate<T: copy>(parser: parser<T>, text: str) -> parser<T>
-{
-	{|input: state|
-		alt parser(input)
-		{
-			result::ok(pass)
-			{
-				log_ok(text, input, pass)
-			}
-			result::err(failure)
-			{
-				log_err(text, input, failure)
-			}
-		}
-	}
-}
-
-#[doc = "If label is not empty then it is used if the parser completely failed to parse or if its error
-message was empty. Otherwise it suppresses errors from the parser (in favor of a later tag function).
-
-Should be of the form \"Expected foo\"."]
-fn tag<T: copy>(parser: parser<T>, label: str) -> parser<T>
-{
-	{|input: state|
-		result::chain_err(parser(input))
-		{|failure|
-			if str::is_empty(label)
-			{
-				log_err("tag", input, {mesg: "" with failure})
-			}
-			else if failure.err_state.index == input.index || str::is_empty(failure.mesg)
-			{
-				log_err("tag", input, {mesg: label with failure})
-			}
-			else
-			{
-				// If we managed to parse something then it is usually better to
-				// use that error message. (If that's not what you want then use
-				// empty strings there).
-				log_err("tag", input, failure)
-			}
-		}
-	}
-}
 
 #[doc = "If parser1 is successful is successful then parser2 is called (and the value from parser1
 is ignored). If parser1 fails parser2 is not called."]
@@ -657,7 +595,7 @@ fn then<T: copy, U: copy>(parser1: parser<T>, parser2: parser<U>) -> parser<U>
 		{|pass|
 			result::chain_err(parser2(pass.new_state))
 			{|failure|
-				log_err("then", input, {old_state: input with failure})
+				result::err({old_state: input with failure})
 			}
 		}
 	}
@@ -674,7 +612,7 @@ fn thene<T: copy, U: copy>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> par
 		{|pass|
 			result::chain_err(eval(pass.value)(pass.new_state))
 			{|failure|
-				log_err("thene", input, {old_state: input with failure})
+				result::err({old_state: input with failure})
 			}
 		}
 	}

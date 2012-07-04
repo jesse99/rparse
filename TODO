@@ -1,9 +1,14 @@
 Built with: d7823de5e2bfc749c2fb4fcfe4d65d54b28e3a92
 
 * Experiment with better logging:
+	- see what xml example logging looks like
 	- remove old logging
+	- maybe err and note
+		` info level on success
+		` debug level on fail
 	- use dedicated function(s) to log
 		debug/dbg/note/annotate/log or info/debug/error
+	- might want to log lit matching a debug
 	- can we replace tag with something that also logs?
 	- update examples
 	- update readme

@@ -134,7 +134,7 @@ fn xml_parser() -> parser<xml>
 		}
 		else
 		{
-			result::err(#fmt["Expected end tag '%s' but found '%s'", name1, name2])
+			result::err(#fmt["end tag '%s' but found '%s'", name1, name2])
 		}
 	};
 	
@@ -156,8 +156,8 @@ fn test_simple_element()
 	assert check_xml_ok("<trivial first=\"number one\"/>", "<trivial first=\"number one\"></trivial>", p);
 	assert check_xml_ok("<trivial first=\"number one\" second=\"number two\"/>", "<trivial first=\"number one\" second=\"number two\"></trivial>", p);
 	assert check_xml_ok("  <  trivial first \t =    \"number one\"  \t/>", "<trivial first=\"number one\"></trivial>", p);
-	assert check_xml_failed("<trivial", p, "Expected '/>' or '>'", 1);
-	assert check_xml_failed("<trivial first=\"number one/>", p, "Expected '/>' or '>'", 1);
+	assert check_xml_failed("<trivial", p, "'/>' or '>'", 1);
+	assert check_xml_failed("<trivial first=\"number one/>", p, "'/>' or '>'", 1);
 }
 
 #[test]
@@ -166,7 +166,7 @@ fn test_element()
 	let p = xml_parser();
 	
 	assert check_xml_ok("<simple>\n  \n</simple>", "<simple></simple>", p);
-	assert check_xml_failed("<simple></oops>", p, "Expected end tag 'simple' but found 'oops'", 1);
+	assert check_xml_failed("<simple></oops>", p, "end tag 'simple' but found 'oops'", 1);
 	assert check_xml_ok("<simple alpha = \"A\" beta=\"12\"></simple>", "<simple alpha=\"A\" beta=\"12\"></simple>", p);
 	
 	assert check_xml_ok("<parent><child></child></parent>", "<parent><child></child></parent>", p);
@@ -176,7 +176,7 @@ fn test_element()
 	
 	assert check_xml_ok("<parent>some text</parent>", "<parent>some text</parent>", p);
 	assert check_xml_ok("<parent><child/>blah blah</parent>", "<parent><child></child>blah blah</parent>", p);
-	assert check_xml_failed("<simple>\r  \n  \r\n</oops>", p, "Expected end tag 'simple' but found 'oops'", 4);
+	assert check_xml_failed("<simple>\r  \n  \r\n</oops>", p, "end tag 'simple' but found 'oops'", 4);
 }
 
 #[testXX]

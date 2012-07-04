@@ -12,15 +12,15 @@ fn expr_parser() -> parser<int>
 	let expr_ref = forward_ref(expr_ptr);
 	
 	// sub_expr := [-+]? '(' expr ')'
+	// The err function provides better error messages if the factor parser fails
+	// on the very first character.
 	let sub_expr = or_v([
 		seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
 		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene({|v| return(-v)}),
-		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]/~);
+		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]/~).err("sub-expression");
 	
 	// factor := integer | sub_expr
-	// The tag provides better error messages if the factor parser fails
-	// on the very first character.
-	let factor = int_literal.or(sub_expr).tag("Expected integer or sub-expression");
+	let factor = int_literal.or(sub_expr);
 	
 	// term := factor ([*/] factor)*
 	let term = factor.chainl1("*".s0().or("/".s0()))
@@ -41,19 +41,19 @@ fn test_factor()
 {
 	let p = expr_parser();
 	
-	assert check_int_failed("", p, "Expected integer or sub-expression", 1);
+	assert check_int_failed("", p, "decimal number or sub-expression", 1);
 	assert check_int_ok("23", p, 23);
 	assert check_int_ok(" 57   ", p, 57);
-	assert check_int_failed("+", p, "Expected '('", 1);
-	assert check_int_failed(" 57   200", p, "Expected EOT", 1);
+	assert check_int_failed("+", p, "'('", 1);
+	assert check_int_failed(" 57   200", p, "EOT", 1);
 	
 	// TODO: https://github.com/mozilla/rust/issues/2546
 	//assert check_int_failed("9999999999999999999999", p, "'9999999999999999999999' is out of range", 1);
 	
 	assert check_int_ok("(23)", p, 23);
 	assert check_int_ok("((23))", p, 23);
-	assert check_int_failed("(23", p, "Expected ')'", 1);
-	assert check_int_failed("((23)", p, "Expected ')'", 1);
+	assert check_int_failed("(23", p, "')'", 1);
+	assert check_int_failed("((23)", p, "')'", 1);
 	
 	assert check_int_ok("-(23)", p, -23);
 	assert check_int_ok("+(5)", p, 5);
@@ -66,9 +66,9 @@ fn test_term()
 	
 	assert check_int_ok("2*3", p, 6);
 	assert check_int_ok(" 4 / 2   ", p, 2);
-	assert check_int_failed("4 * ", p, "Expected EOT", 1);
-	assert check_int_failed("4 ** 1", p, "Expected EOT", 1);
-	assert check_int_failed("4 % 1", p, "Expected EOT", 1);
+	assert check_int_failed("4 * ", p, "EOT", 1);
+	assert check_int_failed("4 ** 1", p, "EOT", 1);
+	assert check_int_failed("4 % 1", p, "EOT", 1);
 	
 	assert check_int_ok("2 * 3 / 6", p, 1);
 }
@@ -98,4 +98,14 @@ fn test_usage()
 			assert false;
 		}
 	}
+}
+
+// This doesn't really test anything that we don't test elsewhere, but it's convenient
+// to use when examining how well rparse handles logging.
+#[test]
+fn test_log()
+{
+	let p = expr_parser();
+	
+	assert check_int_failed("2+3**5", p, "EOT", 1);
 }

@@ -25,11 +25,11 @@ fn liti(in_s: str) -> parser<str>
 		if i == str::len(s)
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			log_ok("liti", input, {new_state: {index: j with input}, value: text})
+			result::ok({new_state: {index: j with input}, value: text})
 		}
 		else
 		{
-			log_err(#fmt["liti '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
+			result::err({old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", s]})
 		}
 	}
 }
@@ -57,11 +57,11 @@ fn lit(s: str) -> parser<str>
 		if i == str::len(s)
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			log_ok("lit", input, {new_state: {index: j with input}, value: text})
+			result::ok({new_state: {index: j with input}, value: text})
 		}
 		else
 		{
-			log_err(#fmt["lit '%s'", s], input, {old_state: input, err_state: {index: j with input}, mesg: #fmt["Expected '%s'", s]})
+			result::err({old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", s]})
 		}
 	}
 }
@@ -94,7 +94,7 @@ fn match0(predicate: fn@ (char) -> bool) -> parser<str>
 		}
 		
 		let text = str::from_chars(vec::slice(input.text, input.index, i));
-		log_ok("match0", input, {new_state: {index: i with input}, value: text})
+		result::ok({new_state: {index: i with input}, value: text})
 	}
 }
 
@@ -114,11 +114,11 @@ fn match1(predicate: fn@ (char) -> bool) -> parser<str>
 		if i > input.index
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, i));
-			log_ok("match1", input, {new_state: {index: i with input}, value: text})
+			result::ok({new_state: {index: i with input}, value: text})
 		}
 		else
 		{
-			log_err("match1", input, {old_state: input, err_state: {index: i with input}, mesg: ""})
+			result::err({old_state: input, err_state: {index: i with input}, mesg: ""})
 		}
 	}
 }
@@ -139,11 +139,11 @@ fn optional_str(parser: parser<str>) -> parser<str>
 		{
 			result::ok(pass)
 			{
-				log_ok("optional", input, {new_state: pass.new_state, value: pass.value})
+				result::ok({new_state: pass.new_state, value: pass.value})
 			}
 			result::err(_failure)
 			{
-				log_ok("optional", input, {new_state: input, value: ""})
+				result::ok({new_state: input, value: ""})
 			}
 		}
 	}
@@ -174,11 +174,11 @@ fn scan(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 				i += 1u;
 			}
 			let text = str::from_chars(vec::slice(input.text, input.index, i));
-			log_ok("scan", input, {new_state: {index: i, line: line with input}, value: text})
+			result::ok({new_state: {index: i, line: line with input}, value: text})
 		}
 		else
 		{
-			log_ok("scan", input, {new_state: {index: i, line: line with input}, value: ""})
+			result::ok({new_state: {index: i, line: line with input}, value: ""})
 		}
 	}
 }
@@ -214,7 +214,7 @@ fn scan0(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 			else
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, i));
-				result = log_ok("scan0", input, {new_state: {index: i, line: line with input}, value: text});
+				result = result::ok({new_state: {index: i, line: line with input}, value: text});
 			}
 		}
 		result
@@ -229,11 +229,11 @@ fn scan1(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 		{|pass|
 			if pass.new_state.index > input.index
 			{
-				log_ok("scan1", input, pass)
+				result::ok(pass)
 			}
 			else
 			{
-				log_err("scan1", input, {old_state: input, err_state: pass.new_state, mesg: ""})
+				result::err({old_state: input, err_state: pass.new_state, mesg: ""})
 			}
 		}
 	}
@@ -248,11 +248,11 @@ fn seq2_ret_str<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<st
 			result::ok(pass)
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				log_ok("seq2_ret_str", input, {new_state: pass.new_state, value: text})
+				result::ok({new_state: pass.new_state, value: text})
 			}
 			result::err(failure)
 			{
-				log_err("seq2_ret_str", input, {old_state: input with failure})
+				result::err({old_state: input with failure})
 			}
 		}
 	}
@@ -267,11 +267,11 @@ fn seq3_ret_str<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2
 			result::ok(pass)
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				log_ok("seq2_ret_str", input, {new_state: pass.new_state, value: text})
+				result::ok({new_state: pass.new_state, value: text})
 			}
 			result::err(failure)
 			{
-				log_err("seq2_ret_str", input, {old_state: input with failure})
+				result::err({old_state: input with failure})
 			}
 		}
 	}
@@ -286,11 +286,11 @@ fn seq4_ret_str<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: pars
 			result::ok(pass)
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				log_ok("seq2_ret_str", input, {new_state: pass.new_state, value: text})
+				result::ok({new_state: pass.new_state, value: text})
 			}
 			result::err(failure)
 			{
-				log_err("seq2_ret_str", input, {old_state: input with failure})
+				result::err({old_state: input with failure})
 			}
 		}
 	}
@@ -305,11 +305,11 @@ fn seq5_ret_str<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy>(p0: parser<T0>
 			result::ok(pass)
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				log_ok("seq2_ret_str", input, {new_state: pass.new_state, value: text})
+				result::ok({new_state: pass.new_state, value: text})
 			}
 			result::err(failure)
 			{
-				log_err("seq2_ret_str", input, {old_state: input with failure})
+				result::err({old_state: input with failure})
 			}
 		}
 	}

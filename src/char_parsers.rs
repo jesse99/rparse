@@ -13,11 +13,11 @@ fn match(predicate: fn@ (char) -> bool) -> parser<char>
 		
 		if i > input.index
 		{
-			log_ok("match", input, {new_state: {index: i with input}, value: input.text[input.index]})
+			result::ok({new_state: {index: i with input}, value: input.text[input.index]})
 		}
 		else
 		{
-			log_err("match", input, {old_state: input, err_state: {index: i with input}, mesg: ""})
+			result::err({old_state: input, err_state: {index: i with input}, mesg: ""})
 		}
 	}
 }
@@ -34,11 +34,11 @@ fn anyc(chars: str) -> parser<char>
 		
 		if i > input.index
 		{
-			log_ok("anyc", input, {new_state: {index: i with input}, value: input.text[input.index]})
+			result::ok({new_state: {index: i with input}, value: input.text[input.index]})
 		}
 		else
 		{
-			log_err("anyc", input, {old_state: input, err_state: {index: i with input}, mesg: #fmt["Expected [%s]", chars]})
+			result::err({old_state: input, err_state: {index: i with input}, mesg: #fmt["[%s]", chars]})
 		}
 	}
 }
@@ -55,11 +55,11 @@ fn noc(chars: str) -> parser<char>
 		
 		if i > input.index
 		{
-			log_ok("noc", input, {new_state: {index: i with input}, value: input.text[input.index]})
+			result::ok({new_state: {index: i with input}, value: input.text[input.index]})
 		}
 		else
 		{
-			log_err("noc", input, {old_state: input, err_state: {index: i with input}, mesg: #fmt["Expected [^%s]", chars]})
+			result::err({old_state: input, err_state: {index: i with input}, mesg: #fmt["[^%s]", chars]})
 		}
 	}
 }

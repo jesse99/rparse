@@ -43,11 +43,11 @@ fn parse_unary() -> parser<char>
 		let ch = input.text[input.index];
 		if ch == '-' || ch == '+'
 		{
-			log_ok("unary", input, {new_state: {index: input.index + 1u with input}, value: ch})
+			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
 		}
 		else
 		{
-			log_err("unary", input, {old_state: input, err_state: {index: input.index with input}, mesg: "'-' or '+'"})
+			result::err({old_state: input, err_state: {index: input.index with input}, mesg: "'-' or '+'"})
 		}
 	}
 }
@@ -59,11 +59,11 @@ fn parse_digit() -> parser<int>
 		if ch >= '0' && ch <= '9'
 		{
 			let value = option::get(char::to_digit(ch, 10u)) as int;
-			log_ok("digit", input, {new_state: {index: input.index + 1u with input}, value: value})
+			result::ok({new_state: {index: input.index + 1u with input}, value: value})
 		}
 		else
 		{
-			log_err("digit", input, {old_state: input, err_state: {index: input.index with input}, mesg: "digit"})
+			result::err({old_state: input, err_state: {index: input.index with input}, mesg: "digit"})
 		}
 	}
 }
@@ -74,7 +74,7 @@ fn parse_num(op: char) -> parser<int>
 		chain(parse_digit()(input))
 		{|output|
 			let value = if op == '-' {-output.value} else {output.value};
-			log_ok("num", input, {value: value with output})
+			result::ok({value: value with output})
 		}
 	}
 }
@@ -105,10 +105,10 @@ fn test_then()
 	let p = "<".lit().then("foo".lit()).then(">".lit());
 	
 	assert check_str_ok("<foo>", p, ">");
-	assert check_str_failed("", p, "Expected '<'", 1);
-	assert check_str_failed("<", p, "Expected 'foo'", 1);
-	assert check_str_failed("<foo", p, "Expected '>'", 1);
-	assert check_str_failed("<foo-", p, "Expected '>'", 1);
+	assert check_str_failed("", p, "'<'", 1);
+	assert check_str_failed("<", p, "'foo'", 1);
+	assert check_str_failed("<foo", p, "'>'", 1);
+	assert check_str_failed("<foo-", p, "'>'", 1);
 	
 	let text = chars_with_eot("<foo-");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
@@ -122,7 +122,7 @@ fn test_seq()
 	let prefix = match1(is_identifier_prefix);
 	let suffix = match1(is_identifier_suffix).r0();
 	let trailer = match1(is_identifier_trailer).optional();
-	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + option::get_default(c, ""))}).tag("Expected identifier");
+	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + option::get_default(c, ""))}).err("identifier");
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -130,7 +130,7 @@ fn test_seq()
 	assert check_str_ok("hey_there", p, "hey_there");
 	assert check_str_ok("hey there", p, "hey");
 	assert check_str_ok("spanky123xy", p, "spanky123xy");
-	assert check_str_failed("", p, "Expected identifier", 1);
+	assert check_str_failed("", p, "identifier", 1);
 	
 	let p = seq2("a".lit(), "b".lit(), {|x, y| result::ok(x+y)});
 	let text = chars_with_eot("az");
@@ -144,11 +144,11 @@ fn parse_lower() -> parser<char>
 		let ch = input.text[input.index];
 		if ch >= 'a' && ch <= 'z'
 		{
-			log_ok("lower", input, {new_state: {index: input.index + 1u with input}, value: ch})
+			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
 		}
 		else
 		{
-			log_err("lower", input, {old_state: input, err_state: {index: input.index with input}, mesg: "Expected lower-case letter"})
+			result::err({old_state: input, err_state: {index: input.index with input}, mesg: "lower-case letter"})
 		}
 	}
 }
@@ -159,11 +159,11 @@ fn parse_upper() -> parser<char>
 		let ch = input.text[input.index];
 		if ch >= 'A' && ch <= 'Z'
 		{
-			log_ok("upper", input, {new_state: {index: input.index + 1u with input}, value: ch})
+			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
 		}
 		else
 		{
-			log_err("upper", input, {old_state: input, err_state: {index: input.index with input}, mesg: "Expected upper-case letter"})
+			result::err({old_state: input, err_state: {index: input.index with input}, mesg: "upper-case letter"})
 		}
 	}
 }
@@ -175,8 +175,8 @@ fn test_or()
 	
 	assert check_char_ok("a", p, 'a');
 	assert check_char_ok("Z", p, 'Z');
-	assert check_char_failed("", p, "Expected lower-case letter or upper-case letter", 1);
-	assert check_char_failed("9", p, "Expected lower-case letter or upper-case letter", 1);
+	assert check_char_failed("", p, "lower-case letter or upper-case letter", 1);
+	assert check_char_failed("9", p, "lower-case letter or upper-case letter", 1);
 }
 
 #[test]
@@ -188,7 +188,7 @@ fn test_or_v()
 	assert check_str_ok("bb", p, "bb");
 	assert check_str_ok("c", p, "c");
 	assert check_str_ok("ca", p, "c");
-	assert check_str_failed("", p, "Expected 'a' or 'bb' or 'c'", 1);
+	assert check_str_failed("", p, "'a' or 'bb' or 'c'", 1);
 	
 	let text = chars_with_eot("bz");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
@@ -210,7 +210,7 @@ fn test__repeat0()
 #[test]
 fn test__repeat1()
 {
-	let p = "b".lit().r1().tag("b's");
+	let p = "b".lit().r1().err("b's");
 	
 	assert check_str_array_ok("b", p, ["b"]/~);
 	assert check_str_array_ok("bb", p, ["b", "b"]/~);
@@ -230,8 +230,8 @@ fn test_list()
 	assert check_str_array_ok("b,b,b", p, ["b", "b", "b"]/~);
 	assert check_str_array_ok("b,b,c", p, ["b", "b"]/~);
 	
-	assert check_str_array_failed("", p, "Expected 'b'", 1);
-	assert check_str_array_failed("c", p, "Expected 'b'", 1);
+	assert check_str_array_failed("", p, "'b'", 1);
+	assert check_str_array_failed("c", p, "'b'", 1);
 }
 
 
@@ -271,18 +271,18 @@ fn test_chainr1()
 #[test]
 fn test_tag()
 {
-	let p = "<".lit().then("foo".lit()).then(">".lit()).tag("Expected bracketed foo");
+	let p = "<".lit().then("foo".lit()).then(">".lit()).err("bracketed foo");
 	
 	assert check_str_ok("<foo>", p, ">");
-	assert check_str_failed("", p, "Expected bracketed foo", 1);
-	assert check_str_failed("<", p, "Expected 'foo'", 1);
-	assert check_str_failed("<foo", p, "Expected '>'", 1);
+	assert check_str_failed("", p, "bracketed foo", 1);
+	assert check_str_failed("<", p, "'foo'", 1);
+	assert check_str_failed("<foo", p, "'>'", 1);
 }
 
 #[test]
 fn test_parse()
 {
-	let p = "<".lit().s0().then("foo".lit().s0()).then(">".lit()).tag("Expected bracketed foo");
+	let p = "<".lit().s0().then("foo".lit().s0()).then(">".lit()).err("bracketed foo");
 	
 	alt parse(p, "unit test", "< foo\t>")
 	{
@@ -290,7 +290,7 @@ fn test_parse()
 		{
 			if s != ">"
 			{
-				io::stderr().write_line(#fmt["Expected '>' but found '%s'.", s]);
+				io::stderr().write_line(#fmt["'>' but found '%s'.", s]);
 				assert false;
 			}
 		}
@@ -301,7 +301,7 @@ fn test_parse()
 		}
 	}
 	
-	assert check_str_failed("<foo", p, "Expected '>'", 1);
+	assert check_str_failed("<foo", p, "'>'", 1);
 	alt parse(p, "unit test", "< \n\nfoo\tx")
 	{
 		result::ok(s)
@@ -314,7 +314,7 @@ fn test_parse()
 			assert file == "unit test";
 			assert line == 3u;
 			assert col == 5u;
-			assert mesg == "Expected '>'";
+			assert mesg == "'>'";
 		}
 	}
 }
