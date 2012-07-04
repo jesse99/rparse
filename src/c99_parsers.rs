@@ -12,7 +12,7 @@ fn identifier() -> parser<str>
 {
 	// Supposed to support universal character names too, e.g.  
 	// fo\u006F is a valid C99 identifier.
-	match1_0(is_identifier_prefix, is_identifier_suffix).err("identifier")
+	match1_0(is_identifier_prefix, is_identifier_suffix)
 }
 
 #[doc = "decimal_number := [0-9]+
@@ -21,7 +21,7 @@ Technically this is not supposed to match numbers with leading zeros,
 but we do so to make this parser more reusable."]
 fn decimal_number() -> parser<int>
 {
-	match1(is_digit).err("decimal number").thene()
+	match1(is_digit).thene()
 		{|text|
 			alt int::from_str(text)
 			{
@@ -40,7 +40,7 @@ fn decimal_number() -> parser<int>
 #[doc = "octal_number := 0 [0-7]*"]
 fn octal_number() -> parser<int>
 {
-	match1_0({|c| c == '0'}, is_octal).err("octal number").thene()
+	match1_0({|c| c == '0'}, is_octal).thene()
 		{|text|
 			alt from_base_8(text)
 			{
@@ -59,8 +59,8 @@ fn octal_number() -> parser<int>
 #[doc = "hex_number := 0[xX] [0-9a-fA-F]+"]
 fn hex_number() -> parser<int>
 {
-	let prefix = "0".lit().then(or("x".lit(), "X".lit())).err("hex number");
-	let digits = match1(is_hex).err("hex number").thene()
+	let prefix = "0".lit().then(or("x".lit(), "X".lit()));
+	let digits = match1(is_hex).thene()
 		{|text|
 			alt from_base_16(text)
 			{
@@ -92,7 +92,7 @@ fn float_number() -> parser<f64>
 	let float2 = seq3_ret_str(match1(is_digit), ".".lit(), exponent.optional()).err("");
 	let float3 = seq2_ret_str(match1(is_digit), exponent).err("");
 	
-	let number = or_v([float1, float2, float3]/~).err("float number");
+	let number = or_v([float1, float2, float3]/~);
 	
 	number.thene()
 		{|text|
@@ -111,10 +111,10 @@ fn char_literal() -> parser<char>
 {
 	// We don't support the [LuU] prefix (so the parser is reusable in other contexts).
 	let case1 = "'\n\r\\".noc().err("");
-	let case2 = escape_sequence().err("escape character");
+	let case2 = escape_sequence();
 	let char_sequence = case1.or(case2);
 	
-	seq3_ret1("'".lit(), char_sequence, "'".lit()).err("char literal")
+	seq3_ret1("'".lit(), char_sequence, "'".lit())
 }
 
 #[doc = "string_literal := '\"' s_char* '\"'
@@ -125,11 +125,11 @@ fn string_literal() -> parser<str>
 {
 	// We don't support the encoding prefix (so the parser is reusable in other contexts).
 	let case1 = "\"\n\r\\".noc().err("");
-	let case2 = escape_sequence().err("escape character");
+	let case2 = escape_sequence();
 	let s_char = case1.or(case2);
 	let body = s_char.r0().thene() {|chars| return(str::from_chars(chars))};
 	
-	seq3_ret1("\"".lit(), body, "\"".lit()).err("string literal")
+	seq3_ret1("\"".lit(), body, "\"".lit())
 }
 
 #[doc = "comment := '/*' ([^*] | '*' [^/])* '*/'
@@ -149,7 +149,7 @@ fn comment() -> parser<str>
 		}
 	};
 	
-	seq3_ret1("/*".lit(), body, "*/".lit()).err("comment")
+	seq3_ret1("/*".lit(), body, "*/".lit())
 }
 
 #[doc = "line_comment := '//' [^\r\n]*"]
@@ -167,7 +167,7 @@ fn line_comment() -> parser<str>
 		}
 	};
 	
-	seq2_ret1("//".lit(), body).err("line comment")
+	seq2_ret1("//".lit(), body)
 }
 
 // ---- Helpers ---------------------------------------------------------------
@@ -295,7 +295,7 @@ fn escape_to_char(ch: char) -> char
 
 fn octal_digits() -> parser<int>
 {
-	match1(is_octal).err("octal escape").thene()
+	match1(is_octal).thene()
 		{|text|
 			alt from_base_8(text)
 			{
@@ -313,7 +313,7 @@ fn octal_digits() -> parser<int>
 
 fn hex_digits() -> parser<int>
 {
-	match1(is_hex).err("hex escape").thene()
+	match1(is_hex).thene()
 		{|text|
 			alt from_base_16(text)
 			{
@@ -349,7 +349,7 @@ fn escape_sequence() -> parser<char>
 // universal-character-name := '\\U' hex-digit{8}
 fn universal_character_name() -> parser<char>
 {
-	seq3_ret2("\\".lit(), "uU".anyc(), hex_digits()).err("unicode escape").thene({|n| return(n as char)})
+	seq3_ret2("\\".lit(), "uU".anyc(), hex_digits()).thene({|n| return(n as char)})
 }
 
 
