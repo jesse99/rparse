@@ -71,7 +71,7 @@ fn repeat_char(ch: char, count: uint) -> str
 {
 	let mut value = "";
 	str::reserve(value, count);
-	for uint::range(0u, count) {|_i| str::push_char(value, ch);}
+	for uint::range(0u, count) |_i| { str::push_char(value, ch);}
 	ret value;
 }
 
@@ -101,7 +101,7 @@ fn munge_chars(chars: [char]/~) -> str
 	
 	let mut value = "";
 	str::reserve(value, vec::len(chars));
-	vec::iter(chars) {|ch| str::push_char(value, if is_print(ch) {ch} else {bullet});}
+	do vec::iter(chars) |ch| { str::push_char(value, if is_print(ch) {ch} else {bullet});}
 	ret value;
 }
 

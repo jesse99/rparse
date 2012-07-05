@@ -4,7 +4,7 @@
 Returns the matched character."]
 fn match(predicate: fn@ (char) -> bool) -> parser<char>
 {
-	{|input: state|
+	|input: state| {
 		let mut i = input.index;
 		if input.text[i] != EOT && predicate(input.text[i])
 		{
@@ -25,7 +25,7 @@ fn match(predicate: fn@ (char) -> bool) -> parser<char>
 #[doc = "Attempts to match any character in chars. If matched the char is returned."]
 fn anyc(chars: str) -> parser<char>
 {
-	{|input: state|
+	|input: state| {
 		let mut i = input.index;
 		if str::find_char(chars, input.text[i]).is_some()
 		{
@@ -46,7 +46,7 @@ fn anyc(chars: str) -> parser<char>
 #[doc = "Attempts to match no character in chars. If matched the char is returned."]
 fn noc(chars: str) -> parser<char>
 {
-	{|input: state|
+	|input: state| {
 		let mut i = input.index;
 		if input.text[i] != EOT && str::find_char(chars, input.text[i]).is_none()
 		{
