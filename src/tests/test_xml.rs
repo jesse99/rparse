@@ -21,8 +21,8 @@ impl of to_str for xml
 		{
 			xxml(name, attributes, children, content)
 			{
-				let attrs = vec::map(attributes) {|a| #fmt["%s=\"%s\"", a.name, a.value]};
-				let childs = vec::map(children) {|c| c.to_str()};
+				let attrs = vec::map(attributes, |a| #fmt["%s=\"%s\"", a.name, a.value] );
+				let childs = vec::map(children, |c| c.to_str() );
 				if vec::len(attrs) > 0u
 				{
 					ret #fmt["<%s %s>%s%s</%s>", name, str::connect(attrs, " "), str::connect(childs, ""), content, name];
@@ -72,8 +72,8 @@ fn check_xml_failed(inText: str, parser: parser<xml>, expected: str, line: int) 
 // string_body := [^"]*
 fn string_body() -> parser<str>
 {
-	scan0()
-	{|chars, i|
+	do scan0()
+	|chars, i| {
 		if chars[i] == '\\' && chars[i+1u] == '"'
 		{
 			2u
@@ -92,8 +92,8 @@ fn string_body() -> parser<str>
 // content := (anything but '</')*
 fn content() -> parser<str>
 {
-	scan0()
-	{|chars, i|
+	do scan0()
+	|chars, i| {
 		if chars[i] == '<' && chars[i+1u] == '/'
 		{
 			0u
@@ -114,20 +114,20 @@ fn xml_parser() -> parser<xml>
 	let element_ref = forward_ref(element_ptr);
 	
 	// attribute := name '=' '"' string_body '"'
-	let attribute = seq5(name, "=".s0(), "\"".s0(), string_body(), "\"".s0())
-	{|name, _a2, _a3, body, _a5|
+	let attribute = do seq5(name, "=".s0(), "\"".s0(), string_body(), "\"".s0())
+	|name, _a2, _a3, body, _a5| {
 		result::ok({name: name, value: body})
 	};
 	
 	// empty_element := '<' name attribute* '/>'
-	let empty_element = seq4("<".s0(), name, attribute.r0(), "/>".s0())
-	{|_a1, name, attrs, _a4|
+	let empty_element = do seq4("<".s0(), name, attribute.r0(), "/>".s0())
+	|_a1, name, attrs, _a4| {
 		result::ok(xxml(name, attrs, []/~, ""))
 	};
 	
 	// complex_element := '<' name attribute* '>' element* content '</' name '>'
-	let complex_element = seq9("<".s0(), name, attribute.r0(), ">".s0(), element_ref.r0(), content(), "</".s0(), name, ">".s0())
-	{|_a1, name1, attrs, _a4, children, chars, _a5, name2, _a7|
+	let complex_element = do seq9("<".s0(), name, attribute.r0(), ">".s0(), element_ref.r0(), content(), "</".s0(), name, ">".s0())
+	|_a1, name1, attrs, _a4, children, chars, _a5, name2, _a7| {
 		if name1 == name2
 		{
 			result::ok(xxml(name1, attrs, children, chars))

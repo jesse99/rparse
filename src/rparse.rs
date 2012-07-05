@@ -245,9 +245,9 @@ impl parser_methods<T: copy> for parser<T>
 	Non-empty labels should look like \"expression\" or \"statement\"."]
 	fn err(label: str) -> parser<T>
 	{
-		{|input: state|
-			result::chain_err((self.note(label))(input))
-			{|failure|
+		|input: state| {
+			do result::chain_err((self.note(label))(input))
+			    |failure| {
 				if str::is_empty(label)
 				{
 					result::err({mesg: "" with failure})

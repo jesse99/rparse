@@ -5,7 +5,7 @@ fn liti(in_s: str) -> parser<str>
 {
 	let s = str::to_lower(in_s);
 	
-	{|input: state|
+	|input: state| {
 		let mut i = 0u;
 		let mut j = input.index;
 		while i < str::len(s)
@@ -37,7 +37,7 @@ fn liti(in_s: str) -> parser<str>
 #[doc = "Returns s if input matches s. Also see liti and litv."]
 fn lit(s: str) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		let mut i = 0u;
 		let mut j = input.index;
 		while i < str::len(s)
@@ -86,7 +86,7 @@ Returns the matched characters.
 Note that this does not increment line."]
 fn match0(predicate: fn@ (char) -> bool) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		let mut i = input.index;
 		while input.text[i] != EOT && predicate(input.text[i])
 		{
@@ -104,7 +104,7 @@ Returns the matched characters.
 Note that this does not increment line."]
 fn match1(predicate: fn@ (char) -> bool) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		let mut i = input.index;
 		while input.text[i] != EOT && predicate(input.text[i])
 		{
@@ -128,13 +128,13 @@ fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> parser<st
 {
 	let prefix = match1(prefix);
 	let suffix = match0(suffix);
-	prefix.thene({|p| suffix.thene({|s| return(p + s)})})
+	prefix.thene(|p| suffix.thene(|s| return(p + s) ) )
 }
 
 #[doc = "optional := e?"]
 fn optional_str(parser: parser<str>) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		alt parser(input)
 		{
 			result::ok(pass)
@@ -154,7 +154,7 @@ fn optional_str(parser: parser<str>) -> parser<str>
 This does increment line."]
 fn scan(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		let mut i = input.index;
 		let mut line = input.line;
 		
@@ -162,7 +162,7 @@ fn scan(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 		if count > 0u && input.text[i] != EOT		// EOT check makes it easier to write funs that do stuff like matching chars that are not something
 		{
 			for uint::range(0u, count)
-			{|_k|
+			|_k| {
 				if input.text[i] == '\r'
 				{
 					line += 1;
@@ -189,7 +189,7 @@ Returns the matched characters.
 This does increment line."]
 fn scan0(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		let mut i = input.index;
 		let mut line = input.line;
 		let mut result = result::err({old_state: input, err_state: input, mesg: "dummy"});
@@ -199,7 +199,7 @@ fn scan0(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 			if count > 0u && input.text[i] != EOT		// EOT check makes it easier to write funs that do stuff like matching chars that are not something
 			{
 				for uint::range(0u, count)
-				{|_k|
+				|_k| {
 					if input.text[i] == '\r'
 					{
 						line += 1;
@@ -224,9 +224,9 @@ fn scan0(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 #[doc = "Like scan0 except that at least one character must be consumed."]
 fn scan1(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 {
-	{|input: state|
-		result::chain(scan0(fun)(input))
-		{|pass|
+	|input: state| {
+		do result::chain(scan0(fun)(input))
+		|pass| {
 			if pass.new_state.index > input.index
 			{
 				result::ok(pass)
@@ -242,7 +242,7 @@ fn scan1(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 #[doc = "If all the parsers are successful then the matched text is returned."]
 fn seq2_ret_str<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		alt p0.then(p1)(input)
 		{
 			result::ok(pass)
@@ -261,7 +261,7 @@ fn seq2_ret_str<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<st
 #[doc = "If all the parsers are successful then the matched text is returned."]
 fn seq3_ret_str<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		alt p0.then(p1). then(p2)(input)
 		{
 			result::ok(pass)
@@ -280,7 +280,7 @@ fn seq3_ret_str<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2
 #[doc = "If all the parsers are successful then the matched text is returned."]
 fn seq4_ret_str<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		alt p0.then(p1). then(p2).then(p3)(input)
 		{
 			result::ok(pass)
@@ -299,7 +299,7 @@ fn seq4_ret_str<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: pars
 #[doc = "If all the parsers are successful then the matched text is returned."]
 fn seq5_ret_str<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>, p4: parser<T4>) -> parser<str>
 {
-	{|input: state|
+	|input: state| {
 		alt p0.then(p1). then(p2).then(p3).then(p4)(input)
 		{
 			result::ok(pass)

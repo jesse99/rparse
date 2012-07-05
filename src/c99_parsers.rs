@@ -21,8 +21,8 @@ Technically this is not supposed to match numbers with leading zeros,
 but we do so to make this parser more reusable."]
 fn decimal_number() -> parser<int>
 {
-	match1(is_digit).thene()
-		{|text|
+	do match1(is_digit).thene()
+		    |text| {
 			alt int::from_str(text)
 			{
 				option::some(value)
@@ -40,8 +40,8 @@ fn decimal_number() -> parser<int>
 #[doc = "octal_number := 0 [0-7]*"]
 fn octal_number() -> parser<int>
 {
-	match1_0({|c| c == '0'}, is_octal).thene()
-		{|text|
+	do match1_0(|c| c == '0', is_octal).thene()
+		    |text| {
 			alt from_base_8(text)
 			{
 				result::ok(value)
@@ -60,8 +60,8 @@ fn octal_number() -> parser<int>
 fn hex_number() -> parser<int>
 {
 	let prefix = "0".lit().then(or("x".lit(), "X".lit()));
-	let digits = match1(is_hex).thene()
-		{|text|
+	let digits = do match1(is_hex).thene()
+		    |text| {
 			alt from_base_16(text)
 			{
 				result::ok(value)
@@ -94,10 +94,10 @@ fn float_number() -> parser<f64>
 	
 	let number = or_v([float1, float2, float3]/~);
 	
-	number.thene()
-		{|text|
-			str::as_c_str(text)
-			{|ptr|
+	do number.thene()
+		|text| {
+                        do str::as_c_str(text)
+                        |ptr| {
 				return(libc::strtod(ptr, ptr::null()) as f64)
 			}
 		}
@@ -127,7 +127,7 @@ fn string_literal() -> parser<str>
 	let case1 = "\"\n\r\\".noc().err("");
 	let case2 = escape_sequence();
 	let s_char = case1.or(case2);
-	let body = s_char.r0().thene() {|chars| return(str::from_chars(chars))};
+	let body = do s_char.r0().thene() |chars| { return(str::from_chars(chars))};
 	
 	seq3_ret1("\"".lit(), body, "\"".lit())
 }
@@ -137,8 +137,8 @@ fn string_literal() -> parser<str>
 Note that these do not nest."]
 fn comment() -> parser<str>
 {
-	let body = scan0()
-	{|chars, i|
+	let body = do scan0()
+	|chars, i| {
 		if chars[i] == '*' && chars[i+1u] == '/'
 		{
 			0u
@@ -155,8 +155,8 @@ fn comment() -> parser<str>
 #[doc = "line_comment := '//' [^\r\n]*"]
 fn line_comment() -> parser<str>
 {
-	let body = scan0()
-	{|chars, i|
+	let body = do scan0()
+	|chars, i| {
 		if chars[i] == '\r' || chars[i+1u] == '\n'
 		{
 			0u
@@ -295,8 +295,8 @@ fn escape_to_char(ch: char) -> char
 
 fn octal_digits() -> parser<int>
 {
-	match1(is_octal).thene()
-		{|text|
+	do match1(is_octal).thene()
+		    |text| {
 			alt from_base_8(text)
 			{
 				result::ok(value)
@@ -313,8 +313,8 @@ fn octal_digits() -> parser<int>
 
 fn hex_digits() -> parser<int>
 {
-	match1(is_hex).thene()
-		{|text|
+	do match1(is_hex).thene()
+		|text| {
 			alt from_base_16(text)
 			{
 				result::ok(value)
@@ -335,12 +335,12 @@ fn hex_digits() -> parser<int>
 // escape-sequence := universal-character-name
 fn escape_sequence() -> parser<char>
 {
-	let escape = "'\"?abfnrtv\\".anyc().thene()
-		{|ch| return(escape_to_char(ch))};
+	let escape = do "'\"?abfnrtv\\".anyc().thene()
+		|ch| {return(escape_to_char(ch))};
 	
 	let case1 = seq2_ret1("\\".lit(), escape);
-	let case2 = seq2_ret1("\\".lit(), octal_digits().thene({|n| return(n as char)}));
-	let case3 = seq2_ret1("\\x".lit(), hex_digits().thene({|n| return(n as char)}));
+	let case2 = seq2_ret1("\\".lit(), octal_digits().thene(|n| return(n as char) ));
+	let case3 = seq2_ret1("\\x".lit(), hex_digits().thene(|n| return(n as char) ));
 	let case4 = universal_character_name();
 	or_v([case1, case2, case3, case4]/~).err("")
 }
@@ -349,7 +349,7 @@ fn escape_sequence() -> parser<char>
 // universal-character-name := '\\U' hex-digit{8}
 fn universal_character_name() -> parser<char>
 {
-	seq3_ret2("\\".lit(), "uU".anyc(), hex_digits()).thene({|n| return(n as char)})
+	seq3_ret2("\\".lit(), "uU".anyc(), hex_digits()).thene(|n| return(n as char) )
 }
 
 

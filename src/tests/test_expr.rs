@@ -16,20 +16,20 @@ fn expr_parser() -> parser<int>
 	// on the very first character.
 	let sub_expr = or_v([
 		seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
-		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene({|v| return(-v)}),
+		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene(|v| return(-v) ),
 		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]/~).err("sub-expression");
 	
 	// factor := integer | sub_expr
 	let factor = int_literal.or(sub_expr);
 	
 	// term := factor ([*/] factor)*
-	let term = factor.chainl1("*".s0().or("/".s0()))
-		{|lhs, op, rhs| if op == "*" {lhs*rhs} else {lhs/rhs}};
+	let term = do factor.chainl1("*".s0().or("/".s0()))
+		|lhs, op, rhs| { if op == "*" {lhs*rhs} else {lhs/rhs}};
 	
 	// expr := term ([+-] term)*
-	let expr = term.chainl1("+".s0().or("-".s0()))
-		{|lhs, op, rhs| if op == "+" {lhs + rhs} else {lhs - rhs}};
-	*expr_ptr = expr;
+	let expr = do term.chainl1("+".s0().or("-".s0()))
+		|lhs, op, rhs| { if op == "+" {lhs + rhs} else {lhs - rhs}};
+	//*rhs_ptr = sub_expr;
 	
 	// start := s0 expr EOT
 	let s = return(0).s0();

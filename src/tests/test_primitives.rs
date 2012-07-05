@@ -39,7 +39,7 @@ fn test_return()
 // multiple times for each input string.
 fn parse_unary() -> parser<char>
 {
-	{|input: state|
+	|input: state| {
 		let ch = input.text[input.index];
 		if ch == '-' || ch == '+'
 		{
@@ -54,7 +54,7 @@ fn parse_unary() -> parser<char>
 
 fn parse_digit() -> parser<int>
 {
-	{|input: state|
+	|input: state| {
 		let ch = input.text[input.index];
 		if ch >= '0' && ch <= '9'
 		{
@@ -70,9 +70,9 @@ fn parse_digit() -> parser<int>
 
 fn parse_num(op: char) -> parser<int>
 {
-	{|input: state|
-		chain(parse_digit()(input))
-		{|output|
+	|input: state| {
+		do chain(parse_digit()(input))
+		|output| {
 			let value = if op == '-' {-output.value} else {output.value};
 			result::ok({value: value with output})
 		}
@@ -122,7 +122,7 @@ fn test_seq()
 	let prefix = match1(is_identifier_prefix);
 	let suffix = match1(is_identifier_suffix).r0();
 	let trailer = match1(is_identifier_trailer).optional();
-	let p = seq3(prefix, suffix, trailer, {|a, b, c| result::ok(a + str::connect(b, "") + option::get_default(c, ""))}).err("identifier");
+	let p = seq3(prefix, suffix, trailer, |a, b, c| result::ok(a + str::connect(b, "") + option::get_default(c, "")) ).err("identifier");
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -132,7 +132,7 @@ fn test_seq()
 	assert check_str_ok("spanky123xy", p, "spanky123xy");
 	assert check_str_failed("", p, "identifier", 1);
 	
-	let p = seq2("a".lit(), "b".lit(), {|x, y| result::ok(x+y)});
+	let p = seq2("a".lit(), "b".lit(), |x, y| result::ok(x+y) );
 	let text = chars_with_eot("az");
 	let result = p({file: "unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;
@@ -140,7 +140,7 @@ fn test_seq()
 
 fn parse_lower() -> parser<char>
 {
-	{|input: state|
+	|input: state| {
 		let ch = input.text[input.index];
 		if ch >= 'a' && ch <= 'z'
 		{
@@ -155,7 +155,7 @@ fn parse_lower() -> parser<char>
 
 fn parse_upper() -> parser<char>
 {
-	{|input: state|
+	|input: state| {
 		let ch = input.text[input.index];
 		if ch >= 'A' && ch <= 'Z'
 		{
@@ -245,7 +245,7 @@ fn test_chainl1()
 {
 	let factor = decimal_number();
 	let op = "*".lit().or("/".lit());
-	let p = factor.chainl1(op, {|lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs}});
+	let p = factor.chainl1(op, |lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs} );
 	
 	assert check_int_ok("2", p, 2);
 	assert check_int_ok("2*3", p, 6);
@@ -259,7 +259,7 @@ fn test_chainr1()
 {
 	let factor = decimal_number();
 	let op = "*".lit().or("/".lit());
-	let p = factor.chainr1(op, {|lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs}});
+	let p = factor.chainr1(op, |lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs} );
 	
 	assert check_int_ok("2", p, 2);
 	assert check_int_ok("2*3", p, 6);
