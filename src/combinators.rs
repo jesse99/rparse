@@ -87,6 +87,7 @@ fn forward_ref<T: copy>(parser: @mut parser<T>) -> parser<T>
 		(*parser)(input)
 	}
 }
+
 #[doc = "list := e (sep e)*
 
 Values for each parsed e are returned."]
@@ -476,7 +477,7 @@ fn seq2_ret0<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<T0>
 #[doc = "seq2 := e0 e1"]
 fn seq2_ret1<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<T1>
 {
-	seq2(p0, p1, |a0, a1| result::ok(a1))
+	seq2(p0, p1, |_a0, a1| result::ok(a1))
 }
 
 #[doc = "seq3 := e0 e1 e2"]

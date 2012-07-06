@@ -61,7 +61,7 @@ fn hex_number() -> parser<int>
 {
 	let prefix = "0".lit().then(or("x".lit(), "X".lit()));
 	let digits = do match1(is_hex).thene()
-		    |text| {
+			|text| {
 			alt from_base_16(text)
 			{
 				result::ok(value)
@@ -111,7 +111,7 @@ fn char_literal() -> parser<char>
 {
 	// We don't support the [LuU] prefix (so the parser is reusable in other contexts).
 	let case1 = "'\n\r\\".noc().err("");
-	let case2 = escape_sequence();
+	let case2 = escape_sequence().err("escape character");
 	let char_sequence = case1.or(case2);
 	
 	seq3_ret1("'".lit(), char_sequence, "'".lit())
@@ -125,7 +125,7 @@ fn string_literal() -> parser<str>
 {
 	// We don't support the encoding prefix (so the parser is reusable in other contexts).
 	let case1 = "\"\n\r\\".noc().err("");
-	let case2 = escape_sequence();
+	let case2 = escape_sequence().err("escape character");
 	let s_char = case1.or(case2);
 	let body = do s_char.r0().thene() |chars| { return(str::from_chars(chars))};
 	

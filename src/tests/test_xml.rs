@@ -111,7 +111,7 @@ fn xml_parser() -> parser<xml>
 	
 	let dummy = xxml("dummy", []/~, []/~, "");
 	let element_ptr = @mut return(dummy);
-	let element_ref = forward_ref(element_ptr);
+	let element_ref = forward_ref(element_ptr); 
 	
 	// attribute := name '=' '"' string_body '"'
 	let attribute = do seq5(name, "=".s0(), "\"".s0(), string_body(), "\"".s0())
