@@ -17,12 +17,12 @@ Here is an example of a simple parser which can be used to evaluate mathematical
     
     fn expr_parser() -> parser<int>
     {
-        let int_literal = decimal_number().s0();
+        let int_literal = decimal_number().err("number").s0();
         
         // Parenthesized expressions require a forward reference to the expr parser
         // so we initialize a function pointer to something of the right type, create
         // a parser using the parser expr_ptr points to, and fixup expr_ptr later.
-        let expr_ptr = @mut return(0);
+        let expr_ptr = @mut return(0i);
         let expr_ref = forward_ref(expr_ptr);
         
         // sub_expr := [-+]? '(' expr ')'
@@ -30,19 +30,19 @@ Here is an example of a simple parser which can be used to evaluate mathematical
         // on the very first character.
         let sub_expr = or_v([
             seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
-            seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene({|v| return(-v)}),
+            seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene(|v| return(-v) ),
             seq3_ret1(             "(".s0(), expr_ref, ")".s0())]/~).err("sub-expression");
         
         // factor := integer | sub_expr
         let factor = int_literal.or(sub_expr);
         
         // term := factor ([*/] factor)*
-        let term = factor.chainl1("*".s0().or("/".s0()))
-            {|lhs, op, rhs| if op == "*" {lhs*rhs} else {lhs/rhs}};
+        let term = do factor.chainl1("*".s0().or("/".s0()))
+            |lhs, op, rhs| { if op == "*" {lhs*rhs} else {lhs/rhs}};
         
         // expr := term ([+-] term)*
-        let expr = term.chainl1("+".s0().or("-".s0()))
-            {|lhs, op, rhs| if op == "+" {lhs + rhs} else {lhs - rhs}};
+        let expr = term.chainl1("+".s0().or("-".s0()),
+            |lhs, op, rhs| { if op == "+" {lhs + rhs} else {lhs - rhs}}).err("expression");
         *expr_ptr = expr;
         
         // start := s0 expr EOT
