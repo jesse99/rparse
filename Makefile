@@ -43,7 +43,7 @@ lib:
 	$(RUSTC) --out-dir bin -O src/rparse.rc
 
 bin/test-rparse: src/rparse.rc src/*.rs src/tests/*.rs
-	$(RUSTC) -g --test -o $@ $<
+	$(RUSTC) --test -o $@ $<
 
 bin/test-rparse-release: src/rparse.rc src/*.rs src/tests/*.rs
-	$(RUSTC) -g --test -O -o $@ $<
+	$(RUSTC) --test -O -o $@ $<
