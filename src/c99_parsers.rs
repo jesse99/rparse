@@ -1,5 +1,6 @@
 #[doc = "Functions that can be used to parse C99 lexical elements (or with languages
 that have similar lexical elements)."];
+import types::{parser, state, status}; 
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
 export identifier, decimal_number, octal_number, hex_number, float_number,
@@ -8,7 +9,7 @@ export identifier, decimal_number, octal_number, hex_number, float_number,
 #[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*
 
 Note that match1_0 can be used to easily implement custom identifier parsers."]
-fn identifier() -> parser<str>
+fn identifier() -> parser<~str>
 {
 	// Supposed to support universal character names too, e.g.  
 	// fo\u006F is a valid C99 identifier.
@@ -59,7 +60,7 @@ fn octal_number() -> parser<int>
 #[doc = "hex_number := 0[xX] [0-9a-fA-F]+"]
 fn hex_number() -> parser<int>
 {
-	let prefix = "0".lit().then(or("x".lit(), "X".lit()));
+	let prefix = ~"0".lit().then(or("x".lit(), "X".lit()));
 	let digits = do match1(is_hex).thene()
 			|text| {
 			alt from_base_16(text)
@@ -121,7 +122,7 @@ fn char_literal() -> parser<char>
 
 s_char := [^\"\n\r\\]
 s_char := escape_sequence"]
-fn string_literal() -> parser<str>
+fn string_literal() -> parser<~str>
 {
 	// We don't support the encoding prefix (so the parser is reusable in other contexts).
 	let case1 = "\"\n\r\\".noc().err("");
@@ -135,7 +136,7 @@ fn string_literal() -> parser<str>
 #[doc = "comment := '/*' ([^*] | '*' [^/])* '*/'
 
 Note that these do not nest."]
-fn comment() -> parser<str>
+fn comment() -> parser<~str>
 {
 	let body = do scan0()
 	|chars, i| {
@@ -153,7 +154,7 @@ fn comment() -> parser<str>
 }
 
 #[doc = "line_comment := '//' [^\r\n]*"]
-fn line_comment() -> parser<str>
+fn line_comment() -> parser<~str>
 {
 	let body = do scan0()
 	|chars, i| {
@@ -191,7 +192,7 @@ pure fn is_hex(ch: char) -> bool
 	ret (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
 }
 
-fn from_base_8(text: str) -> result::result<int, str>
+fn from_base_8(text: ~str) -> result::result<int, ~str>
 {
 	let mut power = 1;
 	let mut result = 0;
@@ -216,7 +217,7 @@ fn from_base_8(text: str) -> result::result<int, str>
 	ret result::ok(result);
 }
 
-fn from_base_16(text: str) -> result::result<int, str>
+fn from_base_16(text: ~str) -> result::result<int, ~str>
 {
 	let mut power = 1;
 	let mut result = 0;

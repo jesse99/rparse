@@ -5,17 +5,17 @@ import to_str::to_str;
 import result::*;
 import test_helpers::*;
 
-type attribute = {name: str, value: str};
+type attribute = {name: ~str, value: ~str};
 
 enum xml
 {
 	// element name, attributes, children, content
-	xxml(str, ~[attribute], ~[xml], str)
+	xxml(~str, ~[attribute], ~[xml], ~str)
 }
 
 impl of to_str for xml
 {
-	fn to_str() -> str
+	fn to_str() -> ~str
 	{
 		alt self
 		{
@@ -38,13 +38,13 @@ impl of to_str for xml
 
 impl of to_str for attribute
 {
-	fn to_str() -> str
+	fn to_str() -> ~str
 	{
 		ret #fmt["%s = \"%s\"", self.name, self.value];
 	}
 }
 
-fn check_xml_ok(inText: str, expected: str, parser: parser<xml>) -> bool
+fn check_xml_ok(inText: ~str, expected: ~str, parser: parser<xml>) -> bool
 {
 	#info["----------------------------------------------------"];
 	let text = chars_with_eot(inText);
@@ -61,7 +61,7 @@ fn check_xml_ok(inText: str, expected: str, parser: parser<xml>) -> bool
 	}
 }
 
-fn check_xml_failed(inText: str, parser: parser<xml>, expected: str, line: int) -> bool
+fn check_xml_failed(inText: ~str, parser: parser<xml>, expected: ~str, line: int) -> bool
 {
 	#info["----------------------------------------------------"];
 	let text = chars_with_eot(inText);
@@ -70,7 +70,7 @@ fn check_xml_failed(inText: str, parser: parser<xml>, expected: str, line: int) 
 }
 
 // string_body := [^"]*
-fn string_body() -> parser<str>
+fn string_body() -> parser<~str>
 {
 	do scan0()
 	|chars, i| {
@@ -90,7 +90,7 @@ fn string_body() -> parser<str>
 }
 
 // content := (anything but '</')*
-fn content() -> parser<str>
+fn content() -> parser<~str>
 {
 	do scan0()
 	|chars, i| {

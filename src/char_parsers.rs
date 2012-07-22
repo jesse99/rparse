@@ -1,4 +1,5 @@
 #[doc = "Parser functions with char return types."];
+import types::{parser, state, status};
 
 #[doc = "Consumes a character which must satisfy the predicate.
 Returns the matched character."]
@@ -23,7 +24,7 @@ fn match(predicate: fn@ (char) -> bool) -> parser<char>
 }
 
 #[doc = "Attempts to match any character in chars. If matched the char is returned."]
-fn anyc(chars: str) -> parser<char>
+fn anyc(chars: ~str) -> parser<char>
 {
 	|input: state| {
 		let mut i = input.index;
@@ -44,7 +45,7 @@ fn anyc(chars: str) -> parser<char>
 }
 
 #[doc = "Attempts to match no character in chars. If matched the char is returned."]
-fn noc(chars: str) -> parser<char>
+fn noc(chars: ~str) -> parser<char>
 {
 	|input: state| {
 		let mut i = input.index;

@@ -1,12 +1,11 @@
 #[doc = "Various utility functions. 
 
 Clients should not need to use most of these except for log_ok and log_err."];
-import types::*;
 
 const EOT: char = '\u0003';
 
 #[doc = "Converts a string to an array of char and appends an EOT character."]
-fn chars_with_eot(s: str) -> ~[char]
+fn chars_with_eot(s: ~str) -> ~[char]
 {
 	let mut buf = ~[], i = 0u;
 	let len = str::len(s);
@@ -67,7 +66,7 @@ pure fn lower_char(ch: char) -> char
 }
 
 #[doc = "Returns a string with count ch characters."]
-fn repeat_char(ch: char, count: uint) -> str
+fn repeat_char(ch: char, count: uint) -> ~str
 {
 	let mut value = "";
 	str::reserve(value, count);
@@ -92,7 +91,7 @@ fn get_col(text: ~[char], index: uint) -> uint
 // one code point to map to one printed character (so our log_ok arrows point to
 // the right character).
 #[doc = "Replaces non-is_print characters with '.'."]
-fn munge_chars(chars: ~[char]) -> str
+fn munge_chars(chars: ~[char]) -> ~str
 {
 	// TODO: I'd like to use bullet here, but while io::println handles it correctly
 	// the logging subsystem does not. See issue 2154.

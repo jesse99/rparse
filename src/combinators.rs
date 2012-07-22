@@ -23,7 +23,7 @@ fn chainl1<T: copy, U: copy>(parser: parser<T>, op: parser<U>, eval: fn@ (T, U, 
 			{
 				result::ok(pass2)
 				{
-					let value = vec::foldl(pass.value, pass2.value, {|lhs, rhs| eval(lhs, tuple::first(rhs), tuple::second(rhs))});
+					let value = vec::foldl(pass.value, pass2.value, {|lhs, rhs| eval(lhs, rhs.first(), rhs.second())});
 					result::ok({new_state: pass2.new_state, value: value})
 				}
 				result::err(failure)
@@ -63,7 +63,7 @@ fn chainr1<T: copy, U: copy>(parser: parser<T>, op: parser<U>, eval: fn@ (T, U, 
 						// [(e1 op1), (e2 op2)] and e3
 						let terms = vec::zip(parsers, ops);
 						
-						let value = vec::foldr(terms, e3, {|lhs, rhs| eval(tuple::first(lhs), tuple::second(lhs), rhs)});
+						let value = vec::foldr(terms, e3, {|lhs, rhs| eval(lhs.first(), lhs.second(), rhs)});
 						result::ok({new_state: pass2.new_state, value: value})
 					}
 					else
@@ -133,7 +133,7 @@ fn optional<T: copy>(parser: parser<T>) -> parser<option<T>>
 
 // When using tag it can be useful to use empty messages for interior parsers
 // so we need to handle that case.
-fn or_mesg(mesg1: str, mesg2: str) -> str
+fn or_mesg(mesg1: ~str, mesg2: ~str) -> ~str
 {
 	if str::is_not_empty(mesg1) && str::is_not_empty(mesg2)
 	{
@@ -282,7 +282,7 @@ fn r1<T: copy>(parser: parser<T>) -> parser<~[T]>
 
 #[doc = "seq2 := e0 e1"]
 fn seq2<T0: copy, T1: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> result::result<R, str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> result::result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -302,7 +302,7 @@ fn seq2<T0: copy, T1: copy, R: copy>
 
 #[doc = "seq3 := e0 e1 e2"]
 fn seq3<T0: copy, T1: copy, T2: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> result::result<R, str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> result::result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -323,7 +323,7 @@ fn seq3<T0: copy, T1: copy, T2: copy, R: copy>
 
 #[doc = "seq4 := e0 e1 e2 e3"]
 fn seq4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::result<R, str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -345,7 +345,7 @@ fn seq4<T0: copy, T1: copy, T2: copy, T3: copy, R: copy>
 
 #[doc = "seq5 := e0 e1 e2 e3 e4"]
 fn seq5<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::result<R, str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -368,7 +368,7 @@ fn seq5<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, R: copy>
 
 #[doc = "seq6 := e0 e1 e2 e3 e4 e5"]
 fn seq6<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::result<R, str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -392,7 +392,7 @@ fn seq6<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, R: copy>
 
 #[doc = "seq7 := e0 e1 e2 e3 e4 e5 e6"]
 fn seq7<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::result<R, str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -417,7 +417,7 @@ fn seq7<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, R:
 
 #[doc = "seq8 := e0 e1 e2 e3 e4 e5 e6 e7"]
 fn seq8<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::result<R, str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -443,7 +443,7 @@ fn seq8<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7
 
 #[doc = "seq9 := e0 e1 e2 e3 e4 e5 e6 e7 e8"]
 fn seq9<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy, T5: copy, T6: copy, T7: copy, T8: copy, R: copy>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, parser8: parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::result<R, str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, parser8: parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {

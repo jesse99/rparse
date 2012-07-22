@@ -39,10 +39,10 @@ export parse_status, parse_failed, eot, everything, parse, str_methods, parser_m
 type parse_status<T: copy> = result::result<T, parse_failed>;
 
 #[doc = "Returned by parse function on error. Line and col are both 1-based."]
-type parse_failed = {file: str, line: uint, col: uint, mesg: str};
+type parse_failed = {file: ~str, line: uint, col: uint, mesg: ~str};
 
 #[doc = "Uses parser to parse text. Also see everything function."]
-fn parse<T: copy>(parser: parser<T>, file: str, text: str) -> parse_status<T>
+fn parse<T: copy>(parser: parser<T>, file: ~str, text: ~str) -> parse_status<T>
 {
 	let chars = chars_with_eot(text);
 	let input = {file: file, text: chars, index: 0u, line: 1};
@@ -87,14 +87,25 @@ fn everything<T: copy, U: copy>(parser: parser<T>, space: parser<U>) -> parser<T
 }
 
 #[doc = "Methods that treat a string as a literal."]
-impl str_methods for str
+trait str_trait
 {
-	fn lit() -> parser<str>
+	fn lit() -> parser<~str>;
+	fn liti() -> parser<~str>;
+	fn litv<T: copy>(value: T) -> parser<T>;
+	fn anyc() -> parser<char>;
+	fn noc() -> parser<char>;
+	fn s0() -> parser<~str>;
+	fn s1() -> parser<~str>;
+}
+
+impl str_methods of str_trait for ~str
+{
+	fn lit() -> parser<~str>
 	{
 		lit(self)
 	}
 	
-	fn liti() -> parser<str>
+	fn liti() -> parser<~str>
 	{
 		liti(self)
 	}
@@ -114,20 +125,25 @@ impl str_methods for str
 		noc(self)
 	}
 	
-	fn s0() -> parser<str>
+	fn s0() -> parser<~str>
 	{
 		s0(lit(self))
 	}
 	
-	fn s1() -> parser<str>
+	fn s1() -> parser<~str>
 	{
 		s1(lit(self))
 	}
 }
 
-impl str_parser_methods for parser<str>
+trait str_parser_trait
 {
-	fn optional_str() -> parser<str>
+	fn optional_str() -> parser<~str>;
+}
+
+impl str_parser_methods of str_parser_trait for parser<~str>
+{
+	fn optional_str() -> parser<~str>
 	{
 		optional_str(self)
 	}
@@ -135,7 +151,30 @@ impl str_parser_methods for parser<str>
 
 #[doc = "These work the same as the functions of the same name, but tend
 to make the code look a bit better."]
-impl parser_methods<T: copy> for parser<T>
+trait parser_trait<T: copy>
+{
+	fn thene<U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>;
+	fn then<U: copy>(parser2: parser<U>) -> parser<U>;
+	fn or(parser2: parser<T>) -> parser<T>;
+	fn optional() -> parser<option<T>>;
+	fn r(n: uint, m: uint) -> parser<~[T]>;
+	fn r0() -> parser<~[T]>;
+	fn r1() -> parser<~[T]>;
+	fn list<U: copy>(sep: parser<U>) -> parser<~[T]>;
+	fn chain_suffix<U: copy>(op: parser<U>) -> parser<~[(U, T)]>;
+	fn chainl1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>;
+	fn chainr1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>;
+	
+	fn note(mesg: ~str) -> parser<T>;
+	fn err(label: ~str) -> parser<T>;
+	fn parse(file: ~str, text: ~str) -> parse_status<T>;
+	
+	fn s0() -> parser<T>;
+	fn s1() -> parser<T>;
+	fn everything<U: copy>(space: parser<U>) -> parser<T>;
+}
+
+impl parser_methods<T: copy> of parser_trait<T> for parser<T>
 {
 	fn thene<U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
 	{
@@ -195,7 +234,7 @@ impl parser_methods<T: copy> for parser<T>
 	#[doc = "Logs the result of the previous parser.
 	
 	If it was successful then the log is at INFO level. Otherwise it is at DEBUG level."]
-	fn note(mesg: str) -> parser<T>
+	fn note(mesg: ~str) -> parser<T>
 	{
 		{|input: state|
 			alt self(input)
@@ -243,7 +282,7 @@ impl parser_methods<T: copy> for parser<T>
 	If label is not empty then it is used if the previous parser completely failed to parse or if its error
 	message was empty. Otherwise it suppresses errors from the parser (in favor of a later err function).
 	Non-empty labels should look like \"expression\" or \"statement\"."]
-	fn err(label: str) -> parser<T>
+	fn err(label: ~str) -> parser<T>
 	{
 		|input: state| {
 			do result::chain_err((self.note(label))(input))
@@ -267,7 +306,7 @@ impl parser_methods<T: copy> for parser<T>
 		}
 	}
 	
-	fn parse(file: str, text: str) -> parse_status<T>
+	fn parse(file: ~str, text: ~str) -> parse_status<T>
 	{
 		parse(self, file, text)
 	}
