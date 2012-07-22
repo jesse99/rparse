@@ -1,10 +1,10 @@
-#[doc = "Various utility functions. 
-
-Clients should not need to use most of these except for log_ok and log_err."];
+//! Various utility functions. 
+//!
+//! Clients should not need to use most of these except for log_ok and log_err.
 
 const EOT: char = '\u0003';
 
-#[doc = "Converts a string to an array of char and appends an EOT character."]
+/// Converts a string to an array of char and appends an EOT character.
 fn chars_with_eot(s: &str) -> @[char]
 {
 	do core::at_vec::build_sized(s.len() + 1)
@@ -23,37 +23,37 @@ fn chars_with_eot(s: &str) -> @[char]
 	}
 }
 
-#[doc = "Returns true if ch is in [a-zA-Z]."]
+/// Returns true if ch is in [a-zA-Z].
 pure fn is_alpha(ch: char) -> bool
 {
 	ret (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
-#[doc = "Returns true if ch is in [0-9]."]
+/// Returns true if ch is in [0-9].
 pure fn is_digit(ch: char) -> bool
 {
 	ret ch >= '0' && ch <= '9';
 }
 
-#[doc = "Returns true if ch is_alpha or is_digit."]
+/// Returns true if ch is_alpha or is_digit.
 pure fn is_alphanum(ch: char) -> bool
 {
 	ret is_alpha(ch) || is_digit(ch);
 }
 
-#[doc = "Returns true if ch is 7-bit ASCII and not a control character."]
+/// Returns true if ch is 7-bit ASCII and not a control character.
 pure fn is_print(ch: char) -> bool
 {
 	ret ch >= ' ' && ch <= '~';
 }
 
-#[doc = "Returns true if ch is ' ', '\t', '\r', or '\n'."]
+/// Returns true if ch is ' ', '\t', '\r', or '\n'.
 pure fn is_whitespace(ch: char) -> bool
 {
 	ret ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
 }
 
-#[doc = "Returns ch as lower case."]
+/// Returns ch as lower case.
 pure fn lower_char(ch: char) -> char
 {
 	if ch >= 'A' && ch <= 'Z'
@@ -66,7 +66,7 @@ pure fn lower_char(ch: char) -> char
 	}
 }
 
-#[doc = "Returns a string with count ch characters."]
+/// Returns a string with count ch characters.
 fn repeat_char(ch: char, count: uint) -> ~str
 {
 	let mut value = ~"";
@@ -91,7 +91,8 @@ fn get_col(text: @[char], index: uint) -> uint
 // Note that we don't want to escape control characters here because we need
 // one code point to map to one printed character (so our log_ok arrows point to
 // the right character).
-#[doc = "Replaces non-is_print characters with '.'."]
+
+/// Replaces non-is_print characters with '.'."
 fn munge_chars(chars: @[char]) -> ~str
 {
 	// TODO: I'd like to use bullet here, but while io::println handles it correctly
