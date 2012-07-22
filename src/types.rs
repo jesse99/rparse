@@ -8,7 +8,7 @@ type parser<T: copy> = fn@ (state) -> status<T>;
 
 #[doc = "Input argument for parse functions. File is not interpreted 
 and need not be a path. Text is assumed to end with EOT. Lines are 1-based."]
-type state = {file: str, text: [char]/~, index: uint, line: int};
+type state = {file: str, text: ~[char], index: uint, line: int};
 
 
 #[doc = "Return type of parse functions."]

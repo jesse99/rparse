@@ -14,10 +14,10 @@ fn expr_parser() -> parser<int>
 	// sub_expr := [-+]? '(' expr ')'
 	// The err function provides better error messages if the factor parser fails
 	// on the very first character.
-	let sub_expr = or_v([
+	let sub_expr = or_v(~[
 		seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
 		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene(|v| return(-v) ),
-		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]/~).err("sub-expression");
+		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]).err("sub-expression");
 	
 	// factor := integer | sub_expr
 	let factor = int_literal.or(sub_expr);

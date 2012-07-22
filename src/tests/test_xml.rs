@@ -10,7 +10,7 @@ type attribute = {name: str, value: str};
 enum xml
 {
 	// element name, attributes, children, content
-	xxml(str, [attribute]/~, [xml]/~, str)
+	xxml(str, ~[attribute], ~[xml], str)
 }
 
 impl of to_str for xml
@@ -109,7 +109,7 @@ fn xml_parser() -> parser<xml>
 {
 	let name = identifier().s0();
 	
-	let dummy = xxml("dummy", []/~, []/~, "");
+	let dummy = xxml("dummy", ~[], ~[], "");
 	let element_ptr = @mut return(dummy);
 	let element_ref = forward_ref(element_ptr); 
 	
@@ -122,7 +122,7 @@ fn xml_parser() -> parser<xml>
 	// empty_element := '<' name attribute* '/>'
 	let empty_element = do seq4("<".s0(), name, attribute.r0(), "/>".s0())
 	|_a1, name, attrs, _a4| {
-		result::ok(xxml(name, attrs, []/~, ""))
+		result::ok(xxml(name, attrs, ~[], ""))
 	};
 	
 	// complex_element := '<' name attribute* '>' element* content '</' name '>'

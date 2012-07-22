@@ -152,7 +152,7 @@ fn optional_str(parser: parser<str>) -> parser<str>
 #[doc = "Calls fun once and matches the number of characters returned by fun. 
 
 This does increment line."]
-fn scan(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
+fn scan(fun: fn@ (~[char], uint) -> uint) -> parser<str>
 {
 	|input: state| {
 		let mut i = input.index;
@@ -187,7 +187,7 @@ fn scan(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 Returns the matched characters. 
 
 This does increment line."]
-fn scan0(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
+fn scan0(fun: fn@ (~[char], uint) -> uint) -> parser<str>
 {
 	|input: state| {
 		let mut i = input.index;
@@ -222,7 +222,7 @@ fn scan0(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
 }
 
 #[doc = "Like scan0 except that at least one character must be consumed."]
-fn scan1(fun: fn@ ([char]/~, uint) -> uint) -> parser<str>
+fn scan1(fun: fn@ (~[char], uint) -> uint) -> parser<str>
 {
 	|input: state| {
 		do result::chain(scan0(fun)(input))

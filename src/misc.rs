@@ -6,9 +6,9 @@ import types::*;
 const EOT: char = '\u0003';
 
 #[doc = "Converts a string to an array of char and appends an EOT character."]
-fn chars_with_eot(s: str) -> [char]/~
+fn chars_with_eot(s: str) -> ~[char]
 {
-	let mut buf = []/~, i = 0u;
+	let mut buf = ~[], i = 0u;
 	let len = str::len(s);
 
 	vec::reserve(buf, len + 1u);
@@ -16,10 +16,10 @@ fn chars_with_eot(s: str) -> [char]/~
 	{
 		let {ch, next} = str::char_range_at(s, i);
 		assert next > i;
-		buf += [ch]/~;
+		buf += ~[ch];
 		i = next;
 	}
-	buf += [EOT]/~;
+	buf += ~[EOT];
 	ret buf;
 }
 
@@ -76,7 +76,7 @@ fn repeat_char(ch: char, count: uint) -> str
 }
 
 #[doc(hidden)]
-fn get_col(text: [char]/~, index: uint) -> uint
+fn get_col(text: ~[char], index: uint) -> uint
 {
 	let mut i = index;
 	
@@ -92,7 +92,7 @@ fn get_col(text: [char]/~, index: uint) -> uint
 // one code point to map to one printed character (so our log_ok arrows point to
 // the right character).
 #[doc = "Replaces non-is_print characters with '.'."]
-fn munge_chars(chars: [char]/~) -> str
+fn munge_chars(chars: ~[char]) -> str
 {
 	// TODO: I'd like to use bullet here, but while io::println handles it correctly
 	// the logging subsystem does not. See issue 2154.

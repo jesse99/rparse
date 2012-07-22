@@ -67,7 +67,7 @@ fn check_str_failed(inText: str, parser: parser<str>, expected: str, line: int) 
 	ret check_failed(result, expected, line);
 }
 
-fn check_str_array_ok(inText: str, parser: parser<[str]/~>, expected: [str]/~) -> bool
+fn check_str_array_ok(inText: str, parser: parser<~[str]>, expected: ~[str]) -> bool
 {
 	#info["----------------------------------------------------"];
 	let text = chars_with_eot(inText);
@@ -75,7 +75,7 @@ fn check_str_array_ok(inText: str, parser: parser<[str]/~>, expected: [str]/~) -
 	ret check_ok(result, expected);
 }
 
-fn check_str_array_failed(inText: str, parser: parser<[str]/~>, expected: str, line: int) -> bool
+fn check_str_array_failed(inText: str, parser: parser<~[str]>, expected: str, line: int) -> bool
 {
 	#info["----------------------------------------------------"];
 	let text = chars_with_eot(inText);
