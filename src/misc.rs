@@ -5,21 +5,22 @@ Clients should not need to use most of these except for log_ok and log_err."];
 const EOT: char = '\u0003';
 
 #[doc = "Converts a string to an array of char and appends an EOT character."]
-fn chars_with_eot(s: &str) -> ~[char]
+fn chars_with_eot(s: &str) -> @[char]
 {
-	let mut buf = ~[], i = 0u;
-	let len = str::len(s);
-
-	vec::reserve(buf, len + 1u);
-	while i < len
+	do core::at_vec::build_sized(s.len() + 1)
+	|push|
 	{
-		let {ch, next} = str::char_range_at(s, i);
-		assert next > i;
-		buf += ~[ch];
-		i = next;
+		let mut i = 0u;
+		let len = str::len(s);
+		while i < len
+		{
+			let {ch, next} = str::char_range_at(s, i);
+			assert next > i;
+			push(ch);
+			i = next;
+		}
+		push(EOT);
 	}
-	buf += ~[EOT];
-	ret buf;
 }
 
 #[doc = "Returns true if ch is in [a-zA-Z]."]
@@ -75,7 +76,7 @@ fn repeat_char(ch: char, count: uint) -> ~str
 }
 
 #[doc(hidden)]
-fn get_col(text: ~[char], index: uint) -> uint
+fn get_col(text: @[char], index: uint) -> uint
 {
 	let mut i = index;
 	
@@ -91,7 +92,7 @@ fn get_col(text: ~[char], index: uint) -> uint
 // one code point to map to one printed character (so our log_ok arrows point to
 // the right character).
 #[doc = "Replaces non-is_print characters with '.'."]
-fn munge_chars(chars: ~[char]) -> ~str
+fn munge_chars(chars: @[char]) -> ~str
 {
 	// TODO: I'd like to use bullet here, but while io::println handles it correctly
 	// the logging subsystem does not. See issue 2154.
@@ -105,12 +106,13 @@ fn munge_chars(chars: ~[char]) -> ~str
 }
 
 // TODO: Hopefully rust will provide something better for converting and mixing ~str and & str.
+// See https://github.com/mozilla/rust/issues/2992
 fn unslice(s: &str) -> ~str
 {
 	s.slice(0, s.len())
 }
 
-fn unslice_vec<T>(s: &[T]) -> ~[T]
+fn unslice_vec<T: copy>(s: &[T]) -> ~[T]
 {
 	s.slice(0, s.len())
 }

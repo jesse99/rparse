@@ -84,7 +84,7 @@ fn check_str_array_failed(inText: &str, parser: parser<~[~str]>, expected: &str,
 }
 
 // ---- Private Functions -----------------------------------------------------
-fn check_ok<T: copy>(result: status<T>, expected: T) -> bool
+fn check_ok<T: copy owned>(result: status<T>, expected: T) -> bool
 {
 	alt result
 	{
@@ -147,7 +147,7 @@ fn check_ok_str_arrays(result: status<~[~str]>, expected: &[~str]) -> bool
 	}
 }
 
-fn check_failed<T: copy>(result: status<T>, expected: &str, line: int) -> bool
+fn check_failed<T: copy owned>(result: status<T>, expected: &str, line: int) -> bool
 {
 	alt result
 	{

@@ -56,7 +56,7 @@ fn check_xml_ok(inText: &str, expected: &str, parser: parser<xml>) -> bool
 		}
 		result::err(failure)
 		{
-			check_ok(result::err(failure), expected)
+			check_ok_strs(result::err(failure), expected)
 		}
 	}
 }

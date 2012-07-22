@@ -37,7 +37,10 @@ fn liti(in_s: &str) -> parser<~str>
 #[doc = "Returns s if input matches s. Also see liti and litv."]
 fn lit(s: &str) -> parser<~str>
 {
-	|input: state| {
+	let s = unslice(s);
+	
+	|input: state|
+	{
 		let mut i = 0u;
 		let mut j = input.index;
 		while i < str::len(s)
@@ -152,7 +155,7 @@ fn optional_str(parser: parser<~str>) -> parser<~str>
 #[doc = "Calls fun once and matches the number of characters returned by fun. 
 
 This does increment line."]
-fn scan(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
+fn scan(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 {
 	|input: state| {
 		let mut i = input.index;
@@ -187,7 +190,7 @@ fn scan(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
 Returns the matched characters. 
 
 This does increment line."]
-fn scan0(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
+fn scan0(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 {
 	|input: state| {
 		let mut i = input.index;
@@ -222,7 +225,7 @@ fn scan0(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
 }
 
 #[doc = "Like scan0 except that at least one character must be consumed."]
-fn scan1(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
+fn scan1(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 {
 	|input: state| {
 		do result::chain(scan0(fun)(input))
@@ -240,7 +243,7 @@ fn scan1(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
 }
 
 #[doc = "If all the parsers are successful then the matched text is returned."]
-fn seq2_ret_str<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<~str>
+fn seq2_ret_str<T0: copy owned, T1: copy owned>(p0: parser<T0>, p1: parser<T1>) -> parser<~str>
 {
 	|input: state| {
 		alt p0.then(p1)(input)
@@ -259,7 +262,7 @@ fn seq2_ret_str<T0: copy, T1: copy>(p0: parser<T0>, p1: parser<T1>) -> parser<~s
 }
 
 #[doc = "If all the parsers are successful then the matched text is returned."]
-fn seq3_ret_str<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<~str>
+fn seq3_ret_str<T0: copy owned, T1: copy owned, T2: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<~str>
 {
 	|input: state| {
 		alt p0.then(p1). then(p2)(input)
@@ -278,7 +281,7 @@ fn seq3_ret_str<T0: copy, T1: copy, T2: copy>(p0: parser<T0>, p1: parser<T1>, p2
 }
 
 #[doc = "If all the parsers are successful then the matched text is returned."]
-fn seq4_ret_str<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<~str>
+fn seq4_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<~str>
 {
 	|input: state| {
 		alt p0.then(p1). then(p2).then(p3)(input)
@@ -297,7 +300,7 @@ fn seq4_ret_str<T0: copy, T1: copy, T2: copy, T3: copy>(p0: parser<T0>, p1: pars
 }
 
 #[doc = "If all the parsers are successful then the matched text is returned."]
-fn seq5_ret_str<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>, p4: parser<T4>) -> parser<~str>
+fn seq5_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>, p4: parser<T4>) -> parser<~str>
 {
 	|input: state| {
 		alt p0.then(p1). then(p2).then(p3).then(p4)(input)
@@ -320,7 +323,7 @@ trait str_trait
 {
 	fn lit() -> parser<~str>;
 	fn liti() -> parser<~str>;
-	fn litv<T: copy>(value: T) -> parser<T>;
+	fn litv<T: copy owned>(value: T) -> parser<T>;
 	fn anyc() -> parser<char>;
 	fn noc() -> parser<char>;
 	fn s0() -> parser<~str>;
@@ -339,7 +342,7 @@ impl str_methods of str_trait for &str
 		liti(self)
 	}
 	
-	fn litv<T: copy>(value: T) -> parser<T>
+	fn litv<T: copy owned>(value: T) -> parser<T>
 	{
 		litv(self, value)
 	}

@@ -36,13 +36,13 @@ export parse_status, parse_failed, eot, everything, parse, str_methods, parser_m
 
 
 #[doc = "Return type of parse function."]
-type parse_status<T: copy> = result::result<T, parse_failed>;
+type parse_status<T: copy owned> = result::result<T, parse_failed>;
 
 #[doc = "Returned by parse function on error. Line and col are both 1-based."]
 type parse_failed = {file: ~str, line: uint, col: uint, mesg: ~str};
 
 #[doc = "Uses parser to parse text. Also see everything function."]
-fn parse<T: copy>(parser: parser<T>, file: ~str, text: ~str) -> parse_status<T>
+fn parse<T: copy owned>(parser: parser<T>, file: ~str, text: &str) -> parse_status<T>
 {
 	let chars = chars_with_eot(text);
 	let input = {file: file, text: chars, index: 0u, line: 1};
@@ -81,26 +81,26 @@ fn eot() -> parser<()>
 
 This is typically used in conjunction with the parse function. Note that space has to have the
 same type as parser which is backwards from how it is normally used."]
-fn everything<T: copy, U: copy>(parser: parser<T>, space: parser<U>) -> parser<T>
+fn everything<T: copy owned, U: copy owned>(parser: parser<T>, space: parser<U>) -> parser<T>
 {
 	seq3_ret1(space, parser, eot())
 }
 
 #[doc = "These work the same as the functions of the same name, but tend
 to make the code look a bit better."]
-trait parser_trait<T: copy>
+trait parser_trait<T: copy owned>
 {
-	fn thene<U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>;
-	fn then<U: copy>(parser2: parser<U>) -> parser<U>;
+	fn thene<U: copy owned>(eval: fn@ (T) -> parser<U>) -> parser<U>;
+	fn then<U: copy owned>(parser2: parser<U>) -> parser<U>;
 	fn or(parser2: parser<T>) -> parser<T>;
 	fn optional() -> parser<option<T>>;
 	fn r(n: uint, m: uint) -> parser<~[T]>;
 	fn r0() -> parser<~[T]>;
 	fn r1() -> parser<~[T]>;
-	fn list<U: copy>(sep: parser<U>) -> parser<~[T]>;
-	fn chain_suffix<U: copy>(op: parser<U>) -> parser<~[(U, T)]>;
-	fn chainl1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>;
-	fn chainr1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>;
+	fn list<U: copy owned>(sep: parser<U>) -> parser<~[T]>;
+	fn chain_suffix<U: copy owned>(op: parser<U>) -> parser<~[(U, T)]>;
+	fn chainl1<U: copy owned>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>;
+	fn chainr1<U: copy owned>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>;
 	
 	fn note(mesg: ~str) -> parser<T>;
 	fn err(label: &str) -> parser<T>;
@@ -108,17 +108,17 @@ trait parser_trait<T: copy>
 	
 	fn s0() -> parser<T>;
 	fn s1() -> parser<T>;
-	fn everything<U: copy>(space: parser<U>) -> parser<T>;
+	fn everything<U: copy owned>(space: parser<U>) -> parser<T>;
 }
 
-impl parser_methods<T: copy> of parser_trait<T> for parser<T>
+impl parser_methods<T: copy owned> of parser_trait<T> for parser<T>
 {
-	fn thene<U: copy>(eval: fn@ (T) -> parser<U>) -> parser<U>
+	fn thene<U: copy owned>(eval: fn@ (T) -> parser<U>) -> parser<U>
 	{
 		thene(self, eval)
 	}
 	
-	fn then<U: copy>(parser2: parser<U>) -> parser<U>
+	fn then<U: copy owned>(parser2: parser<U>) -> parser<U>
 	{
 		then(self, parser2)
 	}
@@ -148,22 +148,22 @@ impl parser_methods<T: copy> of parser_trait<T> for parser<T>
 		r1(self)
 	}
 	
-	fn list<U: copy>(sep: parser<U>) -> parser<~[T]>
+	fn list<U: copy owned>(sep: parser<U>) -> parser<~[T]>
 	{
 		list(self, sep)
 	}
 	
-	fn chain_suffix<U: copy>(op: parser<U>) -> parser<~[(U, T)]>
+	fn chain_suffix<U: copy owned>(op: parser<U>) -> parser<~[(U, T)]>
 	{
 		chain_suffix(self, op)
 	}
 	
-	fn chainl1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
+	fn chainl1<U: copy owned>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
 	{
 		chainl1(self, op, eval)
 	}
 	
-	fn chainr1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
+	fn chainr1<U: copy owned>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>
 	{
 		chainr1(self, op, eval)
 	}
@@ -221,9 +221,13 @@ impl parser_methods<T: copy> of parser_trait<T> for parser<T>
 	Non-empty labels should look like \"expression\" or \"statement\"."]
 	fn err(label: &str) -> parser<T>
 	{
-		|input: state| {
+		let label = unslice(label);
+		
+		|input: state|
+		{
 			do result::chain_err((self.note(unslice(label)))(input))
-				|failure| {
+			|failure| 
+			{
 				if str::is_empty(label)
 				{
 					result::err({mesg: ~"" with failure})
@@ -259,7 +263,7 @@ impl parser_methods<T: copy> of parser_trait<T> for parser<T>
 		s1(self)
 	}
 	
-	fn everything<U: copy>(space: parser<U>) -> parser<T>
+	fn everything<U: copy owned>(space: parser<U>) -> parser<T>
 	{
 		everything(self, space)
 	}
