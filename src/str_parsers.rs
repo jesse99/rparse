@@ -1,7 +1,7 @@
 #[doc = "Parser functions with str return types."];
 
 #[doc = "Returns s if input matches s ignoring case. Also see lit and litv."]
-fn liti(in_s: ~str) -> parser<~str>
+fn liti(in_s: &str) -> parser<~str>
 {
 	let s = str::to_lower(in_s);
 	
@@ -35,7 +35,7 @@ fn liti(in_s: ~str) -> parser<~str>
 }
 
 #[doc = "Returns s if input matches s. Also see liti and litv."]
-fn lit(s: ~str) -> parser<~str>
+fn lit(s: &str) -> parser<~str>
 {
 	|input: state| {
 		let mut i = 0u;
@@ -61,7 +61,7 @@ fn lit(s: ~str) -> parser<~str>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", s]})
+			result::err({old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", unslice(s)]})
 		}
 	}
 }
@@ -118,7 +118,7 @@ fn match1(predicate: fn@ (char) -> bool) -> parser<~str>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: i with input}, mesg: ""})
+			result::err({old_state: input, err_state: {index: i with input}, mesg: ~""})
 		}
 	}
 }
@@ -143,7 +143,7 @@ fn optional_str(parser: parser<~str>) -> parser<~str>
 			}
 			result::err(_failure)
 			{
-				result::ok({new_state: input, value: ""})
+				result::ok({new_state: input, value: ~""})
 			}
 		}
 	}
@@ -178,7 +178,7 @@ fn scan(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
 		}
 		else
 		{
-			result::ok({new_state: {index: i, line: line with input}, value: ""})
+			result::ok({new_state: {index: i, line: line with input}, value: ~""})
 		}
 	}
 }
@@ -192,7 +192,7 @@ fn scan0(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
 	|input: state| {
 		let mut i = input.index;
 		let mut line = input.line;
-		let mut result = result::err({old_state: input, err_state: input, mesg: "dummy"});
+		let mut result = result::err({old_state: input, err_state: input, mesg: ~"dummy"});
 		while result::is_err(result)
 		{
 			let count = fun(input.text, i);
@@ -233,7 +233,7 @@ fn scan1(fun: fn@ (~[char], uint) -> uint) -> parser<~str>
 			}
 			else
 			{
-				result::err({old_state: input, err_state: pass.new_state, mesg: ""})
+				result::err({old_state: input, err_state: pass.new_state, mesg: ~""})
 			}
 		}
 	}
@@ -315,3 +315,65 @@ fn seq5_ret_str<T0: copy, T1: copy, T2: copy, T3: copy, T4: copy>(p0: parser<T0>
 	}
 }
 
+#[doc = "Methods that treat a string as a literal."]
+trait str_trait
+{
+	fn lit() -> parser<~str>;
+	fn liti() -> parser<~str>;
+	fn litv<T: copy>(value: T) -> parser<T>;
+	fn anyc() -> parser<char>;
+	fn noc() -> parser<char>;
+	fn s0() -> parser<~str>;
+	fn s1() -> parser<~str>;
+}
+
+impl str_methods of str_trait for &str
+{
+	fn lit() -> parser<~str>
+	{
+		lit(self)
+	}
+	
+	fn liti() -> parser<~str>
+	{
+		liti(self)
+	}
+	
+	fn litv<T: copy>(value: T) -> parser<T>
+	{
+		litv(self, value)
+	}
+	
+	fn anyc() -> parser<char>
+	{
+		anyc(self)
+	}
+	
+	fn noc() -> parser<char>
+	{
+		noc(self)
+	}
+	
+	fn s0() -> parser<~str>
+	{
+		s0(lit(self))
+	}
+	
+	fn s1() -> parser<~str>
+	{
+		s1(lit(self))
+	}
+}
+
+trait str_parser_trait
+{
+	fn optional_str() -> parser<~str>;
+}
+
+impl str_parser_methods of str_parser_trait for parser<~str>
+{
+	fn optional_str() -> parser<~str>
+	{
+		optional_str(self)
+	}
+}

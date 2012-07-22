@@ -24,11 +24,11 @@ fn expr_parser() -> parser<int>
 	
 	// term := factor ([*/] factor)*
 	let term = do factor.chainl1("*".s0().or("/".s0()))
-		|lhs, op, rhs| { if op == "*" {lhs*rhs} else {lhs/rhs}};
+		|lhs, op, rhs| { if op == ~"*" {lhs*rhs} else {lhs/rhs}};
 	
 	// expr := term ([+-] term)*
 	let expr = term.chainl1("+".s0().or("-".s0()),
-		|lhs, op, rhs| { if op == "+" {lhs + rhs} else {lhs - rhs}}).err("expression");
+		|lhs, op, rhs| { if op == ~"+" {lhs + rhs} else {lhs - rhs}}).err("expression");
 	*expr_ptr = expr;
 	
 	// start := s0 expr EOT
@@ -87,7 +87,7 @@ fn test_expr()
 #[test]
 fn test_usage()
 {
-	alt expr_parser().parse("test", "2+3*5")
+	alt expr_parser().parse(~"test", ~"2+3*5")
 	{
 		result::ok(value)
 		{

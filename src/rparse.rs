@@ -72,7 +72,7 @@ fn eot() -> parser<()>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: input, mesg: "EOT"})
+			result::err({old_state: input, err_state: input, mesg: ~"EOT"})
 		}
 	}
 }
@@ -84,69 +84,6 @@ same type as parser which is backwards from how it is normally used."]
 fn everything<T: copy, U: copy>(parser: parser<T>, space: parser<U>) -> parser<T>
 {
 	seq3_ret1(space, parser, eot())
-}
-
-#[doc = "Methods that treat a string as a literal."]
-trait str_trait
-{
-	fn lit() -> parser<~str>;
-	fn liti() -> parser<~str>;
-	fn litv<T: copy>(value: T) -> parser<T>;
-	fn anyc() -> parser<char>;
-	fn noc() -> parser<char>;
-	fn s0() -> parser<~str>;
-	fn s1() -> parser<~str>;
-}
-
-impl str_methods of str_trait for ~str
-{
-	fn lit() -> parser<~str>
-	{
-		lit(self)
-	}
-	
-	fn liti() -> parser<~str>
-	{
-		liti(self)
-	}
-	
-	fn litv<T: copy>(value: T) -> parser<T>
-	{
-		litv(self, value)
-	}
-	
-	fn anyc() -> parser<char>
-	{
-		anyc(self)
-	}
-	
-	fn noc() -> parser<char>
-	{
-		noc(self)
-	}
-	
-	fn s0() -> parser<~str>
-	{
-		s0(lit(self))
-	}
-	
-	fn s1() -> parser<~str>
-	{
-		s1(lit(self))
-	}
-}
-
-trait str_parser_trait
-{
-	fn optional_str() -> parser<~str>;
-}
-
-impl str_parser_methods of str_parser_trait for parser<~str>
-{
-	fn optional_str() -> parser<~str>
-	{
-		optional_str(self)
-	}
 }
 
 #[doc = "These work the same as the functions of the same name, but tend
@@ -166,7 +103,7 @@ trait parser_trait<T: copy>
 	fn chainr1<U: copy>(op: parser<U>, eval: fn@ (T, U, T) -> T) -> parser<T>;
 	
 	fn note(mesg: ~str) -> parser<T>;
-	fn err(label: ~str) -> parser<T>;
+	fn err(label: &str) -> parser<T>;
 	fn parse(file: ~str, text: ~str) -> parse_status<T>;
 	
 	fn s0() -> parser<T>;
@@ -282,18 +219,18 @@ impl parser_methods<T: copy> of parser_trait<T> for parser<T>
 	If label is not empty then it is used if the previous parser completely failed to parse or if its error
 	message was empty. Otherwise it suppresses errors from the parser (in favor of a later err function).
 	Non-empty labels should look like \"expression\" or \"statement\"."]
-	fn err(label: ~str) -> parser<T>
+	fn err(label: &str) -> parser<T>
 	{
 		|input: state| {
-			do result::chain_err((self.note(label))(input))
-			    |failure| {
+			do result::chain_err((self.note(unslice(label)))(input))
+				|failure| {
 				if str::is_empty(label)
 				{
-					result::err({mesg: "" with failure})
+					result::err({mesg: ~"" with failure})
 				}
 				else if failure.err_state.index == input.index || str::is_empty(failure.mesg)
 				{
-					result::err({mesg: label with failure})
+					result::err({mesg: unslice(label) with failure})
 				}
 				else
 				{

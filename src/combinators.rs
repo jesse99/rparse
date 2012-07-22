@@ -7,7 +7,15 @@ the parsers they are invoked with normally will)."];
 #[doc(hidden)]
 fn chain_suffix<T: copy, U: copy>(parser: parser<T>, op: parser<U>) -> parser<~[(U, T)]>
 {
-	let q = op.thene({|operator| parser.thene({|value| return((operator, value))})});
+	let q = op.thene(
+	|operator|
+	{
+		parser.thene(
+		|value|
+		{
+			return((operator, value))
+		})
+	});
 	q.r0()
 }
 
@@ -23,7 +31,7 @@ fn chainl1<T: copy, U: copy>(parser: parser<T>, op: parser<U>, eval: fn@ (T, U, 
 			{
 				result::ok(pass2)
 				{
-					let value = vec::foldl(pass.value, pass2.value, {|lhs, rhs| eval(lhs, rhs.first(), rhs.second())});
+					let value = vec::foldl(pass.value, pass2.value, {|lhs, rhs: (U, T)| eval(lhs, rhs.first(), rhs.second())});
 					result::ok({new_state: pass2.new_state, value: value})
 				}
 				result::err(failure)
@@ -63,7 +71,7 @@ fn chainr1<T: copy, U: copy>(parser: parser<T>, op: parser<U>, eval: fn@ (T, U, 
 						// [(e1 op1), (e2 op2)] and e3
 						let terms = vec::zip(parsers, ops);
 						
-						let value = vec::foldr(terms, e3, {|lhs, rhs| eval(lhs.first(), lhs.second(), rhs)});
+						let value = vec::foldr(terms, e3, {|lhs: (T, U), rhs| eval(lhs.first(), lhs.second(), rhs)});
 						result::ok({new_state: pass2.new_state, value: value})
 					}
 					else
@@ -149,7 +157,7 @@ fn or_mesg(mesg1: ~str, mesg2: ~str) -> ~str
 	}
 	else
 	{
-		""
+		~""
 	}
 }
 
@@ -223,7 +231,7 @@ fn or_v<T: copy>(parsers: ~[parser<T>]) -> parser<T>
 		else
 		{
 			let errs = vec::filter(errors, |s| str::is_not_empty(s));
-			let mesg = str::connect(errs, " or ");
+			let mesg = str::connect(errs, ~" or ");
 			result::err({old_state: input, err_state: {index: max_index with input}, mesg: mesg})
 		}
 	}
@@ -259,7 +267,7 @@ fn r<T: copy>(parser: parser<T>, n: uint, m: uint) -> parser<~[T]>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: output, mesg: ""})
+			result::err({old_state: input, err_state: output, mesg: ~""})
 		}
 	}
 }
@@ -571,7 +579,7 @@ fn s1<T: copy>(parser: parser<T>) -> parser<T>
 			}
 			else
 			{
-				result::err({old_state: input, err_state: pass.new_state, mesg: "whitespace"})
+				result::err({old_state: input, err_state: pass.new_state, mesg: ~"whitespace"})
 			}
 		}
 	}

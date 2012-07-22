@@ -18,14 +18,16 @@ fn match(predicate: fn@ (char) -> bool) -> parser<char>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: i with input}, mesg: ""})
+			result::err({old_state: input, err_state: {index: i with input}, mesg: ~""})
 		}
 	}
 }
 
 #[doc = "Attempts to match any character in chars. If matched the char is returned."]
-fn anyc(chars: ~str) -> parser<char>
+fn anyc(chars: &str) -> parser<char>
 {
+	let chars = unslice(chars);
+	
 	|input: state| {
 		let mut i = input.index;
 		if str::find_char(chars, input.text[i]).is_some()
@@ -39,14 +41,16 @@ fn anyc(chars: ~str) -> parser<char>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: i with input}, mesg: #fmt["[%s]", chars]})
+			result::err({old_state: input, err_state: {index: i with input}, mesg: #fmt["[%s]", unslice(chars)]})
 		}
 	}
 }
 
 #[doc = "Attempts to match no character in chars. If matched the char is returned."]
-fn noc(chars: ~str) -> parser<char>
+fn noc(chars: &str) -> parser<char>
 {
+	let chars = unslice(chars);
+	
 	|input: state| {
 		let mut i = input.index;
 		if input.text[i] != EOT && str::find_char(chars, input.text[i]).is_none()
@@ -60,7 +64,7 @@ fn noc(chars: ~str) -> parser<char>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: i with input}, mesg: #fmt["[^%s]", chars]})
+			result::err({old_state: input, err_state: {index: i with input}, mesg: #fmt["[^%s]", unslice(chars)]})
 		}
 	}
 }

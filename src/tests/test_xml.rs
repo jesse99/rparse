@@ -25,11 +25,11 @@ impl of to_str for xml
 				let childs = vec::map(children, |c| c.to_str() );
 				if vec::len(attrs) > 0u
 				{
-					ret #fmt["<%s %s>%s%s</%s>", name, str::connect(attrs, " "), str::connect(childs, ""), content, name];
+					ret #fmt["<%s %s>%s%s</%s>", name, str::connect(attrs, ~" "), str::connect(childs, ~""), content, name];
 				}
 				else
 				{
-					ret #fmt["<%s>%s%s</%s>", name, str::connect(childs, ""), content, name];
+					ret #fmt["<%s>%s%s</%s>", name, str::connect(childs, ~""), content, name];
 				}
 			}
 		}
@@ -44,15 +44,15 @@ impl of to_str for attribute
 	}
 }
 
-fn check_xml_ok(inText: ~str, expected: ~str, parser: parser<xml>) -> bool
+fn check_xml_ok(inText: &str, expected: &str, parser: parser<xml>) -> bool
 {
 	#info["----------------------------------------------------"];
 	let text = chars_with_eot(inText);
-	alt parser({file: "unit test", text: text, index: 0u, line: 1,})
+	alt parser({file: ~"unit test", text: text, index: 0u, line: 1,})
 	{
 		result::ok(pass)
 		{
-			check_ok(result::ok({new_state: pass.new_state, value: pass.value.to_str()}), expected)
+			check_ok(result::ok({new_state: pass.new_state, value: pass.value.to_str()}), unslice(expected))
 		}
 		result::err(failure)
 		{
@@ -61,11 +61,11 @@ fn check_xml_ok(inText: ~str, expected: ~str, parser: parser<xml>) -> bool
 	}
 }
 
-fn check_xml_failed(inText: ~str, parser: parser<xml>, expected: ~str, line: int) -> bool
+fn check_xml_failed(inText: &str, parser: parser<xml>, expected: &str, line: int) -> bool
 {
 	#info["----------------------------------------------------"];
 	let text = chars_with_eot(inText);
-	let result = parser({file: "unit test", text: text, index: 0u, line: 1});
+	let result = parser({file: ~"unit test", text: text, index: 0u, line: 1});
 	ret check_failed(result, expected, line);
 }
 
@@ -109,7 +109,7 @@ fn xml_parser() -> parser<xml>
 {
 	let name = identifier().s0();
 	
-	let dummy = xxml("dummy", ~[], ~[], "");
+	let dummy = xxml(~"dummy", ~[], ~[], ~"");
 	let element_ptr = @mut return(dummy);
 	let element_ref = forward_ref(element_ptr); 
 	
@@ -122,7 +122,7 @@ fn xml_parser() -> parser<xml>
 	// empty_element := '<' name attribute* '/>'
 	let empty_element = do seq4("<".s0(), name, attribute.r0(), "/>".s0())
 	|_a1, name, attrs, _a4| {
-		result::ok(xxml(name, attrs, ~[], ""))
+		result::ok(xxml(name, attrs, ~[], ~""))
 	};
 	
 	// complex_element := '<' name attribute* '>' element* content '</' name '>'

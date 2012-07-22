@@ -5,7 +5,7 @@ Clients should not need to use most of these except for log_ok and log_err."];
 const EOT: char = '\u0003';
 
 #[doc = "Converts a string to an array of char and appends an EOT character."]
-fn chars_with_eot(s: ~str) -> ~[char]
+fn chars_with_eot(s: &str) -> ~[char]
 {
 	let mut buf = ~[], i = 0u;
 	let len = str::len(s);
@@ -68,7 +68,7 @@ pure fn lower_char(ch: char) -> char
 #[doc = "Returns a string with count ch characters."]
 fn repeat_char(ch: char, count: uint) -> ~str
 {
-	let mut value = "";
+	let mut value = ~"";
 	str::reserve(value, count);
 	for uint::range(0u, count) |_i| { str::push_char(value, ch);}
 	ret value;
@@ -98,9 +98,21 @@ fn munge_chars(chars: ~[char]) -> ~str
 	//let bullet = '\u2022';
 	let bullet = '.';
 	
-	let mut value = "";
+	let mut value = ~"";
 	str::reserve(value, vec::len(chars));
 	do vec::iter(chars) |ch| { str::push_char(value, if is_print(ch) {ch} else {bullet});}
 	ret value;
 }
+
+// TODO: Hopefully rust will provide something better for converting and mixing ~str and & str.
+fn unslice(s: &str) -> ~str
+{
+	s.slice(0, s.len())
+}
+
+fn unslice_vec<T>(s: &[T]) -> ~[T]
+{
+	s.slice(0, s.len())
+}
+
 

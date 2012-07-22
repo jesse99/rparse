@@ -1,7 +1,7 @@
 #[doc = "Parser functions with generic return types."];
 
 #[doc = "Returns value if input matches s. Also see lit."]
-fn litv<T: copy>(s: ~str, value: T) -> parser<T>
+fn litv<T: copy>(s: &str, value: T) -> parser<T>
 {
 	{|input: state|
 		alt lit(s)(input)
@@ -19,10 +19,10 @@ fn litv<T: copy>(s: ~str, value: T) -> parser<T>
 }
 
 #[doc = "Returns a parser which always fails."]
-fn fails<T: copy>(mesg: ~str) -> parser<T>
+fn fails<T: copy>(mesg: &str) -> parser<T>
 {
 	{|input: state|
-		result::err({old_state: input, err_state: input, mesg: mesg})
+		result::err({old_state: input, err_state: input, mesg: unslice(mesg)})
 	}
 }
 

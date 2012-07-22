@@ -47,7 +47,7 @@ fn parse_unary() -> parser<char>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: input.index with input}, mesg: "'-' or '+'"})
+			result::err({old_state: input, err_state: {index: input.index with input}, mesg: ~"'-' or '+'"})
 		}
 	}
 }
@@ -63,7 +63,7 @@ fn parse_digit() -> parser<int>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: input.index with input}, mesg: "digit"})
+			result::err({old_state: input, err_state: {index: input.index with input}, mesg: ~"digit"})
 		}
 	}
 }
@@ -91,11 +91,11 @@ fn test_thene()
 	assert check_int_failed("--9", p, "digit", 1);
 	
 	let text = chars_with_eot("~9");
-	let result = p({file: "unit test", text: text, index: 0u, line: 1});
+	let result = p({file: ~"unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;	// simple case where parse_unary fails
 	
 	let text = chars_with_eot("--");
-	let result = p({file: "unit test", text: text, index: 0u, line: 1});
+	let result = p({file: ~"unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;	// if parse_num fails we need to start over
 }
 
@@ -111,7 +111,7 @@ fn test_then()
 	assert check_str_failed("<foo-", p, "'>'", 1);
 	
 	let text = chars_with_eot("<foo-");
-	let result = p({file: "unit test", text: text, index: 0u, line: 1});
+	let result = p({file: ~"unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;	// if any of the then clauses fails we need to start over
 }
 
@@ -122,7 +122,7 @@ fn test_seq()
 	let prefix = match1(is_identifier_prefix);
 	let suffix = match1(is_identifier_suffix).r0();
 	let trailer = match1(is_identifier_trailer).optional();
-	let p = seq3(prefix, suffix, trailer, |a, b, c| result::ok(a + str::connect(b, "") + option::get_default(c, "")) ).err("identifier");
+	let p = seq3(prefix, suffix, trailer, |a, b, c| result::ok(a + str::connect(b, ~"") + option::get_default(c, ~"")) ).err("identifier");
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -134,7 +134,7 @@ fn test_seq()
 	
 	let p = seq2("a".lit(), "b".lit(), |x, y| result::ok(x+y) );
 	let text = chars_with_eot("az");
-	let result = p({file: "unit test", text: text, index: 0u, line: 1});
+	let result = p({file: ~"unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;
 }
 
@@ -148,7 +148,7 @@ fn parse_lower() -> parser<char>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: input.index with input}, mesg: "lower-case letter"})
+			result::err({old_state: input, err_state: {index: input.index with input}, mesg: ~"lower-case letter"})
 		}
 	}
 }
@@ -163,7 +163,7 @@ fn parse_upper() -> parser<char>
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: input.index with input}, mesg: "upper-case letter"})
+			result::err({old_state: input, err_state: {index: input.index with input}, mesg: ~"upper-case letter"})
 		}
 	}
 }
@@ -191,7 +191,7 @@ fn test_or_v()
 	assert check_str_failed("", p, "'a' or 'bb' or 'c'", 1);
 	
 	let text = chars_with_eot("bz");
-	let result = p({file: "unit test", text: text, index: 0u, line: 1});
+	let result = p({file: ~"unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;
 }
 
@@ -200,11 +200,11 @@ fn test__repeat0()
 {
 	let p = "b".lit().r0();
 	
-	assert check_str_array_ok("", p, ~[]);
-	assert check_str_array_ok("b", p, ~["b"]);
-	assert check_str_array_ok("bb", p, ~["b", "b"]);
-	assert check_str_array_ok("bbb", p, ~["b", "b", "b"]);
-	assert check_str_array_ok("c", p, ~[]);
+	assert check_str_array_ok("", p, []);
+	assert check_str_array_ok("b", p, [~"b"]);
+	assert check_str_array_ok("bb", p, [~"b", ~"b"]);
+	assert check_str_array_ok("bbb", p, [~"b", ~"b", ~"b"]);
+	assert check_str_array_ok("c", p, []);
 }
 
 #[test]
@@ -212,9 +212,9 @@ fn test__repeat1()
 {
 	let p = "b".lit().r1().err("b's");
 	
-	assert check_str_array_ok("b", p, ~["b"]);
-	assert check_str_array_ok("bb", p, ~["b", "b"]);
-	assert check_str_array_ok("bbb", p, ~["b", "b", "b"]);
+	assert check_str_array_ok("b", p, [~"b"]);
+	assert check_str_array_ok("bb", p, [~"b", ~"b"]);
+	assert check_str_array_ok("bbb", p, [~"b", ~"b", ~"b"]);
 	
 	assert check_str_array_failed("", p, "b's", 1);
 	assert check_str_array_failed("c", p, "b's", 1);
@@ -225,10 +225,10 @@ fn test_list()
 {
 	let p = "b".lit().list(",".lit());
 	
-	assert check_str_array_ok("b", p, ~["b"]);
-	assert check_str_array_ok("b,b", p, ~["b", "b"]);
-	assert check_str_array_ok("b,b,b", p, ~["b", "b", "b"]);
-	assert check_str_array_ok("b,b,c", p, ~["b", "b"]);
+	assert check_str_array_ok("b", p, [~"b"]);
+	assert check_str_array_ok("b,b", p, [~"b", ~"b"]);
+	assert check_str_array_ok("b,b,b", p, [~"b", ~"b", ~"b"]);
+	assert check_str_array_ok("b,b,c", p, [~"b", ~"b"]);
 	
 	assert check_str_array_failed("", p, "'b'", 1);
 	assert check_str_array_failed("c", p, "'b'", 1);
@@ -245,7 +245,7 @@ fn test_chainl1()
 {
 	let factor = decimal_number();
 	let op = "*".lit().or("/".lit());
-	let p = factor.chainl1(op, |lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs} );
+	let p = factor.chainl1(op, |lhs, op, rhs| if op == ~"*" {lhs * rhs} else {lhs / rhs} );
 	
 	assert check_int_ok("2", p, 2);
 	assert check_int_ok("2*3", p, 6);
@@ -259,7 +259,7 @@ fn test_chainr1()
 {
 	let factor = decimal_number();
 	let op = "*".lit().or("/".lit());
-	let p = factor.chainr1(op, |lhs, op, rhs| if op == "*" {lhs * rhs} else {lhs / rhs} );
+	let p = factor.chainr1(op, |lhs, op, rhs| if op == ~"*" {lhs * rhs} else {lhs / rhs} );
 	
 	assert check_int_ok("2", p, 2);
 	assert check_int_ok("2*3", p, 6);
@@ -284,11 +284,11 @@ fn test_parse()
 {
 	let p = "<".lit().s0().then("foo".lit().s0()).then(">".lit()).err("bracketed foo");
 	
-	alt parse(p, "unit test", "< foo\t>")
+	alt parse(p, ~"unit test", ~"< foo\t>")
 	{
 		result::ok(s)
 		{
-			if s != ">"
+			if s != ~">"
 			{
 				io::stderr().write_line(#fmt["'>' but found '%s'.", s]);
 				assert false;
@@ -302,7 +302,7 @@ fn test_parse()
 	}
 	
 	assert check_str_failed("<foo", p, "'>'", 1);
-	alt parse(p, "unit test", "< \n\nfoo\tx")
+	alt parse(p, ~"unit test", ~"< \n\nfoo\tx")
 	{
 		result::ok(s)
 		{
@@ -311,10 +311,10 @@ fn test_parse()
 		}
 		result::err({file, line, col, mesg})
 		{
-			assert file == "unit test";
+			assert file == ~"unit test";
 			assert line == 3u;
 			assert col == 5u;
-			assert mesg == "'>'";
+			assert mesg == ~"'>'";
 		}
 	}
 }

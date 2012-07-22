@@ -1,6 +1,7 @@
 #[doc = "Functions that can be used to parse C99 lexical elements (or with languages
 that have similar lexical elements)."];
-import types::{parser, state, status}; 
+import types::{parser, state, status};
+import str_parsers::{str_methods};
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
 export identifier, decimal_number, octal_number, hex_number, float_number,
@@ -23,7 +24,7 @@ but we do so to make this parser more reusable."]
 fn decimal_number() -> parser<int>
 {
 	do match1(is_digit).thene()
-		    |text| {
+		|text| {
 			alt int::from_str(text)
 			{
 				option::some(value)
@@ -42,7 +43,7 @@ fn decimal_number() -> parser<int>
 fn octal_number() -> parser<int>
 {
 	do match1_0(|c| c == '0', is_octal).thene()
-		    |text| {
+		|text| {
 			alt from_base_8(text)
 			{
 				result::ok(value)
@@ -57,10 +58,12 @@ fn octal_number() -> parser<int>
 		}
 }
 
+//fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
+
 #[doc = "hex_number := 0[xX] [0-9a-fA-F]+"]
 fn hex_number() -> parser<int>
 {
-	let prefix = ~"0".lit().then(or("x".lit(), "X".lit()));
+	let prefix = "0".lit().then(or("x".lit(), "X".lit()));
 	let digits = do match1(is_hex).thene()
 			|text| {
 			alt from_base_16(text)
@@ -209,7 +212,7 @@ fn from_base_8(text: ~str) -> result::result<int, ~str>
 		}
 		else
 		{
-			ret result::err("Octal number is too large");
+			ret result::err(~"Octal number is too large");
 		}
 		power *= 8;
 	}
@@ -247,7 +250,7 @@ fn from_base_16(text: ~str) -> result::result<int, ~str>
 		}
 		else
 		{
-			ret result::err("Hex number is too large");
+			ret result::err(~"Hex number is too large");
 		}
 		power *= 16;
 	}
