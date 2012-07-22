@@ -1,7 +1,6 @@
 #[doc = "Functions that can be used to parse C99 lexical elements (or with languages
 that have similar lexical elements)."];
 import types::{parser, state, status};
-import str_parsers::{str_methods};
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
 export identifier, decimal_number, octal_number, hex_number, float_number,

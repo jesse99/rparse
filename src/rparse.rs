@@ -32,7 +32,7 @@ export liti, lit, match0, match1, match1_0, optional_str, scan, scan0, scan1, se
 // types
 export parser, state, status, succeeded, failed;
 
-export parse_status, parse_failed, eot, everything, parse, str_methods, parser_methods;
+export parse_status, parse_failed, eot, everything, parse, str_trait, str_methods, str_parser_trait, str_parser_methods, parser_trait, parser_methods;
 
 
 #[doc = "Return type of parse function."]
@@ -84,6 +84,69 @@ same type as parser which is backwards from how it is normally used."]
 fn everything<T: copy owned, U: copy owned>(parser: parser<T>, space: parser<U>) -> parser<T>
 {
 	seq3_ret1(space, parser, eot())
+}
+
+#[doc = "Methods that treat a string as a literal."]
+trait str_trait
+{
+	fn lit() -> parser<~str>;
+	fn liti() -> parser<~str>;
+	fn litv<T: copy owned>(value: T) -> parser<T>;
+	fn anyc() -> parser<char>;
+	fn noc() -> parser<char>;
+	fn s0() -> parser<~str>;
+	fn s1() -> parser<~str>;
+}
+
+impl str_methods of str_trait for &str
+{
+	fn lit() -> parser<~str>
+	{
+		lit(self)
+	}
+	
+	fn liti() -> parser<~str>
+	{
+		liti(self)
+	}
+	
+	fn litv<T: copy owned>(value: T) -> parser<T>
+	{
+		litv(self, value)
+	}
+	
+	fn anyc() -> parser<char>
+	{
+		anyc(self)
+	}
+	
+	fn noc() -> parser<char>
+	{
+		noc(self)
+	}
+	
+	fn s0() -> parser<~str>
+	{
+		s0(lit(self))
+	}
+	
+	fn s1() -> parser<~str>
+	{
+		s1(lit(self))
+	}
+}
+
+trait str_parser_trait
+{
+	fn optional_str() -> parser<~str>;
+}
+
+impl str_parser_methods of str_parser_trait for parser<~str>
+{
+	fn optional_str() -> parser<~str>
+	{
+		optional_str(self)
+	}
 }
 
 #[doc = "These work the same as the functions of the same name, but tend
