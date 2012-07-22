@@ -1,6 +1,6 @@
-#[doc = "Parser functions with str return types."];
+//! Parser functions with str return types.
 
-#[doc = "Returns s if input matches s ignoring case. Also see lit and litv."]
+/// Returns s if input matches s ignoring case. Also see lit and litv.
 fn liti(in_s: &str) -> parser<~str>
 {
 	let s = str::to_lower(in_s);
@@ -34,7 +34,7 @@ fn liti(in_s: &str) -> parser<~str>
 	}
 }
 
-#[doc = "Returns s if input matches s. Also see liti and litv."]
+/// Returns s if input matches s. Also see liti and litv.
 fn lit(s: &str) -> parser<~str>
 {
 	let s = unslice(s);
@@ -83,10 +83,10 @@ fn lit(s: &str) -> parser<~str>
 // blocks (TODO: though maybe we can somehow ignore or collapse low
 // level parsers when logging).
 
-#[doc = "Consumes zero or more characters matching the predicate.
-Returns the matched characters. 
-
-Note that this does not increment line."]
+/// Consumes zero or more characters matching the predicate.
+/// Returns the matched characters. 
+/// 
+/// Note that this does not increment line.
 fn match0(predicate: fn@ (char) -> bool) -> parser<~str>
 {
 	|input: state| {
@@ -101,10 +101,10 @@ fn match0(predicate: fn@ (char) -> bool) -> parser<~str>
 	}
 }
 
-#[doc = "Consumes one or more characters matching the predicate.
-Returns the matched characters. 
-
-Note that this does not increment line."]
+/// Consumes one or more characters matching the predicate.
+/// Returns the matched characters. 
+/// 
+/// Note that this does not increment line.
 fn match1(predicate: fn@ (char) -> bool) -> parser<~str>
 {
 	|input: state| {
@@ -126,7 +126,7 @@ fn match1(predicate: fn@ (char) -> bool) -> parser<~str>
 	}
 }
 
-#[doc = "match1_0 := prefix+ suffix*"]
+/// match1_0 := prefix+ suffix*
 fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> parser<~str>
 {
 	let prefix = match1(prefix);
@@ -134,7 +134,7 @@ fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> parser<~s
 	prefix.thene(|p| suffix.thene(|s| return(p + s) ) )
 }
 
-#[doc = "optional := e?"]
+/// optional := e?
 fn optional_str(parser: parser<~str>) -> parser<~str>
 {
 	|input: state| {
@@ -152,9 +152,9 @@ fn optional_str(parser: parser<~str>) -> parser<~str>
 	}
 }
 
-#[doc = "Calls fun once and matches the number of characters returned by fun. 
-
-This does increment line."]
+/// Calls fun once and matches the number of characters returned by fun. 
+/// 
+/// This does increment line.
 fn scan(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 {
 	|input: state| {
@@ -186,10 +186,10 @@ fn scan(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 	}
 }
 
-#[doc = "Calls fun with an index into the characters to be parsed until it returns zero characters.
-Returns the matched characters. 
-
-This does increment line."]
+/// Calls fun with an index into the characters to be parsed until it returns zero characters.
+/// Returns the matched characters. 
+/// 
+/// This does increment line.
 fn scan0(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 {
 	|input: state| {
@@ -224,7 +224,7 @@ fn scan0(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 	}
 }
 
-#[doc = "Like scan0 except that at least one character must be consumed."]
+/// Like scan0 except that at least one character must be consumed.
 fn scan1(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 {
 	|input: state| {
@@ -242,7 +242,7 @@ fn scan1(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 	}
 }
 
-#[doc = "If all the parsers are successful then the matched text is returned."]
+/// If all the parsers are successful then the matched text is returned.
 fn seq2_ret_str<T0: copy owned, T1: copy owned>(p0: parser<T0>, p1: parser<T1>) -> parser<~str>
 {
 	|input: state| {
@@ -261,7 +261,7 @@ fn seq2_ret_str<T0: copy owned, T1: copy owned>(p0: parser<T0>, p1: parser<T1>) 
 	}
 }
 
-#[doc = "If all the parsers are successful then the matched text is returned."]
+/// If all the parsers are successful then the matched text is returned.
 fn seq3_ret_str<T0: copy owned, T1: copy owned, T2: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<~str>
 {
 	|input: state| {
@@ -280,7 +280,7 @@ fn seq3_ret_str<T0: copy owned, T1: copy owned, T2: copy owned>(p0: parser<T0>, 
 	}
 }
 
-#[doc = "If all the parsers are successful then the matched text is returned."]
+/// If all the parsers are successful then the matched text is returned.
 fn seq4_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<~str>
 {
 	|input: state| {
@@ -299,7 +299,7 @@ fn seq4_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(
 	}
 }
 
-#[doc = "If all the parsers are successful then the matched text is returned."]
+/// If all the parsers are successful then the matched text is returned.
 fn seq5_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>, p4: parser<T4>) -> parser<~str>
 {
 	|input: state| {
