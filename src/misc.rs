@@ -1,7 +1,6 @@
 //! Various utility functions. 
 //!
 //! Clients should not need to use most of these except for log_ok and log_err.
-
 const EOT: char = '\u0003';
 
 /// Converts a string to an array of char and appends an EOT character.

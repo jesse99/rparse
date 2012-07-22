@@ -5,7 +5,8 @@ fn liti(in_s: &str) -> parser<~str>
 {
 	let s = str::to_lower(in_s);
 	
-	|input: state| {
+	|input: state|
+	{
 		let mut i = 0u;
 		let mut j = input.index;
 		while i < str::len(s)
