@@ -1,4 +1,4 @@
-/// The types used by all parse functions.
+//! The types used by all parse functions.
 import result = result::result;
 
 // TODO: should be able to get rid of all the owned bounds once

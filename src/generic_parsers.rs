@@ -1,6 +1,6 @@
-#[doc = "Parser functions with generic return types."];
+//! Parser functions with generic return types.
 
-#[doc = "Returns value if input matches s. Also see lit."]
+/// Returns value if input matches s. Also see lit.
 fn litv<T: copy owned>(s: &str, value: T) -> parser<T>
 {
 	let s = unslice(s);
@@ -20,7 +20,7 @@ fn litv<T: copy owned>(s: &str, value: T) -> parser<T>
 	}
 }
 
-#[doc = "Returns a parser which always fails."]
+/// Returns a parser which always fails.
 fn fails<T: copy owned>(mesg: &str) -> parser<T>
 {
 	let mesg = unslice(mesg);
@@ -30,7 +30,7 @@ fn fails<T: copy owned>(mesg: &str) -> parser<T>
 	}
 }
 
-#[doc = "Returns a parser which always succeeds, but does not consume any input."]
+/// Returns a parser which always succeeds, but does not consume any input.
 fn return<T: copy owned>(value: T) -> parser<T>
 {
 	{|input: state|

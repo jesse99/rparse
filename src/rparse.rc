@@ -7,7 +7,7 @@
 
 #[author = "Jesse Jones"];
 #[license = "MIT"];
-#[doc = "General purpose parser combinator library"];
+//! General purpose parser combinator library"
 
 // TODO: remove this once rustc settles down a bit more
 #[warn(no_non_implicitly_copyable_typarams, no_vecs_not_implicitly_copyable)];

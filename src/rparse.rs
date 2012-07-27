@@ -1,4 +1,4 @@
-#[doc = "Functions and methods used to construct and compose parsers."];
+//! Functions and methods used to construct and compose parsers.
 
 import c99_parsers::*;
 import char_parsers::*;
@@ -35,13 +35,13 @@ export parser, state, status, succeeded, failed;
 export parse_status, parse_failed, eot, everything, parse, str_trait, str_methods, str_parser_trait, str_parser_methods, parser_trait, parser_methods;
 
 
-#[doc = "Return type of parse function."]
+/// Return type of parse function.
 type parse_status<T: copy owned> = result::result<T, parse_failed>;
 
-#[doc = "Returned by parse function on error. Line and col are both 1-based."]
+/// Returned by parse function on error. Line and col are both 1-based.
 type parse_failed = {file: ~str, line: uint, col: uint, mesg: ~str};
 
-#[doc = "Uses parser to parse text. Also see everything function."]
+/// Uses parser to parse text. Also see everything function.
 fn parse<T: copy owned>(parser: parser<T>, file: ~str, text: &str) -> parse_status<T>
 {
 	let chars = chars_with_eot(text);
@@ -60,9 +60,9 @@ fn parse<T: copy owned>(parser: parser<T>, file: ~str, text: &str) -> parse_stat
 	}
 }
 
-#[doc = "Returns a parser which matches the end of the input.
-
-Typically clients will use the everything method instead of calling this directly."]
+/// Returns a parser which matches the end of the input.
+/// 
+/// Typically clients will use the everything method instead of calling this directly.
 fn eot() -> parser<()>
 {
 	{|input: state|
@@ -77,16 +77,16 @@ fn eot() -> parser<()>
 	}
 }
 
-#[doc = "Parses the text and fails if all the text was not consumed. Leading space is allowed.
-
-This is typically used in conjunction with the parse function. Note that space has to have the
-same type as parser which is backwards from how it is normally used."]
+/// Parses the text and fails if all the text was not consumed. Leading space is allowed.
+/// 
+/// This is typically used in conjunction with the parse function. Note that space has to have the
+/// same type as parser which is backwards from how it is normally used.
 fn everything<T: copy owned, U: copy owned>(parser: parser<T>, space: parser<U>) -> parser<T>
 {
 	seq3_ret1(space, parser, eot())
 }
 
-#[doc = "Methods that treat a string as a literal."]
+/// Methods that treat a string as a literal.
 trait str_trait
 {
 	fn lit() -> parser<~str>;
@@ -149,8 +149,8 @@ impl str_parser_methods of str_parser_trait for parser<~str>
 	}
 }
 
-#[doc = "These work the same as the functions of the same name, but tend
-to make the code look a bit better."]
+/// These work the same as the functions of the same name, but tend
+/// to make the code look a bit better.
 trait parser_trait<T: copy owned>
 {
 	fn thene<U: copy owned>(eval: fn@ (T) -> parser<U>) -> parser<U>;
@@ -231,9 +231,9 @@ impl parser_methods<T: copy owned> of parser_trait<T> for parser<T>
 		chainr1(self, op, eval)
 	}
 	
-	#[doc = "Logs the result of the previous parser.
-	
-	If it was successful then the log is at INFO level. Otherwise it is at DEBUG level."]
+	/// Logs the result of the previous parser.
+	/// 
+	/// If it was successful then the log is at INFO level. Otherwise it is at DEBUG level.
 	fn note(mesg: ~str) -> parser<T>
 	{
 		{|input: state|
@@ -277,11 +277,11 @@ impl parser_methods<T: copy owned> of parser_trait<T> for parser<T>
 		}
 	}
 	
-	#[doc = "Like note except that the mesg is also used for error reporting.
-	
-	If label is not empty then it is used if the previous parser completely failed to parse or if its error
-	message was empty. Otherwise it suppresses errors from the parser (in favor of a later err function).
-	Non-empty labels should look like \"expression\" or \"statement\"."]
+	/// Like note except that the mesg is also used for error reporting.
+	/// 
+	/// If label is not empty then it is used if the previous parser completely failed to parse or if its error
+	/// message was empty. Otherwise it suppresses errors from the parser (in favor of a later err function).
+	/// Non-empty labels should look like \"expression\" or \"statement\".
 	fn err(label: &str) -> parser<T>
 	{
 		let label = unslice(label);

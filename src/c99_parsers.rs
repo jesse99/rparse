@@ -1,14 +1,14 @@
-#[doc = "Functions that can be used to parse C99 lexical elements (or with languages
-that have similar lexical elements)."];
+//! Functions that can be used to parse C99 lexical elements (or with languages
+//! that have similar lexical elements).
 import types::{parser, state, status};
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
 export identifier, decimal_number, octal_number, hex_number, float_number,
 	char_literal, string_literal, comment, line_comment;
 
-#[doc = "identifier := [a-zA-Z_] [a-zA-Z0-9_]*
-
-Note that match1_0 can be used to easily implement custom identifier parsers."]
+/// identifier := [a-zA-Z_] [a-zA-Z0-9_]*
+/// 
+/// Note that match1_0 can be used to easily implement custom identifier parsers.
 fn identifier() -> parser<~str>
 {
 	// Supposed to support universal character names too, e.g.  
@@ -16,10 +16,10 @@ fn identifier() -> parser<~str>
 	match1_0(is_identifier_prefix, is_identifier_suffix)
 }
 
-#[doc = "decimal_number := [0-9]+
-
-Technically this is not supposed to match numbers with leading zeros,
-but we do so to make this parser more reusable."]
+/// decimal_number := [0-9]+
+/// 
+/// Technically this is not supposed to match numbers with leading zeros,
+/// but we do so to make this parser more reusable.
 fn decimal_number() -> parser<int>
 {
 	do match1(is_digit).thene()
@@ -38,7 +38,7 @@ fn decimal_number() -> parser<int>
 		}
 }
 
-#[doc = "octal_number := 0 [0-7]*"]
+/// octal_number := 0 [0-7]*
 fn octal_number() -> parser<int>
 {
 	do match1_0(|c| c == '0', is_octal).thene()
@@ -59,7 +59,7 @@ fn octal_number() -> parser<int>
 
 //fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 
-#[doc = "hex_number := 0[xX] [0-9a-fA-F]+"]
+/// hex_number := 0[xX] [0-9a-fA-F]+
 fn hex_number() -> parser<int>
 {
 	let prefix = "0".lit().then(or("x".lit(), "X".lit()));
@@ -81,12 +81,12 @@ fn hex_number() -> parser<int>
 	seq2_ret1(prefix, digits)
 }
 
-#[doc = "float_number := float1 | float2 | float3
-
-float1 := [0-9]* '.' [0-9]+ exponent?
-float2 := [0-9]+ '.' exponent?
-float3 := [0-9]+ exponent
-exponent := [eE] [+-]? [0-9]+"]
+/// float_number := float1 | float2 | float3
+/// 
+/// float1 := [0-9]* '.' [0-9]+ exponent?
+/// float2 := [0-9]+ '.' exponent?
+/// float3 := [0-9]+ exponent
+/// exponent := [eE] [+-]? [0-9]+
 fn float_number() -> parser<f64>
 {
 	let exponent = seq3_ret_str("eE".anyc(), "+-".anyc().optional(), match1(is_digit));
@@ -106,10 +106,10 @@ fn float_number() -> parser<f64>
 		}
 }
 
-#[doc = "char_literal := '\\'' c_char_sequence '\\''
-
-c_char_sequence := [^'\n\r\\]
-c_char_sequence := escape_sequence"]
+/// char_literal := '\\'' c_char_sequence '\\''
+/// 
+/// c_char_sequence := [^'\n\r\\]
+/// c_char_sequence := escape_sequence
 fn char_literal() -> parser<char>
 {
 	// We don't support the [LuU] prefix (so the parser is reusable in other contexts).
@@ -120,10 +120,10 @@ fn char_literal() -> parser<char>
 	seq3_ret1("'".lit(), char_sequence, "'".lit())
 }
 
-#[doc = "string_literal := '\"' s_char* '\"'
-
-s_char := [^\"\n\r\\]
-s_char := escape_sequence"]
+/// string_literal := '\"' s_char* '\"'
+/// 
+/// s_char := [^\"\n\r\\]
+/// s_char := escape_sequence
 fn string_literal() -> parser<~str>
 {
 	// We don't support the encoding prefix (so the parser is reusable in other contexts).
@@ -135,9 +135,9 @@ fn string_literal() -> parser<~str>
 	seq3_ret1("\"".lit(), body, "\"".lit())
 }
 
-#[doc = "comment := '/*' ([^*] | '*' [^/])* '*/'
-
-Note that these do not nest."]
+/// comment := '/*' ([^*] | '*' [^/])* '*/'
+/// 
+/// Note that these do not nest.
 fn comment() -> parser<~str>
 {
 	let body = do scan0()
@@ -155,7 +155,7 @@ fn comment() -> parser<~str>
 	seq3_ret1("/*".lit(), body, "*/".lit())
 }
 
-#[doc = "line_comment := '//' [^\r\n]*"]
+/// line_comment := '//' [^\r\n]*
 fn line_comment() -> parser<~str>
 {
 	let body = do scan0()
