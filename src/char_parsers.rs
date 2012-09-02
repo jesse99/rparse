@@ -1,9 +1,10 @@
 //! Parser functions with char return types.
-import types::{parser, state, status};
+use misc::*;
+use types::{parser, state, status};
 
 /// Consumes a character which must satisfy the predicate.
 /// Returns the matched character.
-fn match(predicate: fn@ (char) -> bool) -> parser<char>
+fn anyp(predicate: fn@ (char) -> bool) -> parser<char>
 {
 	|input: state| {
 		let mut i = input.index;
@@ -14,11 +15,11 @@ fn match(predicate: fn@ (char) -> bool) -> parser<char>
 		
 		if i > input.index
 		{
-			result::ok({new_state: {index: i with input}, value: input.text[input.index]})
+			result::Ok({new_state: {index: i ,.. input}, value: input.text[input.index]})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: i with input}, mesg: ~""})
+			result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: ~""})
 		}
 	}
 }
@@ -37,11 +38,11 @@ fn anyc(chars: &str) -> parser<char>
 		
 		if i > input.index
 		{
-			result::ok({new_state: {index: i with input}, value: input.text[input.index]})
+			result::Ok({new_state: {index: i ,.. input}, value: input.text[input.index]})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: i with input}, mesg: #fmt["[%s]", unslice(chars)]})
+			result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: fmt!("[%s)", unslice(chars))})
 		}
 	}
 }
@@ -60,11 +61,11 @@ fn noc(chars: &str) -> parser<char>
 		
 		if i > input.index
 		{
-			result::ok({new_state: {index: i with input}, value: input.text[input.index]})
+			result::Ok({new_state: {index: i ,.. input}, value: input.text[input.index]})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: i with input}, mesg: #fmt["[^%s]", unslice(chars)]})
+			result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: fmt!("[^%s)", unslice(chars))})
 		}
 	}
 }

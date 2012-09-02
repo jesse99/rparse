@@ -1,17 +1,22 @@
 // Test selected individual parse functions (the other tests suffice for most functions).
-import io;
-import io::writer_util;
-import result::*;
-import test_helpers::*;
+//use io;
+use io::WriterUtil;
+use c99_parsers::*;
+use combinators::*;
+use generic_parsers::*;
+use misc::*;
+use result::*;
+use parser::*;
+use test_helpers::*;
 
 pure fn is_identifier_prefix(ch: char) -> bool
 {
-	ret is_alpha(ch) || ch == '_';
+	return is_alpha(ch) || ch == '_';
 }
 
 pure fn is_identifier_suffix(ch: char) -> bool
 {
-	ret is_identifier_prefix(ch) || is_digit(ch);
+	return is_identifier_prefix(ch) || is_digit(ch);
 }
 
 #[test]
@@ -43,11 +48,11 @@ fn parse_unary() -> parser<char>
 		let ch = input.text[input.index];
 		if ch == '-' || ch == '+'
 		{
-			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
+			result::Ok({new_state: {index: input.index + 1u ,.. input}, value: ch})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: input.index with input}, mesg: ~"'-' or '+'"})
+			result::Err({old_state: input, err_state: {index: input.index ,.. input}, mesg: ~"'-' or '+'"})
 		}
 	}
 }
@@ -59,11 +64,11 @@ fn parse_digit() -> parser<int>
 		if ch >= '0' && ch <= '9'
 		{
 			let value = option::get(char::to_digit(ch, 10u)) as int;
-			result::ok({new_state: {index: input.index + 1u with input}, value: value})
+			result::Ok({new_state: {index: input.index + 1u ,.. input}, value: value})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: input.index with input}, mesg: ~"digit"})
+			result::Err({old_state: input, err_state: {index: input.index ,.. input}, mesg: ~"digit"})
 		}
 	}
 }
@@ -74,7 +79,7 @@ fn parse_num(op: char) -> parser<int>
 		do chain(parse_digit()(input))
 		|output| {
 			let value = if op == '-' {-output.value} else {output.value};
-			result::ok({value: value with output})
+			result::Ok({value: value ,.. output})
 		}
 	}
 }
@@ -122,7 +127,7 @@ fn test_seq()
 	let prefix = match1(is_identifier_prefix);
 	let suffix = match1(is_identifier_suffix).r0();
 	let trailer = match1(is_identifier_trailer).optional();
-	let p = seq3(prefix, suffix, trailer, |a, b, c| result::ok(a + str::connect(b, ~"") + option::get_default(c, ~"")) ).err("identifier");
+	let p = seq3(prefix, suffix, trailer, |a, b, c| result::Ok(a + str::connect(b, ~"") + option::get_default(c, ~"")) ).err("identifier");
 	
 	assert check_str_ok("hey", p, "hey");
 	assert check_str_ok("hey?", p, "hey?");
@@ -132,7 +137,7 @@ fn test_seq()
 	assert check_str_ok("spanky123xy", p, "spanky123xy");
 	assert check_str_failed("", p, "identifier", 1);
 	
-	let p = seq2("a".lit(), "b".lit(), |x, y| result::ok(x+y) );
+	let p = seq2("a".lit(), "b".lit(), |x, y| result::Ok(x+y) );
 	let text = chars_with_eot("az");
 	let result = p({file: ~"unit test", text: text, index: 0u, line: 1});
 	assert get_err(result).old_state.index == 0u;
@@ -144,11 +149,11 @@ fn parse_lower() -> parser<char>
 		let ch = input.text[input.index];
 		if ch >= 'a' && ch <= 'z'
 		{
-			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
+			result::Ok({new_state: {index: input.index + 1u ,.. input}, value: ch})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: input.index with input}, mesg: ~"lower-case letter"})
+			result::Err({old_state: input, err_state: {index: input.index ,.. input}, mesg: ~"lower-case letter"})
 		}
 	}
 }
@@ -159,11 +164,11 @@ fn parse_upper() -> parser<char>
 		let ch = input.text[input.index];
 		if ch >= 'A' && ch <= 'Z'
 		{
-			result::ok({new_state: {index: input.index + 1u with input}, value: ch})
+			result::Ok({new_state: {index: input.index + 1u ,.. input}, value: ch})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: input.index with input}, mesg: ~"upper-case letter"})
+			result::Err({old_state: input, err_state: {index: input.index ,.. input}, mesg: ~"upper-case letter"})
 		}
 	}
 }
@@ -237,7 +242,7 @@ fn test_list()
 
 pure fn is_identifier_trailer(ch: char) -> bool
 {
-	ret ch == '?' || ch == '!';
+	return ch == '?' || ch == '!';
 }
 
 #[test]
@@ -284,32 +289,32 @@ fn test_parse()
 {
 	let p = "<".lit().s0().then("foo".lit().s0()).then(">".lit()).err("bracketed foo");
 	
-	alt parse(p, ~"unit test", ~"< foo\t>")
+	match parse(p, ~"unit test", ~"< foo\t>")
 	{
-		result::ok(s)
+		result::Ok(s) =>
 		{
 			if s != ~">"
 			{
-				io::stderr().write_line(#fmt["'>' but found '%s'.", s]);
+				io::stderr().write_line(fmt!("'>' but found '%s'.", s));
 				assert false;
 			}
 		}
-		result::err({file, line, col, mesg})
+		result::Err({file, line, col, mesg}) =>
 		{
-			io::stderr().write_line(#fmt["Error '%s' on line %u and col %u.", mesg, line, col]);
+			io::stderr().write_line(fmt!("Error '%s' on line %u and col %u.", mesg, line, col));
 			assert false;
 		}
 	}
 	
 	assert check_str_failed("<foo", p, "'>'", 1);
-	alt parse(p, ~"unit test", ~"< \n\nfoo\tx")
+	match parse(p, ~"unit test", ~"< \n\nfoo\tx")
 	{
-		result::ok(s)
+		result::Ok(s) =>
 		{
-			io::stderr().write_line(#fmt["Somehow parsed '%s'.", s]);
+			io::stderr().write_line(fmt!("Somehow parsed '%s'.", s));
 			assert false;
 		}
-		result::err({file, line, col, mesg})
+		result::Err({file, line, col, mesg}) =>
 		{
 			assert file == ~"unit test";
 			assert line == 3u;

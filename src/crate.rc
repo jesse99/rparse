@@ -1,24 +1,26 @@
+//! General purpose parser combinator library"
 // If the version is changed also change the dist target in the Makefile.
+use std;
+
 #[link(name = "rparse", 
 	vers = "0.5",
 	uuid = "0188129D-F459-4EA4-A928-A5BA5632EF2E",
-	url = "https://github.com/jesse99/rparse")];
-#[crate_type = "lib"];
+	url = "https://github.com/jesse99/rparse")]
+#[crate_type = "lib"]
 
-#[author = "Jesse Jones"];
-#[license = "MIT"];
-//! General purpose parser combinator library"
+#[author = "Jesse Jones"]
+#[license = "MIT"]
 
 // TODO: remove this once rustc settles down a bit more
-#[warn(no_non_implicitly_copyable_typarams, no_vecs_not_implicitly_copyable)];
-
-use std;
+//#[warn(no_non_implicitly_copyable_typarams, no_vecs_not_implicitly_copyable)]
 
 mod c99_parsers;
 mod char_parsers;
 mod combinators;
 mod generic_parsers;
 mod misc;
+mod parser;
+mod rparse;
 mod str_parsers;
 mod types;
 
@@ -32,3 +34,4 @@ mod tests
 	mod test_expr;
 	mod test_xml;
 }
+

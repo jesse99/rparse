@@ -1,5 +1,7 @@
 // Test a grammar capable of evaluating simple mathematical expressions.
-import test_helpers::*;
+use c99_parsers::*;
+use combinators::*;
+use test_helpers::*;
 
 fn expr_parser() -> parser<int>
 {
@@ -87,13 +89,13 @@ fn test_expr()
 #[test]
 fn test_usage()
 {
-	alt expr_parser().parse(~"test", ~"2+3*5")
+	match expr_parser().parse(~"test", ~"2+3*5")
 	{
-		result::ok(value)
+		result::Ok(value) =>
 		{
 			assert value == 17;
 		}
-		result::err({file, line, col, mesg})
+		result::Err({file, line, col, mesg}) =>
 		{
 			assert false;
 		}

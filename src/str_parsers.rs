@@ -1,4 +1,6 @@
 //! Parser functions with str return types.
+use misc::*;
+use types::*;
 
 /// Returns s if input matches s ignoring case. Also see lit and litv.
 fn liti(in_s: &str) -> parser<~str>
@@ -26,11 +28,11 @@ fn liti(in_s: &str) -> parser<~str>
 		if i == str::len(s)
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			result::ok({new_state: {index: j with input}, value: text})
+			result::Ok({new_state: {index: j ,.. input}, value: text})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", s]})
+			result::Err({old_state: input, err_state: {index: j ,.. input}, mesg: fmt!("'%s'", s)})
 		}
 	}
 }
@@ -61,11 +63,11 @@ fn lit(s: &str) -> parser<~str>
 		if i == str::len(s)
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			result::ok({new_state: {index: j with input}, value: text})
+			result::Ok({new_state: {index: j ,.. input}, value: text})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: j with input}, mesg: #fmt["'%s'", unslice(s)]})
+			result::Err({old_state: input, err_state: {index: j ,.. input}, mesg: fmt!("'%s'", unslice(s))})
 		}
 	}
 }
@@ -98,7 +100,7 @@ fn match0(predicate: fn@ (char) -> bool) -> parser<~str>
 		}
 		
 		let text = str::from_chars(vec::slice(input.text, input.index, i));
-		result::ok({new_state: {index: i with input}, value: text})
+		result::Ok({new_state: {index: i ,.. input}, value: text})
 	}
 }
 
@@ -118,11 +120,11 @@ fn match1(predicate: fn@ (char) -> bool) -> parser<~str>
 		if i > input.index
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, i));
-			result::ok({new_state: {index: i with input}, value: text})
+			result::Ok({new_state: {index: i ,.. input}, value: text})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: {index: i with input}, mesg: ~""})
+			result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: ~""})
 		}
 	}
 }
@@ -139,15 +141,15 @@ fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> parser<~s
 fn optional_str(parser: parser<~str>) -> parser<~str>
 {
 	|input: state| {
-		alt parser(input)
+		match parser(input)
 		{
-			result::ok(pass)
+			result::Ok(pass) =>
 			{
-				result::ok({new_state: pass.new_state, value: pass.value})
+				result::Ok({new_state: pass.new_state, value: pass.value})
 			}
-			result::err(_failure)
+			result::Err(_failure) =>
 			{
-				result::ok({new_state: input, value: ~""})
+				result::Ok({new_state: input, value: ~""})
 			}
 		}
 	}
@@ -178,11 +180,11 @@ fn scan(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 				i += 1u;
 			}
 			let text = str::from_chars(vec::slice(input.text, input.index, i));
-			result::ok({new_state: {index: i, line: line with input}, value: text})
+			result::Ok({new_state: {index: i, line: line ,.. input}, value: text})
 		}
 		else
 		{
-			result::ok({new_state: {index: i, line: line with input}, value: ~""})
+			result::Ok({new_state: {index: i, line: line ,.. input}, value: ~""})
 		}
 	}
 }
@@ -196,7 +198,7 @@ fn scan0(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 	|input: state| {
 		let mut i = input.index;
 		let mut line = input.line;
-		let mut result = result::err({old_state: input, err_state: input, mesg: ~"dummy"});
+		let mut result = result::Err({old_state: input, err_state: input, mesg: ~"dummy"});
 		while result::is_err(result)
 		{
 			let count = fun(input.text, i);
@@ -218,7 +220,7 @@ fn scan0(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 			else
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, i));
-				result = result::ok({new_state: {index: i, line: line with input}, value: text});
+				result = result::Ok({new_state: {index: i, line: line ,.. input}, value: text});
 			}
 		}
 		result
@@ -233,11 +235,11 @@ fn scan1(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 		|pass| {
 			if pass.new_state.index > input.index
 			{
-				result::ok(pass)
+				result::Ok(pass)
 			}
 			else
 			{
-				result::err({old_state: input, err_state: pass.new_state, mesg: ~""})
+				result::Err({old_state: input, err_state: pass.new_state, mesg: ~""})
 			}
 		}
 	}
@@ -247,16 +249,16 @@ fn scan1(fun: fn@ (@[char], uint) -> uint) -> parser<~str>
 fn seq2_ret_str<T0: copy owned, T1: copy owned>(p0: parser<T0>, p1: parser<T1>) -> parser<~str>
 {
 	|input: state| {
-		alt p0.then(p1)(input)
+		match p0.then(p1)(input)
 		{
-			result::ok(pass)
+			result::Ok(pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				result::ok({new_state: pass.new_state, value: text})
+				result::Ok({new_state: pass.new_state, value: text})
 			}
-			result::err(failure)
+			result::Err(failure) =>
 			{
-				result::err({old_state: input with failure})
+				result::Err({old_state: input ,.. failure})
 			}
 		}
 	}
@@ -266,16 +268,16 @@ fn seq2_ret_str<T0: copy owned, T1: copy owned>(p0: parser<T0>, p1: parser<T1>) 
 fn seq3_ret_str<T0: copy owned, T1: copy owned, T2: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<~str>
 {
 	|input: state| {
-		alt p0.then(p1). then(p2)(input)
+		match p0.then(p1). then(p2)(input)
 		{
-			result::ok(pass)
+			result::Ok(pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				result::ok({new_state: pass.new_state, value: text})
+				result::Ok({new_state: pass.new_state, value: text})
 			}
-			result::err(failure)
+			result::Err(failure) =>
 			{
-				result::err({old_state: input with failure})
+				result::Err({old_state: input ,.. failure})
 			}
 		}
 	}
@@ -285,16 +287,16 @@ fn seq3_ret_str<T0: copy owned, T1: copy owned, T2: copy owned>(p0: parser<T0>, 
 fn seq4_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<~str>
 {
 	|input: state| {
-		alt p0.then(p1). then(p2).then(p3)(input)
+		match p0.then(p1). then(p2).then(p3)(input)
 		{
-			result::ok(pass)
+			result::Ok(pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				result::ok({new_state: pass.new_state, value: text})
+				result::Ok({new_state: pass.new_state, value: text})
 			}
-			result::err(failure)
+			result::Err(failure) =>
 			{
-				result::err({old_state: input with failure})
+				result::Err({old_state: input ,.. failure})
 			}
 		}
 	}
@@ -304,16 +306,16 @@ fn seq4_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(
 fn seq5_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>, p4: parser<T4>) -> parser<~str>
 {
 	|input: state| {
-		alt p0.then(p1). then(p2).then(p3).then(p4)(input)
+		match p0.then(p1). then(p2).then(p3).then(p4)(input)
 		{
-			result::ok(pass)
+			result::Ok(pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				result::ok({new_state: pass.new_state, value: text})
+				result::Ok({new_state: pass.new_state, value: text})
 			}
-			result::err(failure)
+			result::Err(failure) =>
 			{
-				result::err({old_state: input with failure})
+				result::Err({old_state: input ,.. failure})
 			}
 		}
 	}

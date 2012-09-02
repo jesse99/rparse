@@ -1,6 +1,11 @@
 //! Functions that can be used to parse C99 lexical elements (or with languages
 //! that have similar lexical elements).
-import types::{parser, state, status};
+use combinators::*;
+use generic_parsers::*;
+use misc::*;
+use parser::*;
+use str_parsers::*;
+use types::{parser, state, status};
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
 export identifier, decimal_number, octal_number, hex_number, float_number,
@@ -22,17 +27,17 @@ fn identifier() -> parser<~str>
 /// but we do so to make this parser more reusable.
 fn decimal_number() -> parser<int>
 {
-	do match1(is_digit).thene()
+	do thene(match1(is_digit))
 		|text| {
-			alt int::from_str(text)
+			match int::from_str(text)
 			{
-				option::some(value)
+				option::Some(value) =>
 				{
-					return(value)
+					ret(value)
 				}
-				_
+				_ =>
 				{
-					fails(#fmt["'%s' is out of range", text])
+					fails(fmt!("'%s' is out of range", text))
 				}
 			}
 		}
@@ -41,15 +46,15 @@ fn decimal_number() -> parser<int>
 /// octal_number := 0 [0-7]*
 fn octal_number() -> parser<int>
 {
-	do match1_0(|c| c == '0', is_octal).thene()
+	do thene(match1_0(|c| c == '0', is_octal))
 		|text| {
-			alt from_base_8(text)
+			match from_base_8(text)
 			{
-				result::ok(value)
+				result::Ok(value) =>
 				{
-					return(value)
+					ret(value)
 				}
-				result::err(mesg)
+				result::Err(mesg) =>
 				{
 					fails(mesg)
 				}
@@ -65,13 +70,13 @@ fn hex_number() -> parser<int>
 	let prefix = "0".lit().then(or("x".lit(), "X".lit()));
 	let digits = do match1(is_hex).thene()
 			|text| {
-			alt from_base_16(text)
+			match from_base_16(text)
 			{
-				result::ok(value)
+				result::Ok(value) =>
 				{
-					return(value)
+					ret(value)
 				}
-				result::err(mesg)
+				result::Err(mesg) =>
 				{
 					fails(mesg)
 				}
@@ -101,7 +106,7 @@ fn float_number() -> parser<f64>
 		|text| {
                         do str::as_c_str(text)
                         |ptr| {
-				return(libc::strtod(ptr, ptr::null()) as f64)
+				ret(libc::strtod(ptr, ptr::null()) as f64)
 			}
 		}
 }
@@ -130,7 +135,7 @@ fn string_literal() -> parser<~str>
 	let case1 = "\"\n\r\\".noc().err("");
 	let case2 = escape_sequence().err("escape character");
 	let s_char = case1.or(case2);
-	let body = do s_char.r0().thene() |chars| { return(str::from_chars(chars))};
+	let body = do s_char.r0().thene() |chars| { ret(str::from_chars(chars))};
 	
 	seq3_ret1("\"".lit(), body, "\"".lit())
 }
@@ -176,25 +181,25 @@ fn line_comment() -> parser<~str>
 // ---- Helpers ---------------------------------------------------------------
 pure fn is_identifier_prefix(ch: char) -> bool
 {
-	ret is_alpha(ch) || ch == '_';
+	return is_alpha(ch) || ch == '_';
 }
 
 pure fn is_identifier_suffix(ch: char) -> bool
 {
-	ret is_identifier_prefix(ch) || is_digit(ch);
+	return is_identifier_prefix(ch) || is_digit(ch);
 }
 
 pure fn is_octal(ch: char) -> bool
 {
-	ret ch >= '0' && ch <= '7';
+	return ch >= '0' && ch <= '7';
 }
 
 pure fn is_hex(ch: char) -> bool
 {
-	ret (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
+	return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
 }
 
-fn from_base_8(text: ~str) -> result::result<int, ~str>
+fn from_base_8(text: ~str) -> result::Result<int, ~str>
 {
 	let mut power = 1;
 	let mut result = 0;
@@ -211,15 +216,15 @@ fn from_base_8(text: ~str) -> result::result<int, ~str>
 		}
 		else
 		{
-			ret result::err(~"Octal number is too large");
+			return result::Err(~"Octal number is too large");
 		}
 		power *= 8;
 	}
 	
-	ret result::ok(result);
+	return result::Ok(result);
 }
 
-fn from_base_16(text: ~str) -> result::result<int, ~str>
+fn from_base_16(text: ~str) -> result::Result<int, ~str>
 {
 	let mut power = 1;
 	let mut result = 0;
@@ -249,47 +254,47 @@ fn from_base_16(text: ~str) -> result::result<int, ~str>
 		}
 		else
 		{
-			ret result::err(~"Hex number is too large");
+			return result::Err(~"Hex number is too large");
 		}
 		power *= 16;
 	}
 	
-	ret result::ok(result);
+	return result::Ok(result);
 }
 
 fn escape_to_char(ch: char) -> char
 {
-	alt ch
+	match ch
 	{
-		'a'
+		'a' =>
 		{
 			'\x07'
 		}
-		'b'
+		'b' =>
 		{
 			'\x7F'
 		}
-		'f'
+		'f' =>
 		{
 			'\x0C'
 		}
-		'n'
+		'n' =>
 		{
 			'\n'
 		}
-		'r'
+		'r' =>
 		{
 			'\r'
 		}
-		't'
+		't' =>
 		{
 			'\t'
 		}
-		'v'
+		'v' =>
 		{
 			'\x0B'
 		}
-		_
+		_ =>
 		{
 			ch
 		}
@@ -300,13 +305,13 @@ fn octal_digits() -> parser<int>
 {
 	do match1(is_octal).thene()
 		    |text| {
-			alt from_base_8(text)
+			match from_base_8(text)
 			{
-				result::ok(value)
+				result::Ok(value) =>
 				{
-					return(value)
+					ret(value)
 				}
-				result::err(mesg)
+				result::Err(mesg) =>
 				{
 					fails(mesg)
 				}
@@ -318,13 +323,13 @@ fn hex_digits() -> parser<int>
 {
 	do match1(is_hex).thene()
 		|text| {
-			alt from_base_16(text)
+			match from_base_16(text)
 			{
-				result::ok(value)
+				result::Ok(value) =>
 				{
-					return(value)
+					ret(value)
 				}
-				result::err(mesg)
+				result::Err(mesg) =>
 				{
 					fails(mesg)
 				}
@@ -339,11 +344,11 @@ fn hex_digits() -> parser<int>
 fn escape_sequence() -> parser<char>
 {
 	let escape = do "'\"?abfnrtv\\".anyc().thene()
-		|ch| {return(escape_to_char(ch))};
+		|ch| {ret(escape_to_char(ch))};
 	
 	let case1 = seq2_ret1("\\".lit(), escape);
-	let case2 = seq2_ret1("\\".lit(), octal_digits().thene(|n| return(n as char) ));
-	let case3 = seq2_ret1("\\x".lit(), hex_digits().thene(|n| return(n as char) ));
+	let case2 = seq2_ret1("\\".lit(), octal_digits().thene(|n| ret(n as char) ));
+	let case3 = seq2_ret1("\\x".lit(), hex_digits().thene(|n| ret(n as char) ));
 	let case4 = universal_character_name();
 	or_v(~[case1, case2, case3, case4]).err("")
 }
@@ -352,7 +357,7 @@ fn escape_sequence() -> parser<char>
 // universal-character-name := '\\U' hex-digit{8}
 fn universal_character_name() -> parser<char>
 {
-	seq3_ret2("\\".lit(), "uU".anyc(), hex_digits()).thene(|n| return(n as char) )
+	seq3_ret2("\\".lit(), "uU".anyc(), hex_digits()).thene(|n| ret(n as char) )
 }
 
 

@@ -1,5 +1,5 @@
 //! The types used by all parse functions.
-import result = result::result;
+use Result = result::Result;
 
 // TODO: should be able to get rid of all the owned bounds once
 // https://github.com/mozilla/rust/issues/2992 is fixed
@@ -16,7 +16,7 @@ type parser<T: copy owned> = fn@ (state) -> status<T>;
 type state = {file: ~str, text: @[char], index: uint, line: int};
 
 /// Return type of parse functions.
-type status<T: copy owned> = result<succeeded<T>, failed>;
+type status<T: copy owned> = Result<succeeded<T>, failed>;
 
 /// new_state will be like the input state except that index and line may 
 /// advance. Value is an arbitrary value associated with the parse.

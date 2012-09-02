@@ -25,31 +25,31 @@ fn chars_with_eot(s: &str) -> @[char]
 /// Returns true if ch is in [a-zA-Z].
 pure fn is_alpha(ch: char) -> bool
 {
-	ret (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
 /// Returns true if ch is in [0-9].
 pure fn is_digit(ch: char) -> bool
 {
-	ret ch >= '0' && ch <= '9';
+	return ch >= '0' && ch <= '9';
 }
 
 /// Returns true if ch is_alpha or is_digit.
 pure fn is_alphanum(ch: char) -> bool
 {
-	ret is_alpha(ch) || is_digit(ch);
+	return is_alpha(ch) || is_digit(ch);
 }
 
 /// Returns true if ch is 7-bit ASCII and not a control character.
 pure fn is_print(ch: char) -> bool
 {
-	ret ch >= ' ' && ch <= '~';
+	return ch >= ' ' && ch <= '~';
 }
 
 /// Returns true if ch is ' ', '\t', '\r', or '\n'.
 pure fn is_whitespace(ch: char) -> bool
 {
-	ret ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+	return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
 }
 
 /// Returns ch as lower case.
@@ -71,7 +71,7 @@ fn repeat_char(ch: char, count: uint) -> ~str
 	let mut value = ~"";
 	str::reserve(value, count);
 	for uint::range(0u, count) |_i| { str::push_char(value, ch);}
-	ret value;
+	return value;
 }
 
 #[doc(hidden)]
@@ -84,7 +84,7 @@ fn get_col(text: @[char], index: uint) -> uint
 		i -= 1u;
 	}
 	
-	ret index - i + 1u;
+	return index - i + 1u;
 }
 
 // Note that we don't want to escape control characters here because we need
@@ -102,7 +102,7 @@ fn munge_chars(chars: @[char]) -> ~str
 	let mut value = ~"";
 	str::reserve(value, vec::len(chars));
 	do vec::iter(chars) |ch| { str::push_char(value, if is_print(ch) {ch} else {bullet});}
-	ret value;
+	return value;
 }
 
 // TODO: Hopefully rust will provide something better for converting and mixing ~str and & str.

@@ -2,6 +2,9 @@
 //!
 //! Note that these functions and methods don't actually consume input (although 
 //! the parsers they are invoked with normally will).
+use generic_parsers::*;
+use parser::*;
+use types::*;
 
 // chain_suffix := (op e)*
 #[doc(hidden)]
@@ -27,16 +30,16 @@ fn chainl1<T: copy owned, U: copy owned>(parser: parser<T>, op: parser<U>, eval:
 	|input: state| {
 		do result::chain(parser(input))
 		|pass| {
-			alt parser.chain_suffix(op)(pass.new_state)
+			match parser.chain_suffix(op)(pass.new_state)
 			{
-				result::ok(pass2)
+				result::Ok(pass2) =>
 				{
 					let value = vec::foldl(pass.value, pass2.value, {|lhs, rhs: (U, T)| eval(lhs, rhs.first(), rhs.second())});
-					result::ok({new_state: pass2.new_state, value: value})
+					result::Ok({new_state: pass2.new_state, value: value})
 				}
-				result::err(failure)
+				result::Err(failure) =>
 				{
-					result::err({old_state: input with failure})
+					result::Err({old_state: input ,.. failure})
 				}
 			}
 		}
@@ -51,9 +54,9 @@ fn chainr1<T: copy owned, U: copy owned>(parser: parser<T>, op: parser<U>, eval:
 	|input: state| {
 		do result::chain(parser(input))
 		|pass| {
-			alt parser.chain_suffix(op)(pass.new_state)
+			match parser.chain_suffix(op)(pass.new_state)
 			{
-				result::ok(pass2)
+				result::Ok(pass2) =>
 				{
 					if vec::is_not_empty(pass2.value)
 					{
@@ -72,16 +75,16 @@ fn chainr1<T: copy owned, U: copy owned>(parser: parser<T>, op: parser<U>, eval:
 						let terms = vec::zip(parsers, ops);
 						
 						let value = vec::foldr(terms, e3, {|lhs: (T, U), rhs| eval(lhs.first(), lhs.second(), rhs)});
-						result::ok({new_state: pass2.new_state, value: value})
+						result::Ok({new_state: pass2.new_state, value: value})
 					}
 					else
 					{
-						result::ok({new_state: pass2.new_state, value: pass.value})
+						result::Ok({new_state: pass2.new_state, value: pass.value})
 					}
 				}
-				result::err(failure)
+				result::Err(failure) =>
 				{
-					result::err({old_state: input with failure})
+					result::Err({old_state: input ,.. failure})
 				}
 			}
 		}
@@ -106,15 +109,15 @@ fn list<T: copy owned, U: copy owned>(parser: parser<T>, sep: parser<U>) -> pars
 	|input: state| {
 		do result::chain(parser(input))
 		|pass| {
-			alt term(pass.new_state)
+			match term(pass.new_state)
 			{
-				result::ok(pass2)
+				result::Ok(pass2) =>
 				{
-					result::ok({value: ~[pass.value] + pass2.value with pass2})
+					result::Ok({value: ~[pass.value] + pass2.value ,.. pass2})
 				}
-				result::err(failure)
+				result::Err(failure) =>
 				{
-					result::err({old_state: input with failure})
+					result::Err({old_state: input ,.. failure})
 				}
 			}
 		}
@@ -122,18 +125,18 @@ fn list<T: copy owned, U: copy owned>(parser: parser<T>, sep: parser<U>) -> pars
 }
 
 /// optional := e?
-fn optional<T: copy owned>(parser: parser<T>) -> parser<option<T>>
+fn optional<T: copy owned>(parser: parser<T>) -> parser<Option<T>>
 {
 	|input: state| {
-		alt parser(input)
+		match parser(input)
 		{
-			result::ok(pass)
+			result::Ok(pass) =>
 			{
-				result::ok({new_state: pass.new_state, value: option::some(pass.value)})
+				result::Ok({new_state: pass.new_state, value: option::Some(pass.value)})
 			}
-			result::err(_failure)
+			result::Err(_failure) =>
 			{
-				result::ok({new_state: input, value: option::none})
+				result::Ok({new_state: input, value: option::None})
 			}
 		}
 	}
@@ -171,15 +174,15 @@ fn or<T: copy owned>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
 			|failure2| {
 				if failure1.err_state.index > failure2.err_state.index
 				{
-					result::err(failure1)
+					result::Err(failure1)
 				}
 				else if failure1.err_state.index < failure2.err_state.index
 				{
-					result::err(failure2)
+					result::Err(failure2)
 				}
 				else
 				{
-					result::err({mesg: or_mesg(failure1.mesg, failure2.mesg) with failure2})
+					result::Err({mesg: or_mesg(failure1.mesg, failure2.mesg) ,.. failure2})
 				}
 			}
 		}
@@ -196,19 +199,19 @@ fn or_v<T: copy owned>(parsers: ~[parser<T>]) -> parser<T>
 	assert vec::is_not_empty(parsers);
 	
 	|input: state| {
-		let mut result: option<status<T>> = none;
+		let mut result: Option<status<T>> = None;
 		let mut errors = ~[];
 		let mut max_index = uint::max_value;
 		let mut i = 0u;
 		while i < vec::len(parsers) && option::is_none(result)
 		{
-			alt parsers[i](input)
+			match parsers[i](input)
 			{
-				result::ok(pass)
+				result::Ok(pass) =>
 				{
-					result = option::some(result::ok(pass));
+					result = option::Some(result::Ok(pass));
 				}
-				result::err(failure)
+				result::Err(failure) =>
 				{
 					if failure.err_state.index > max_index || max_index == uint::max_value
 					{
@@ -232,7 +235,7 @@ fn or_v<T: copy owned>(parsers: ~[parser<T>]) -> parser<T>
 		{
 			let errs = vec::filter(errors, |s| str::is_not_empty(s));
 			let mesg = str::connect(errs, ~" or ");
-			result::err({old_state: input, err_state: {index: max_index with input}, mesg: mesg})
+			result::Err({old_state: input, err_state: {index: max_index ,.. input}, mesg: mesg})
 		}
 	}
 }
@@ -245,15 +248,15 @@ fn r<T: copy owned>(parser: parser<T>, n: uint, m: uint) -> parser<~[T]>
 		let mut values = ~[];
 		loop
 		{
-			alt parser(output)
+			match parser(output)
 			{
-				result::ok(pass)
+				result::Ok(pass) =>
 				{
 					assert pass.new_state.index > output.index;	// must make progress to ensure loop termination
 					output = pass.new_state;
 					vec::push(values, pass.value);
 				}
-				result::err(failure)
+				result::Err(failure) =>
 				{
 					break;
 				}
@@ -263,11 +266,11 @@ fn r<T: copy owned>(parser: parser<T>, n: uint, m: uint) -> parser<~[T]>
 		let count = vec::len(values);
 		if n <= count && count <= m
 		{
-			result::ok({new_state: output, value: values})
+			result::Ok({new_state: output, value: values})
 		}
 		else
 		{
-			result::err({old_state: input, err_state: output, mesg: ~""})
+			result::Err({old_state: input, err_state: output, mesg: ~""})
 		}
 	}
 }
@@ -290,17 +293,17 @@ fn r1<T: copy owned>(parser: parser<T>) -> parser<~[T]>
 
 /// seq2 := e0 e1
 fn seq2<T0: copy owned, T1: copy owned, R: copy owned>
-	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> result::result<R, ~str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, eval: fn@ (T0, T1) -> result::Result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
-		alt eval(a0, a1)
+		match eval(a0, a1)
 		{
-			result::ok(value)
+			result::Ok(value) =>
 			{
 				return(value)
 			}
-			result::err(mesg)
+			result::Err(mesg) =>
 			{
 				fails(mesg)
 			}
@@ -310,18 +313,18 @@ fn seq2<T0: copy owned, T1: copy owned, R: copy owned>
 
 /// seq3 := e0 e1 e2
 fn seq3<T0: copy owned, T1: copy owned, T2: copy owned, R: copy owned>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> result::result<R, ~str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, eval: fn@ (T0, T1, T2) -> result::Result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
 	do parser2.thene() |a2| {
-		alt eval(a0, a1, a2)
+		match eval(a0, a1, a2)
 		{
-			result::ok(value)
+			result::Ok(value) =>
 			{
 				return(value)
 			}
-			result::err(mesg)
+			result::Err(mesg) =>
 			{
 				fails(mesg)
 			}
@@ -331,19 +334,19 @@ fn seq3<T0: copy owned, T1: copy owned, T2: copy owned, R: copy owned>
 
 /// seq4 := e0 e1 e2 e3
 fn seq4<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, R: copy owned>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::result<R, ~str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::Result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
 	do parser2.thene() |a2| {
 	do parser3.thene() |a3| {
-		alt eval(a0, a1, a2, a3)
+		match eval(a0, a1, a2, a3)
 		{
-			result::ok(value)
+			result::Ok(value) =>
 			{
 				return(value)
 			}
-			result::err(mesg)
+			result::Err(mesg) =>
 			{
 				fails(mesg)
 			}
@@ -353,20 +356,20 @@ fn seq4<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, R: copy 
 
 /// seq5 := e0 e1 e2 e3 e4
 fn seq5<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, R: copy owned>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::result<R, ~str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::Result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
 	do parser2.thene() |a2| {
 	do parser3.thene() |a3| {
 	do parser4.thene() |a4| {
-		alt eval(a0, a1, a2, a3, a4)
+		match eval(a0, a1, a2, a3, a4)
 		{
-			result::ok(value)
+			result::Ok(value) =>
 			{
 				return(value)
 			}
-			result::err(mesg)
+			result::Err(mesg) =>
 			{
 				fails(mesg)
 			}
@@ -376,7 +379,7 @@ fn seq5<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 
 /// seq6 := e0 e1 e2 e3 e4 e5
 fn seq6<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, T5: copy owned, R: copy owned>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::result<R, ~str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::Result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -384,13 +387,13 @@ fn seq6<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 	do parser3.thene() |a3| {
 	do parser4.thene() |a4| {
 	do parser5.thene() |a5| {
-		alt eval(a0, a1, a2, a3, a4, a5)
+		match eval(a0, a1, a2, a3, a4, a5)
 		{
-			result::ok(value)
+			result::Ok(value) =>
 			{
 				return(value)
 			}
-			result::err(mesg)
+			result::Err(mesg) =>
 			{
 				fails(mesg)
 			}
@@ -400,7 +403,7 @@ fn seq6<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 
 /// seq7 := e0 e1 e2 e3 e4 e5 e6
 fn seq7<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, T5: copy owned, T6: copy owned, R: copy owned>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::result<R, ~str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::Result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -409,13 +412,13 @@ fn seq7<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 	do parser4.thene() |a4| {
 	do parser5.thene() |a5| {
 	do parser6.thene() |a6| {
-		alt eval(a0, a1, a2, a3, a4, a5, a6)
+		match eval(a0, a1, a2, a3, a4, a5, a6)
 		{
-			result::ok(value)
+			result::Ok(value) =>
 			{
 				return(value)
 			}
-			result::err(mesg)
+			result::Err(mesg) =>
 			{
 				fails(mesg)
 			}
@@ -425,7 +428,7 @@ fn seq7<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 
 /// seq8 := e0 e1 e2 e3 e4 e5 e6 e7
 fn seq8<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, T5: copy owned, T6: copy owned, T7: copy owned, R: copy owned>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::result<R, ~str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::Result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -435,13 +438,13 @@ fn seq8<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 	do parser5.thene() |a5| {
 	do parser6.thene() |a6| {
 	do parser7.thene() |a7| {
-		alt eval(a0, a1, a2, a3, a4, a5, a6, a7)
+		match eval(a0, a1, a2, a3, a4, a5, a6, a7)
 		{
-			result::ok(value)
+			result::Ok(value) =>
 			{
 				return(value)
 			}
-			result::err(mesg)
+			result::Err(mesg) =>
 			{
 				fails(mesg)
 			}
@@ -451,7 +454,7 @@ fn seq8<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 
 /// seq9 := e0 e1 e2 e3 e4 e5 e6 e7 e8
 fn seq9<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, T5: copy owned, T6: copy owned, T7: copy owned, T8: copy owned, R: copy owned>
-	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, parser8: parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::result<R, ~str>) -> parser<R>
+	(parser0: parser<T0>, parser1: parser<T1>, parser2: parser<T2>, parser3: parser<T3>, parser4: parser<T4>, parser5: parser<T5>, parser6: parser<T6>, parser7: parser<T7>, parser8: parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::Result<R, ~str>) -> parser<R>
 {
 	do parser0.thene() |a0| {
 	do parser1.thene() |a1| {
@@ -462,13 +465,13 @@ fn seq9<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 	do parser6.thene() |a6| {
 	do parser7.thene() |a7| {
 	do parser8.thene() |a8| {
-		alt eval(a0, a1, a2, a3, a4, a5, a6, a7, a8)
+		match eval(a0, a1, a2, a3, a4, a5, a6, a7, a8)
 		{
-			result::ok(value)
+			result::Ok(value) =>
 			{
 				return(value)
 			}
-			result::err(mesg)
+			result::Err(mesg) =>
 			{
 				fails(mesg)
 			}
@@ -479,55 +482,55 @@ fn seq9<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 /// seq2 := e0 e1
 fn seq2_ret0<T0: copy owned, T1: copy owned>(p0: parser<T0>, p1: parser<T1>) -> parser<T0>
 {
-	seq2(p0, p1, |a0, _a1| result::ok(a0))
+	seq2(p0, p1, |a0, _a1| result::Ok(a0))
 }
 
 /// seq2 := e0 e1
 fn seq2_ret1<T0: copy owned, T1: copy owned>(p0: parser<T0>, p1: parser<T1>) -> parser<T1>
 {
-	seq2(p0, p1, |_a0, a1| result::ok(a1))
+	seq2(p0, p1, |_a0, a1| result::Ok(a1))
 }
 
 /// seq3 := e0 e1 e2
 fn seq3_ret0<T0: copy owned, T1: copy owned, T2: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<T0>
 {
-	seq3(p0, p1, p2, |a0, _a1, _a2| result::ok(a0))
+	seq3(p0, p1, p2, |a0, _a1, _a2| result::Ok(a0))
 }
 
 /// seq3 := e0 e1 e2
 fn seq3_ret1<T0: copy owned, T1: copy owned, T2: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<T1>
 {
-	seq3(p0, p1, p2, |_a0, a1, _a2| result::ok(a1))
+	seq3(p0, p1, p2, |_a0, a1, _a2| result::Ok(a1))
 }
 
 /// seq3 := e0 e1 e2
 fn seq3_ret2<T0: copy owned, T1: copy owned, T2: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>) -> parser<T2>
 {
-	seq3(p0, p1, p2, |_a0, _a1, a2| result::ok(a2))
+	seq3(p0, p1, p2, |_a0, _a1, a2| result::Ok(a2))
 }
 
 /// seq4 := e0 e1 e2 e3
 fn seq4_ret0<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<T0>
 {
-	seq4(p0, p1, p2, p3, |a0, _a1, _a2, _a3| result::ok(a0))
+	seq4(p0, p1, p2, p3, |a0, _a1, _a2, _a3| result::Ok(a0))
 }
 
 /// seq4 := e0 e1 e2 e3
 fn seq4_ret1<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<T1>
 {
-	seq4(p0, p1, p2, p3, |_a0, a1, _a2, _a3| result::ok(a1))
+	seq4(p0, p1, p2, p3, |_a0, a1, _a2, _a3| result::Ok(a1))
 }
 
 /// seq4 := e0 e1 e2 e3
 fn seq4_ret2<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<T2>
 {
-	seq4(p0, p1, p2, p3, |_a0, _a1, a2, _a3| result::ok(a2))
+	seq4(p0, p1, p2, p3, |_a0, _a1, a2, _a3| result::Ok(a2))
 }
 
 /// seq4 := e0 e1 e2 e3
 fn seq4_ret3<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: parser<T0>, p1: parser<T1>, p2: parser<T2>, p3: parser<T3>) -> parser<T3>
 {
-	seq4(p0, p1, p2, p3, |_a0, _a1, _a2, a3| result::ok(a3))
+	seq4(p0, p1, p2, p3, |_a0, _a1, _a2, a3| result::Ok(a3))
 }
 
 /// s0 := e [ \t\r\n]*
@@ -562,7 +565,7 @@ fn s0<T: copy owned>(parser: parser<T>) -> parser<T>
 				i += 1u;
 			}
 			
-			result::ok({new_state: {index: i, line: line with pass.new_state}, value: pass.value})
+			result::Ok({new_state: {index: i, line: line ,.. pass.new_state}, value: pass.value})
 		}
 	}
 }
@@ -575,11 +578,11 @@ fn s1<T: copy owned>(parser: parser<T>) -> parser<T>
 		|pass| {
 			if option::is_some(str::find_char(" \t\r\n", input.text[pass.new_state.index - 1u]))	// little cheesy, but saves us from adding a helper fn
 			{
-				result::ok(pass)
+				result::Ok(pass)
 			}
 			else
 			{
-				result::err({old_state: input, err_state: pass.new_state, mesg: ~"whitespace"})
+				result::Err({old_state: input, err_state: pass.new_state, mesg: ~"whitespace"})
 			}
 		}
 	}
@@ -595,7 +598,7 @@ fn then<T: copy owned, U: copy owned>(parser1: parser<T>, parser2: parser<U>) ->
 		|pass| {
 			do result::chain_err(parser2(pass.new_state))
 			|failure| {
-				result::err({old_state: input with failure})
+				result::Err({old_state: input ,.. failure})
 			}
 		}
 	}
@@ -612,7 +615,7 @@ fn thene<T: copy owned, U: copy owned>(parser: parser<T>, eval: fn@ (T) -> parse
 		|pass| {
 			do result::chain_err(eval(pass.value)(pass.new_state))
 			|failure| {
-				result::err({old_state: input with failure})
+				result::Err({old_state: input ,.. failure})
 			}
 		}
 	}

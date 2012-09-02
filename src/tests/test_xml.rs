@@ -1,9 +1,12 @@
 // Test for a simple DOM style XML parser. Note that this is not intended to be 
 // standards compliant or even very useful. Instead it is designed to test a parser
 // that returns objects instead of evaluating in-place.
-import to_str::to_str;
-import result::*;
-import test_helpers::*;
+//use to_str::to_str;
+use c99_parsers::*;
+use combinators::*;
+use result::*;
+use str_parsers::*;
+use test_helpers::*;
 
 type attribute = {name: ~str, value: ~str};
 
@@ -13,60 +16,60 @@ enum xml
 	xxml(~str, ~[attribute], ~[xml], ~str)
 }
 
-impl of to_str for xml
+impl  xml : ToStr 
 {
 	fn to_str() -> ~str
 	{
-		alt self
+		match self
 		{
-			xxml(name, attributes, children, content)
+			xxml(name, attributes, children, content) =>
 			{
-				let attrs = vec::map(attributes, |a| #fmt["%s=\"%s\"", a.name, a.value] );
+				let attrs = vec::map(attributes, |a| fmt!("%s=\"%s\"", a.name, a.value) );
 				let childs = vec::map(children, |c| c.to_str() );
 				if vec::len(attrs) > 0u
 				{
-					ret #fmt["<%s %s>%s%s</%s>", name, str::connect(attrs, ~" "), str::connect(childs, ~""), content, name];
+					return fmt!("<%s %s>%s%s</%s>", name, str::connect(attrs, ~" "), str::connect(childs, ~""), content, name);
 				}
 				else
 				{
-					ret #fmt["<%s>%s%s</%s>", name, str::connect(childs, ~""), content, name];
+					return fmt!("<%s>%s%s</%s>", name, str::connect(childs, ~""), content, name);
 				}
 			}
 		}
 	}
 }
 
-impl of to_str for attribute
+impl  attribute : ToStr 
 {
 	fn to_str() -> ~str
 	{
-		ret #fmt["%s = \"%s\"", self.name, self.value];
+		return fmt!("%s = \"%s\"", self.name, self.value);
 	}
 }
 
 fn check_xml_ok(inText: &str, expected: &str, parser: parser<xml>) -> bool
 {
-	#info["----------------------------------------------------"];
+	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
-	alt parser({file: ~"unit test", text: text, index: 0u, line: 1,})
+	match parser({file: ~"unit test", text: text, index: 0u, line: 1,})
 	{
-		result::ok(pass)
+		result::Ok(pass) =>
 		{
-			check_ok(result::ok({new_state: pass.new_state, value: pass.value.to_str()}), unslice(expected))
+			check_ok(result::Ok({new_state: pass.new_state, value: pass.value.to_str()}), unslice(expected))
 		}
-		result::err(failure)
+		result::Err(failure) =>
 		{
-			check_ok_strs(result::err(failure), expected)
+			check_ok_strs(result::Err(failure), expected)
 		}
 	}
 }
 
 fn check_xml_failed(inText: &str, parser: parser<xml>, expected: &str, line: int) -> bool
 {
-	#info["----------------------------------------------------"];
+	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
 	let result = parser({file: ~"unit test", text: text, index: 0u, line: 1});
-	ret check_failed(result, expected, line);
+	return check_failed(result, expected, line);
 }
 
 // string_body := [^"]*
@@ -116,13 +119,13 @@ fn xml_parser() -> parser<xml>
 	// attribute := name '=' '"' string_body '"'
 	let attribute = do seq5(name, "=".s0(), "\"".s0(), string_body(), "\"".s0())
 	|name, _a2, _a3, body, _a5| {
-		result::ok({name: name, value: body})
+		result::Ok({name: name, value: body})
 	};
 	
 	// empty_element := '<' name attribute* '/>'
 	let empty_element = do seq4("<".s0(), name, attribute.r0(), "/>".s0())
 	|_a1, name, attrs, _a4| {
-		result::ok(xxml(name, attrs, ~[], ~""))
+		result::Ok(xxml(name, attrs, ~[], ~""))
 	};
 	
 	// complex_element := '<' name attribute* '>' element* content '</' name '>'
@@ -130,11 +133,11 @@ fn xml_parser() -> parser<xml>
 	|_a1, name1, attrs, _a4, children, chars, _a5, name2, _a7| {
 		if name1 == name2
 		{
-			result::ok(xxml(name1, attrs, children, chars))
+			result::Ok(xxml(name1, attrs, children, chars))
 		}
 		else
 		{
-			result::err(#fmt["end tag '%s' but found '%s'", name1, name2])
+			result::Err(fmt!("end tag '%s' but found '%s'", name1, name2))
 		}
 	};
 	
