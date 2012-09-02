@@ -604,20 +604,3 @@ fn then<T: copy owned, U: copy owned>(parser1: parser<T>, parser2: parser<U>) ->
 	}
 }
 
-/// If parser is successful then the function returned by eval is called
-/// with parser's result. If parser fails eval is not called.
-/// 
-/// Often used to translate parsed values: `p().thene({|pvalue| return(2*pvalue)})`
-fn thene<T: copy owned, U: copy owned>(parser: parser<T>, eval: fn@ (T) -> parser<U>) -> parser<U>
-{
-	|input: state| {
-		do result::chain(parser(input))
-		|pass| {
-			do result::chain_err(eval(pass.value)(pass.new_state))
-			|failure| {
-				result::Err({old_state: input ,.. failure})
-			}
-		}
-	}
-}
-
