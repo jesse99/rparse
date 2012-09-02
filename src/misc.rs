@@ -1,6 +1,6 @@
 //! Various utility functions. 
 //!
-//! Clients should not need to use most of these except for log_ok and log_err.
+//! Clients should not need to use these.
 const EOT: char = '\u0003';
 
 /// Converts a string to an array of char and appends an EOT character.
@@ -107,14 +107,12 @@ fn munge_chars(chars: @[char]) -> ~str
 
 // TODO: Hopefully rust will provide something better for converting and mixing ~str and & str.
 // See https://github.com/mozilla/rust/issues/2992
-fn unslice(s: &str) -> ~str
-{
-	s.slice(0, s.len())
-}
-
-fn unslice_vec<T: copy>(s: &[T]) -> ~[T]
-{
-	s.slice(0, s.len())
-}
-
-
+//fn unslice(s: &str) -> ~str
+//{
+//	s.slice(0, s.len())
+//}
+//
+//fn unslice_vec<T: copy>(s: &[T]) -> ~[T]
+//{
+//	s.slice(0, s.len())
+//}

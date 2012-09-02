@@ -14,24 +14,26 @@ use std;
 // TODO: remove this once rustc settles down a bit more
 //#[warn(no_non_implicitly_copyable_typarams, no_vecs_not_implicitly_copyable)]
 
-mod c99_parsers;
-mod char_parsers;
-mod combinators;
-mod generic_parsers;
+//mod c99_parsers;
+//mod char_parsers;
+//mod combinators;
+//mod generic_parsers;
 mod misc;
-mod parser;
-mod rparse;
-mod str_parsers;
+mod parsers;
+//mod parser;
+//mod rparse;
+//mod str_parsers;
 mod types;
 
 #[cfg(test)]
 mod tests
 {
-	mod test_c99_parser;
-	mod test_parsers;
-	mod test_primitives;
+	mod char_tests;
+//	mod test_c99_parser;
+//	mod test_parsers;
+//	mod test_primitives;
 	mod test_helpers;
-	mod test_expr;
-	mod test_xml;
+//	mod test_expr;
+//	mod test_xml;
 }
 

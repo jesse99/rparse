@@ -1,52 +1,58 @@
 {\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf470
 {\fonttbl\f0\fnil\fcharset0 Verdana;\f1\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;\red0\green72\blue255;\red104\green0\blue254;\red161\green33\blue108;
+{\colortbl;\red255\green255\blue255;\red161\green33\blue108;\red0\green72\blue255;\red104\green0\blue254;
 \red140\green83\blue65;\red219\green255\blue255;}
 \deftab480
+\pard\pardeftab480\pardirnatural
+
+\f0\i\fs28 \cf2 In general all T types must have the copy kind.
+\f1\i0\fs24 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f0\b\fs48 \cf0 char parsers
 \fs36 \
 \pard\pardeftab480\pardirnatural
 
-\fs28 \cf2 fn
+\fs28 \cf3 fn
 \b0 \cf0  
 \b anyp
 \b0 (
-\i \cf2 predicate:
+\i \cf3 predicate:
 \i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 char\cf0 >\
+\b \cf3 fn
+\b0 \cf0 @ (\cf4 char\cf0 ) -> \cf4 bool\cf0 ) -> parser<\cf4 char\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Consumes a character which must satisfy the predicate
+\i \cf2 Consumes a character which must satisfy the predicate
 \f1\fs24 \cf0 .
 \i0 \
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b anyc
 \b0 (
-\i \cf2 chars:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 char\cf0 >\
+\i \cf3 chars:
+\i0 \cf0  \cf4 str\cf0 ) -> parser<\cf4 char\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Attempts to match any character in chars. If matched the char is returned.
+\i \cf2 Attempts to match any character in chars. If matched the char is returned.
 \f1\i0\fs24 \cf0 \
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b noc
 \b0 (
-\i \cf2 chars:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 char\cf0 >\
+\i \cf3 chars:
+\i0 \cf0  \cf4 str\cf0 ) -> parser<\cf4 char\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Attempts to match no character in chars. If matched the char is returned.
+\i \cf2 Attempts to match no character in chars. If matched the char is returned.
 \f1\i0\fs24 \cf0 \
 \
 
@@ -54,179 +60,177 @@
 \fs36 \
 \pard\pardeftab480\pardirnatural
 
-\fs28 \cf2 fn
+\fs28 \cf3 fn
 \b0 \cf0  
 \b liti
 \b0 (
-\i \cf2 s:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 str\cf0 >\
+\i \cf3 s:
+\i0 \cf0  \cf4 str\cf0 ) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Returns s if input matches s ignoring case.
+\i \cf2 Returns s if input matches s ignoring case.
 \f1\i0\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f0\fs28 \cf0 \
 
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0  
 \b lit
 \b0 (
-\i \cf2 s:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<\cf3 str\cf0 >\
+\i \cf3 s:
+\i0 \cf0  \cf4 str\cf0 ) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Returns s if input matches s.
+\i \cf2 Returns s if input matches s.
 \f1\i0\fs24 \cf0 \
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b match0
 \b0 (
-\i \cf2 predicate:
+\i \cf3 predicate:
 \i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 str\cf0 >\
+\b \cf3 fn
+\b0 \cf0 @ (\cf4 char\cf0 ) -> \cf4 bool\cf0 ) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Consumes zero or more characters matching the predicate.
+\i \cf2 Consumes zero or more characters matching the predicate.
 \f1\i0\fs24 \cf0 \
 
-\f0\i\fs28 \cf4 Match functions do not increment line.
+\f0\i\fs28 \cf2 Match functions do not increment line.
 \f1\i0\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f0\fs28 \cf0 \
 
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0  
 \b match1
 \b0 (
-\i \cf2 predicate:
+\i \cf3 predicate:
 \i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 str\cf0 >\
+\b \cf3 fn
+\b0 \cf0 @ (\cf4 char\cf0 ) -> \cf4 bool\cf0 ) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Consumes one or more characters matching the predicate.
+\i \cf2 Consumes one or more characters matching the predicate.
 \f1\i0\fs24 \cf0 \
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b match1_0
 \b0 (
-\i \cf2 prefix:
+\i \cf3 prefix:
 \i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 , 
-\i \cf2 suffix:
+\b \cf3 fn
+\b0 \cf0 @ (\cf4 char\cf0 ) -> \cf4 bool\cf0 , 
+\i \cf3 suffix:
 \i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (\cf3 char\cf0 ) -> \cf3 bool\cf0 ) -> parser<\cf3 str\cf0 >\
+\b \cf3 fn
+\b0 \cf0 @ (\cf4 char\cf0 ) -> \cf4 bool\cf0 ) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Consumes one or more prefix chars and zero or more suffix chars.
+\i \cf2 Consumes one or more prefix chars and zero or more suffix chars.
 \f1\i0\fs24 \cf0 \
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b optional_str
 \b0 (
-\i \cf2 parser:
-\i0 \cf0  parser<\cf3 str\cf0 >) -> parser<\cf3 str\cf0 >\
+\i \cf3 parser:
+\i0 \cf0  parser<\cf4 str\cf0 >) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Like optional but returns "" on no match.
+\i \cf2 Like optional but returns "" on no match.
 \f1\i0\fs24 \cf0 \
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b scan
 \b0 (
-\i \cf2 fun:
+\i \cf3 fun:
 \i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
+\b \cf3 fn
+\b0 \cf0 @ ([\cf4 char\cf0 ], \cf4 uint\cf0 ) -> \cf4 uint\cf0 ) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Calls fun once and returns the result.
+\i \cf2 Calls fun once and returns the result.
 \f1\i0\fs24 \cf0 \
 
-\f0\i\fs28 \cf4 All scan functions increments line.
+\f0\i\fs28 \cf2 All scan functions increments line.
 \f1\i0\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f0\fs28 \cf0 \
 
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0  
 \b scan0
 \b0 (
-\i \cf2 fun:
+\i \cf3 fun:
 \i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
+\b \cf3 fn
+\b0 \cf0 @ ([\cf4 char\cf0 ], \cf4 uint\cf0 ) -> \cf4 uint\cf0 ) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Calls fun with an index into the characters to be parsed until it returns zero characters.
+\i \cf2 Calls fun with an index into the characters to be parsed until it returns zero characters.
 \f1\i0\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f0\fs28 \cf0 \
 
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0  
 \b scan1
 \b0 (
-\i \cf2 fun:
+\i \cf3 fun:
 \i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ ([\cf3 char\cf0 ], \cf3 uint\cf0 ) -> \cf3 uint\cf0 ) -> parser<\cf3 str\cf0 >\
+\b \cf3 fn
+\b0 \cf0 @ ([\cf4 char\cf0 ], \cf4 uint\cf0 ) -> \cf4 uint\cf0 ) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Calls fun with an index into the characters to be parsed until it returns zero characters.
+\i \cf2 Calls fun with an index into the characters to be parsed until it returns zero characters.
 \f1\i0\fs24 \cf0 \
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b seqN_ret_str
 \b0 (
-\i \cf2 parsers:
-\i0 \cf0  [parser<\cf5 str\cf0 >]) -> parser<str>\
+\i \cf3 parsers:
+\i0 \cf0  [parser<\cf5 str\cf0 >]) -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Returns text that matched the parsers.
+\i \cf2 Returns text that matched the parsers.
 \f1\i0\fs24 \cf0 \
 \
 
 \f0\b\fs48 generic parsers\
 \pard\pardeftab480\pardirnatural
 
-\fs28 \cf2 fn
+\fs28 \cf3 fn
 \b0 \cf0  
 \b litv
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 s:
-\i0 \cf0  \cf3 str\cf0 , 
-\i \cf2 value:
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 s:
+\i0 \cf0  \cf4 str\cf0 , 
+\i \cf3 value:
 \i0 \cf0  T) -> parser<T>\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 Returns value if input matches s
+\i \cf2 Returns value if input matches s
 \f1\fs24 \cf0 .
 \f0\i0\fs28 \
 \pard\pardeftab480\pardirnatural
@@ -234,93 +238,300 @@
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b fails
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 mesg:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 mesg:
+\i0 \cf0  \cf4 str\cf0 ) -> parser<T>\
 
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0  
 \b ret
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 value:
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 value:
 \i0 \cf0  T) -> parser<T>\
 \pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
+\f0\b\fs28 \cf3 fn
+\b0 \cf0  
+\b chainl1
+\b0 <
+\i \cf3 T
+\i0 \cf0 , 
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>, 
+\i \cf3 op:
+\i0 \cf0  parser<U>, 
+\i \cf3 eval:
+\i0 \cf0  
+\b \cf3 fn
+\b0 \cf0 @ (T, U, T) -> T) -> parser<T>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b chainr1
+\b0 <
+\i \cf3 T
+\i0 \cf0 , 
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>, 
+\i \cf3 op:
+\i0 \cf0  parser<U>, 
+\i \cf3 eval:
+\i0 \cf0  
+\b \cf3 fn
+\b0 \cf0 @ (T, U, T) -> T) -> parser<T>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b forward_ref
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  @
+\b \cf3 mut
+\b0 \cf0  parser<T>) -> parser<T>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b list
+\b0 <
+\i \cf3 T
+\i0 \cf0 , 
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>, 
+\i \cf3 sep:
+\i0 \cf0  parser<U>) -> parser<[T]>	
+\i \cf2 often used with thene
+\i0 \cf0 \
+
+\b \cf3 fn
+\b0 \cf0  
+\b optional
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>) -> parser<option<T>>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b or
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parser1:
+\i0 \cf0  parser<T>, 
+\i \cf3 parser2:
+\i0 \cf0  parser<T>) -> parser<T>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b or_v
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parsers:
+\i0 \cf0  [parser<T>]) -> parser<T>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b r
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>, 
+\i \cf3 n:
+\i0 \cf0  \cf4 uint\cf0 , 
+\i \cf3 m:
+\i0 \cf0  \cf4 uint\cf0 ) -> parser<[T]>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b r0
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>) -> parser<[T]>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b r1
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>) -> parser<[T]>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b seqN
+\b0 <\cf5 T0\cf0 , \cf5 T1\cf0 , 
+\i \cf3 R
+\i0 \cf0 >(
+\i \cf3 parser0:
+\i0 \cf0  parser<\cf5 T0\cf0 >, 
+\i \cf3 parser1:
+\i0 \cf0  parser<\cf5 T1\cf0 >, 
+\i \cf3 eval:
+\i0 \cf0  
+\b \cf3 fn
+\b0 \cf0 @ (\cf5 T0\cf0 , \cf5 T1\cf0 ) -> result::result<R, \cf4 str\cf0 >) -> parser<R>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b seqN_retM
+\b0 <
+\i \cf3 T0
+\i0 \cf0 , 
+\i \cf3 T1
+\i0 \cf0 >(
+\i \cf3 p0:
+\i0 \cf0  parser<T0>, 
+\i \cf3 p1:
+\i0 \cf0  parser<T1>) -> parser<T0>\
+
+\b \cf3 fn
+\b0 \cf0  
+\b s0
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>) -> parser<T>	
+\i \cf2 allow 0 or more trailing whitespace
+\i0 \cf0 \
+
+\b \cf3 fn
+\b0 \cf0  
+\b s1
+\b0 <
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>) -> parser<T>	
+\i \cf2 require 1 or more trailing whitespace
+\i0 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf3 fn
+\b0 \cf0  
+\b then
+\b0 <
+\i \cf3 T
+\i0 \cf0 , 
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 parser1:
+\i0 \cf0  parser<T>, 
+\i \cf3 parser2:
+\i0 \cf0  parser<U>) -> parser<U>\
+\pard\pardeftab480\pardirnatural
+
+\f1\fs24 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\f0\b\fs28 \cf3 fn
+\b0 \cf0  
+\b thene
+\b0 <
+\i \cf3 T
+\i0 \cf0 , 
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 parser:
+\i0 \cf0  parser<T>, 
+\i \cf3 eval:
+\i0 \cf0  
+\b \cf3 fn
+\b0 \cf0 @ (T) -> parser<U>) -> parser<U>\
+
+\i \cf2 p().thene \{|pvalue| return(2*pvalue)\}
+\f1\i0\fs24 \cf0 \
+\
+\pard\pardeftab480\pardirnatural
+
 \f0\b\fs48 \cf0 C99 parsers\
 \pard\pardeftab480\pardirnatural
 
-\fs28 \cf2 fn
+\fs28 \cf3 fn
 \b0 \cf0  
 \b identifier
-\b0 () -> parser<\cf3 str\cf0 >\
+\b0 () -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 [a-zA-Z_] [a-zA-Z0-9_]*.
+\i \cf2 [a-zA-Z_] [a-zA-Z0-9_]*.
 \f1\i0\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f0\fs28 \cf0 \
 
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0  
 \b decimal_number
-\b0 () -> parser<\cf3 int\cf0 >\
+\b0 () -> parser<\cf4 int\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 [0-9]+.
+\i \cf2 [0-9]+.
 \i0 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b octal_number
-\b0 () -> parser<\cf3 int\cf0 >\
+\b0 () -> parser<\cf4 int\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 0 [0-7]*
+\i \cf2 0 [0-7]*
 \i0 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b hex_number
-\b0 () -> parser<\cf3 int\cf0 >\
+\b0 () -> parser<\cf4 int\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 0[xX] [0-9a-fA-F]+
+\i \cf2 0[xX] [0-9a-fA-F]+
 \i0 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b float_number
-\b0 () -> parser<\cf3 f64\cf0 >\
+\b0 () -> parser<\cf4 f64\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 float1 | float2 | float3\
+\i \cf2 float1 | float2 | float3\
 \
 float1 := [0-9]* '.' [0-9]+ exponent?\
 float2 := [0-9]+ '.' exponent?\
@@ -331,13 +542,13 @@ exponent := [eE] [+-]? [0-9]+\
 \f1\i0\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b char_literal
-\b0 () -> parser<\cf3 char\cf0 >\
+\b0 () -> parser<\cf4 char\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 char_literal := '\\\\'' c_char_sequence '\\\\''\
+\i \cf2 char_literal := '\\\\'' c_char_sequence '\\\\''\
 \
 c_char_sequence := [^'\\n\\r\\\\]\
 c_char_sequence := escape_sequence
@@ -345,13 +556,13 @@ c_char_sequence := escape_sequence
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b string_literal
-\b0 () -> parser<\cf3 str\cf0 >\
+\b0 () -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 string_literal := '\\"' s_char* '\\"'\
+\i \cf2 string_literal := '\\"' s_char* '\\"'\
 \
 s_char := [^\\"\\n\\r\\\\]\
 s_char := escape_sequence
@@ -361,514 +572,235 @@ s_char := escape_sequence
 \i0 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b comment
-\b0 () -> parser<\cf3 str\cf0 >\
+\b0 () -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 '/*' ([^*] | '*' [^/])* '*/'
+\i \cf2 '/*' ([^*] | '*' [^/])* '*/'
 \f1\i0\fs24 \cf0 \
 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 fn
+\f0\b\fs28 \cf3 fn
 \b0 \cf0  
 \b line_comment
-\b0 () -> parser<\cf3 str\cf0 >\
+\b0 () -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 '//' [^\\r\\n]*\
+\i \cf2 '//' [^\\r\\n]*\
 \pard\pardeftab480\pardirnatural
 
 \f1\i0\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs48 \cf0 combinators\
-\pard\pardeftab480\pardirnatural
-
-\fs28 \cf2 fn
-\b0 \cf0  
-\b chainl1
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>, 
-\i \cf2 op:
-\i0 \cf0  parser<U>, 
-\i \cf2 eval:
-\i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (T, U, T) -> T) -> parser<T>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b chainr1
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>, 
-\i \cf2 op:
-\i0 \cf0  parser<U>, 
-\i \cf2 eval:
-\i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (T, U, T) -> T) -> parser<T>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b forward_ref
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  @
-\b \cf2 mut
-\b0 \cf0  parser<T>) -> parser<T>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b list
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>, 
-\i \cf2 sep:
-\i0 \cf0  parser<U>) -> parser<[T]>	
-\i \cf4 often used with thene
-\i0 \cf0 \
-
-\b \cf2 fn
-\b0 \cf0  
-\b optional
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>) -> parser<option<T>>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b or
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser1:
-\i0 \cf0  parser<T>, 
-\i \cf2 parser2:
-\i0 \cf0  parser<T>) -> parser<T>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b or_v
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parsers:
-\i0 \cf0  [parser<T>]) -> parser<T>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b r
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>, 
-\i \cf2 n:
-\i0 \cf0  \cf3 uint\cf0 , 
-\i \cf2 m:
-\i0 \cf0  \cf3 uint\cf0 ) -> parser<[T]>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b r0
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>) -> parser<[T]>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b r1
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>) -> parser<[T]>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b seqN
-\b0 <\cf5 T0\cf0 : 
-\b \cf2 copy
-\b0 \cf0 , \cf5 T1\cf0 : 
-\b \cf2 copy
-\b0 \cf0 , 
-\i \cf2 R:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser0:
-\i0 \cf0  parser<\cf5 T0\cf0 >, 
-\i \cf2 parser1:
-\i0 \cf0  parser<\cf5 T1\cf0 >, 
-\i \cf2 eval:
-\i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (\cf5 T0\cf0 , \cf5 T1\cf0 ) -> result::result<R, \cf3 str\cf0 >) -> parser<R>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b seqN_retM
-\b0 <
-\i \cf2 T0:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
-\i \cf2 T1:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 p0:
-\i0 \cf0  parser<T0>, 
-\i \cf2 p1:
-\i0 \cf0  parser<T1>) -> parser<T0>\
-
-\b \cf2 fn
-\b0 \cf0  
-\b s0
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>) -> parser<T>	
-\i \cf4 allow 0 or more trailing whitespace
-\i0 \cf0 \
-
-\b \cf2 fn
-\b0 \cf0  
-\b s1
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>) -> parser<T>	
-\i \cf4 require 1 or more trailing whitespace
-\i0 \cf0 \
-\pard\pardeftab480\pardirnatural
-
-\f1\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
-
-\f0\b\fs28 \cf2 fn
-\b0 \cf0  
-\b then
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser1:
-\i0 \cf0  parser<T>, 
-\i \cf2 parser2:
-\i0 \cf0  parser<U>) -> parser<U>\
-\pard\pardeftab480\pardirnatural
-
-\f1\fs24 \cf0 \
-\pard\pardeftab480\pardirnatural
-
-\f0\b\fs28 \cf2 fn
-\b0 \cf0  
-\b thene
-\b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 , 
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser:
-\i0 \cf0  parser<T>, 
-\i \cf2 eval:
-\i0 \cf0  
-\b \cf2 fn
-\b0 \cf0 @ (T) -> parser<U>) -> parser<U>\
-\pard\pardeftab480\pardirnatural
-
-\i \cf4 p().thene \{|pvalue| return(2*pvalue)\}
-\f1\i0\fs24 \cf0 \
-\
-\pard\pardeftab480\pardirnatural
-
-\f0\b\fs28 \cf2 impl
+\f0\b\fs28 \cf3 impl
 \b0 \cf0  
 \b\fs48 str_methods
 \b0\fs28  
-\b \cf2 for
-\b0 \cf0  \cf3 str\cf0 \
+\b \cf3 for
+\b0 \cf0  \cf4 str\cf0 \
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b lit
-\b0 () -> parser<\cf3 str\cf0 >\
+\b0 () -> parser<\cf4 str\cf0 >\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b liti
-\b0 () -> parser<\cf3 str\cf0 >\
+\b0 () -> parser<\cf4 str\cf0 >\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b litv
 \b0 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 value:
+\i \cf3 T
+\i0 \cf0 >(
+\i \cf3 value:
 \i0 \cf0  T) -> parser<T>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b anyc
-\b0 () -> parser<\cf3 char\cf0 >\
+\b0 () -> parser<\cf4 char\cf0 >\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b noc
-\b0 () -> parser<\cf3 char\cf0 >\
+\b0 () -> parser<\cf4 char\cf0 >\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b s0
-\b0 () -> parser<\cf3 str\cf0 >\
+\b0 () -> parser<\cf4 str\cf0 >\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b s1
-\b0 () -> parser<\cf3 str\cf0 >\
+\b0 () -> parser<\cf4 str\cf0 >\
 \pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
-\f0\b\fs28 \cf2 impl
+\f0\b\fs28 \cf3 impl
 \b0 \cf0  
 \b\fs48 parser_methods
 \b0\fs28 <
-\i \cf2 T:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 > 
-\b \cf2 for
+\i \cf3 T
+\i0 \cf0 > 
+\b \cf3 for
 \b0 \cf0  parser<T>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b thene
 \b0 <
-\i \cf2 U:
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 eval:
 \i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 eval:
-\i0 \cf0  
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0 @ (T) -> parser<U>) -> parser<U>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b then
 \b0 <
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 parser2:
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 parser2:
 \i0 \cf0  parser<U>) -> parser<U>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b or
 \b0 (
-\i \cf2 parser2:
+\i \cf3 parser2:
 \i0 \cf0  parser<T>) -> parser<T>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b optional
 \b0 () -> parser<option<T>>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b r
 \b0 (
-\i \cf2 n:
-\i0 \cf0  \cf3 uint\cf0 , 
-\i \cf2 m:
-\i0 \cf0  \cf3 uint\cf0 ) -> parser<[T]>\
+\i \cf3 n:
+\i0 \cf0  \cf4 uint\cf0 , 
+\i \cf3 m:
+\i0 \cf0  \cf4 uint\cf0 ) -> parser<[T]>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b r0
 \b0 () -> parser<[T]>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b r1
 \b0 () -> parser<[T]>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b list
 \b0 <
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 sep:
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 sep:
 \i0 \cf0  parser<U>) -> parser<[T]>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b chain_suffix
 \b0 <
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 op:
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 op:
 \i0 \cf0  parser<U>) -> parser<[(U, T)]>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b chainl1
 \b0 <
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 op:
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 op:
 \i0 \cf0  parser<U>, 
-\i \cf2 eval:
+\i \cf3 eval:
 \i0 \cf0  
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0 @ (T, U, T) -> T) -> parser<T>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b chainr1
 \b0 <
-\i \cf2 U:
-\i0 \cf0  
-\b \cf2 copy
-\b0 \cf0 >(
-\i \cf2 op:
+\i \cf3 U
+\i0 \cf0 >(
+\i \cf3 op:
 \i0 \cf0  parser<U>, 
-\i \cf2 eval:
+\i \cf3 eval:
 \i0 \cf0  
-\b \cf2 fn
+\b \cf3 fn
 \b0 \cf0 @ (T, U, T) -> T) -> parser<T>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b parse
 \b0 (
-\i \cf2 file:
-\i0 \cf0  \cf3 str\cf0 , 
-\i \cf2 text:
-\i0 \cf0  \cf3 str\cf0 ) -> parse_status<T>\
+\i \cf3 file:
+\i0 \cf0  \cf4 str\cf0 , 
+\i \cf3 text:
+\i0 \cf0  \cf4 str\cf0 ) -> parse_status<T>\
 \cb6 	\cb1 \
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b s0
 \b0 () -> parser<T>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b s1
 \b0 () -> parser<T>\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b everything
 \b0 <
-\b \cf2 U: copy
+\b \cf3 U
 \b0 \cf0 >(
-\i \cf2 space:
+\i \cf3 space:
 \i0 \cf0  parser<U>) -> parser<T>\
 	\
 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b note
 \b0 (
-\i \cf2 mesg:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
+\i \cf3 mesg:
+\i0 \cf0  \cf4 str\cf0 ) -> parser<T>\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 	log at info or debug\
+\i \cf2 	log at info or debug\
 	\
 \pard\pardeftab480\pardirnatural
 
 \i0 \cf0 \cb6 	
-\b \cf2 \cb1 fn
+\b \cf3 \cb1 fn
 \b0 \cf0  
 \b err
 \b0 (
-\i \cf2 label:
-\i0 \cf0  \cf3 str\cf0 ) -> parser<T>\
+\i \cf3 label:
+\i0 \cf0  \cf4 str\cf0 ) -> parser<T>\
 \pard\pardeftab480\pardirnatural
 
-\i \cf4 	log and use label when reporting errors, label should be something like "expression"\
+\i \cf2 	log and use label when reporting errors, label should be something like "expression"\
 	
 \f1\i0\fs24 \cf0 \
 }

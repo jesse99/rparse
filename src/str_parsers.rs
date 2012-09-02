@@ -37,41 +37,6 @@ fn liti(in_s: &str) -> parser<~str>
 	}
 }
 
-/// Returns s if input matches s. Also see liti and litv.
-fn lit(s: &str) -> parser<~str>
-{
-	let s = unslice(s);
-	
-	|input: state|
-	{
-		let mut i = 0u;
-		let mut j = input.index;
-		while i < str::len(s)
-		{
-			let {ch, next} = str::char_range_at(s, i);
-			if ch == input.text[j]
-			{
-				i = next;
-				j += 1u;
-			}
-			else
-			{
-				break;
-			}
-		}
-		
-		if i == str::len(s)
-		{
-			let text = str::from_chars(vec::slice(input.text, input.index, j));
-			result::Ok({new_state: {index: j ,.. input}, value: text})
-		}
-		else
-		{
-			result::Err({old_state: input, err_state: {index: j ,.. input}, mesg: fmt!("'%s'", unslice(s))})
-		}
-	}
-}
-
 // It would be a lot more elegant if match0, match1, and co were removed
 // and users relied on composition to build the sort of parsers that they
 // want. However in practice this is not such a good idea:
