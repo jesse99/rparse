@@ -11,8 +11,12 @@ use std;
 #[author = "Jesse Jones"]
 #[license = "MIT"]
 
-// TODO: remove this once rustc settles down a bit more
-//#[warn(no_non_implicitly_copyable_typarams, no_vecs_not_implicitly_copyable)]
+// TODO: commented out because they don't do anything with
+// my rust (Makefile enables them via the command line)
+//#[allow(unused_imports)] 			// can't figure out which imports it's warning about
+//#[allow(deprecated_pattern)]		// not sure how to get code to compile with this on
+//#[allow(deprecated_mode)]			// think we want to use T instead of @T for succeeded type (and zillions of other places)
+#[warn(non_camel_case_types)]
 
 //mod c99_parsers;
 //mod combinators;

@@ -4,14 +4,14 @@
 // TODO: probably should use individual modules for these, but the dependencies
 // are painful (see https://github.com/mozilla/rust/issues/3352).
 use misc::*;
-use types::{parser, state, status};
+use types::{Parser, State, Status};
 
 // ---- char parsers ------------------------------------------------------------------------------
 /// Consumes a character which must satisfy the predicate.
 /// Returns the matched character.
-fn anycp(predicate: fn@ (char) -> bool) -> parser<char>
+fn anycp(predicate: fn@ (char) -> bool) -> Parser<char>
 {
-	|input: state| {
+	|input: State| {
 		let mut i = input.index;
 		if input.text[i] != EOT && predicate(input.text[i])
 		{
@@ -33,21 +33,21 @@ fn anycp(predicate: fn@ (char) -> bool) -> parser<char>
 trait CharParsers
 {
 	/// Attempts to match any character in self. If matched the char is returned.
-	fn anyc() -> parser<char>;
+	fn anyc() -> Parser<char>;
 	
 	/// Attempts to match no character in self. If matched the char is returned.
-	fn noc() -> parser<char>;
+	fn noc() -> Parser<char>;
 }
 
 impl &str : CharParsers
 {
-	fn anyc() -> parser<char>
+	fn anyc() -> Parser<char>
 	{
 		// Note that we're handing this string off to a closure so we can't get rid of this copy
 		// even if we make the impl on ~str.
 		let s = self.to_unique();
 		
-		|input: state|
+		|input: State|
 		{
 			let mut i = input.index;
 			if str::find_char(s, input.text[i]).is_some()
@@ -66,11 +66,11 @@ impl &str : CharParsers
 		}
 	}
 	
-	fn noc() -> parser<char>
+	fn noc() -> Parser<char>
 	{
 		let s = self.to_unique();
 		
-		|input: state|
+		|input: State|
 		{
 			let mut i = input.index;
 			if input.text[i] != EOT && str::find_char(s, input.text[i]).is_none()
@@ -109,9 +109,9 @@ impl &str : CharParsers
 /// Returns the matched characters. 
 /// 
 /// Note that this does not increment line.
-fn match0(predicate: fn@ (char) -> bool) -> parser<@~str>
+fn match0(predicate: fn@ (char) -> bool) -> Parser<@~str>
 {
-	|input: state|
+	|input: State|
 	{
 		let mut i = input.index;
 		while input.text[i] != EOT && predicate(input.text[i])
@@ -128,9 +128,9 @@ fn match0(predicate: fn@ (char) -> bool) -> parser<@~str>
 /// Returns the matched characters. 
 /// 
 /// Note that this does not increment line.
-fn match1(predicate: fn@ (char) -> bool) -> parser<@~str>
+fn match1(predicate: fn@ (char) -> bool) -> Parser<@~str>
 {
-	|input: state|
+	|input: State|
 	{
 		let mut i = input.index;
 		while input.text[i] != EOT && predicate(input.text[i])
@@ -151,7 +151,7 @@ fn match1(predicate: fn@ (char) -> bool) -> parser<@~str>
 }
 
 /// match1_0 := prefix+ suffix*
-fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> parser<@~str>
+fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> Parser<@~str>
 {
 	let prefix = match1(prefix);
 	let suffix = match0(suffix);
@@ -162,19 +162,19 @@ fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> parser<@~
 trait StringParsers
 {
 	/// Returns the input that matches self. Also see liti and litv.
-	fn lit() -> parser<@~str>;
+	fn lit() -> Parser<@~str>;
 	
 	/// Returns the input that matches lower-cased self. Also see lit and litv.
-	fn liti() -> parser<@~str>;
+	fn liti() -> Parser<@~str>;
 }
 
 impl &str : StringParsers
 {
-	fn lit() -> parser<@~str>
+	fn lit() -> Parser<@~str>
 	{
 		let s = self.to_unique();
 		
-		|input: state|
+		|input: State|
 		{
 			let mut i = 0u;
 			let mut j = input.index;
@@ -204,11 +204,11 @@ impl &str : StringParsers
 		}
 	}
 	
-	fn liti() -> parser<@~str>
+	fn liti() -> Parser<@~str>
 	{
 		let s = str::to_lower(self);
 		
-		|input: state|
+		|input: State|
 		{
 			let mut i = 0u;
 			let mut j = input.index;
@@ -241,23 +241,23 @@ impl &str : StringParsers
 
 // ---- generic parsers ---------------------------------------------------------------------------
 /// Returns a parser which always fails.
-fn fails<T: copy owned>(mesg: &str) -> parser<T>
+fn fails<T: copy owned>(mesg: &str) -> Parser<T>
 {
 	let mesg = mesg.to_unique();
-	|input: state| result::Err({old_state: input, err_state: input, mesg: @copy mesg})
+	|input: State| result::Err({old_state: input, err_state: input, mesg: @copy mesg})
 }
 
 /// Returns a parser which always succeeds, but does not consume any input.
-fn ret<T: copy owned>(value: T) -> parser<T>
+fn ret<T: copy owned>(value: T) -> Parser<T>
 {
-	|input: state| result::Ok({new_state: input, value: value})
+	|input: State| result::Ok({new_state: input, value: value})
 }
 
 /// Parse functions which return a generic type.
 trait GenericParsers
 {
 	/// Returns value if input matches s. Also see lit.
-	fn litv<T: copy owned>(value: T) -> parser<T>;
+	fn litv<T: copy owned>(value: T) -> Parser<T>;
 }
 
 trait Combinators<T: copy owned>
@@ -266,14 +266,14 @@ trait Combinators<T: copy owned>
 	/// with parser's result. If parser fails eval is not called.
 	/// 
 	/// Often used to translate parsed values: `p().thene({|pvalue| return(2*pvalue)})`
-	fn thene<U: copy owned>(eval: fn@ (T) -> parser<U>) -> parser<U>;
+	fn thene<U: copy owned>(eval: fn@ (T) -> Parser<U>) -> Parser<U>;
 }
 
-impl<T: copy owned> parser<T> : Combinators<T>
+impl<T: copy owned> Parser<T> : Combinators<T>
 {
-	fn thene<U: copy owned>(eval: fn@ (T) -> parser<U>) -> parser<U>
+	fn thene<U: copy owned>(eval: fn@ (T) -> Parser<U>) -> Parser<U>
 	{
-		|input: state|
+		|input: State|
 		{
 			do result::chain(self(input))
 			|pass|
@@ -287,11 +287,11 @@ impl<T: copy owned> parser<T> : Combinators<T>
 
 impl &str : GenericParsers
 {
-	fn litv<T: copy owned>(value: T) -> parser<T>
+	fn litv<T: copy owned>(value: T) -> Parser<T>
 	{
 		let s = self.to_unique();
 		
-		|input: state|
+		|input: State|
 		{
 			match s.lit()(input)
 			{

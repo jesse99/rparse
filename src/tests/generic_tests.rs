@@ -5,9 +5,9 @@ use test_helpers::*;
 // Usually these would be written using then, but we are using this
 // to test then and don't want to confuse things by testing then 
 // multiple times for each input string.
-fn parse_unary() -> parser<char>
+fn parse_unary() -> Parser<char>
 {
-	|input: state|
+	|input: State|
 	{
 		let ch = input.text[input.index];
 		if ch == '-' || ch == '+'
@@ -21,9 +21,9 @@ fn parse_unary() -> parser<char>
 	}
 }
 
-fn parse_digit() -> parser<int>
+fn parse_digit() -> Parser<int>
 {
-	|input: state|
+	|input: State|
 	{
 		let ch = input.text[input.index];
 		if ch >= '0' && ch <= '9'
@@ -38,9 +38,9 @@ fn parse_digit() -> parser<int>
 	}
 }
 
-fn parse_num(op: char) -> parser<int>
+fn parse_num(op: char) -> Parser<int>
 {
-	|input: state|
+	|input: State|
 	{
 		do result::chain(parse_digit()(input))
 		|output|
