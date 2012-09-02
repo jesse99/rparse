@@ -32,6 +32,8 @@ mod tests
 //	mod test_c99_parser;
 //	mod test_parsers;
 //	mod test_primitives;
+	mod generic_tests;
+	mod string_tests;
 	mod test_helpers;
 //	mod test_expr;
 //	mod test_xml;

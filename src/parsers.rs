@@ -61,7 +61,7 @@ impl &str : CharParsers
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: @fmt!("[%s)", s)})
+				result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: @fmt!("[%s]", s)})
 			}
 		}
 	}
@@ -84,7 +84,7 @@ impl &str : CharParsers
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: @fmt!("[^%s)", s)})
+				result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: @fmt!("[^%s]", s)})
 			}
 		}
 	}
@@ -129,7 +129,7 @@ impl &str : StringParsers
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: j ,.. input}, mesg: @fmt!("'%self'", s)})
+				result::Err({old_state: input, err_state: {index: j ,.. input}, mesg: @fmt!("'%s'", s)})
 			}
 		}
 	}
@@ -137,9 +137,10 @@ impl &str : StringParsers
 
 // ---- generic parsers ---------------------------------------------------------------------------
 /// Returns a parser which always fails.
-fn fails<T: copy owned>(mesg: @~str) -> parser<T>
+fn fails<T: copy owned>(mesg: &str) -> parser<T>
 {
-	|input: state| result::Err({old_state: input, err_state: input, mesg: mesg})
+	let mesg = mesg.to_unique();
+	|input: state| result::Err({old_state: input, err_state: input, mesg: @copy mesg})
 }
 
 /// Returns a parser which always succeeds, but does not consume any input.
@@ -148,7 +149,7 @@ fn ret<T: copy owned>(value: T) -> parser<T>
 	|input: state| result::Ok({new_state: input, value: value})
 }
 
-/// Parse functions which return a character.
+/// Parse functions which return a generic type.
 trait GenericParsers
 {
 	/// Returns value if input matches s. Also see lit.
