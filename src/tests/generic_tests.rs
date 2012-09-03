@@ -127,6 +127,47 @@ fn test_list()
 }
 
 #[test]
+fn test_parse()
+{
+	let p = "<".lit().s0().then("foo".lit().s0()).then(">".lit()).err("bracketed foo");
+	
+	match p.parse(@~"unit test", ~"< foo\t>")
+	{
+		result::Ok(s) =>
+		{
+			if s != @~">"
+			{
+				io::stderr().write_line(fmt!("'>' but found '%s'.", *s));
+				assert false;
+			}
+		}
+		result::Err({file, line, col, mesg}) =>
+		{
+			util::ignore(file);
+			io::stderr().write_line(fmt!("Error '%s' on line %u and col %u.", *mesg, line, col));
+			assert false;
+		}
+	}
+	
+	assert check_str_failed("<foo", p, "'>'", 1);
+	match p.parse(@~"unit test", ~"< \n\nfoo\tx")
+	{
+		result::Ok(s) =>
+		{
+			io::stderr().write_line(fmt!("Somehow parsed '%s'.", *s));
+			assert false;
+		}
+		result::Err({file, line, col, mesg}) =>
+		{
+			assert file == @~"unit test";
+			assert line == 3u;
+			assert col == 5u;
+			assert mesg == @~"'>'";
+		}
+	}
+}
+
+#[test]
 fn test__r0()
 {
 	let p = "b".lit().r0();

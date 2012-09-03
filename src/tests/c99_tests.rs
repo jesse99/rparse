@@ -101,5 +101,5 @@ fn test_comment()
 	
 	assert check_str_ok("/**/", p, "");
 	assert check_str_ok("/* blah */", p, " blah ");
-	assert check_str_failed("/* xxx\nyyy\nzz", p, "'*/'", 3);
+	assert check_str_failed("/* xxx\nyyy\nzz", p, "'*/'", 1);
 }

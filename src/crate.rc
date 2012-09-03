@@ -18,7 +18,7 @@ use std;
 //#[allow(deprecated_mode)]			// think we want to use T instead of @T for succeeded type (and zillions of other places)
 #[warn(non_camel_case_types)]
 
-//mod c99_parsers;
+mod c99_parsers;
 mod misc;
 mod parsers;
 mod parse;
@@ -28,14 +28,13 @@ mod types;
 #[cfg(test)]
 mod tests
 {
+	mod c99_tests;
 	mod char_tests;
-//	mod test_c99_parser;
-//	mod test_parsers;
 	mod generic_tests;
 	mod parse_tests;
 	mod string_tests;
 	mod test_helpers;
-//	mod test_expr;
+	mod test_expr;
 //	mod test_xml;
 }
 

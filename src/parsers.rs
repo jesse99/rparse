@@ -6,6 +6,12 @@
 use misc::*;
 use types::{Parser, State, Status};
 
+/// Return type of parse function.
+type ParseStatus<T: copy owned> = result::Result<T, ParseFailed>;
+
+/// Returned by parse function on error. Line and col are both 1-based.
+type ParseFailed = {file: @~str, line: uint, col: uint, mesg: @~str};
+
 // ---- weird parsers -----------------------------------------------------------------------------
 // Returns a parser which matches the end of the input.
 // Clients should use everything instead of this.
@@ -298,6 +304,12 @@ trait StringParsers
 	
 	/// Returns the input that matches lower-cased self. Also see lit and litv.
 	fn liti() -> Parser<@~str>;
+	
+	/// s0 := e [ \t\r\n]*
+	fn s0() -> Parser<@~str>;
+	
+	/// s1 := e [ \t\r\n]+
+	fn s1() -> Parser<@~str>;
 }
 
 impl &str : StringParsers
@@ -368,6 +380,16 @@ impl &str : StringParsers
 				result::Err({old_state: input, err_state: {index: j, ..input}, mesg: @fmt!("'%s'", s)})
 			}
 		}
+	}
+	
+	fn s0() -> Parser<@~str>
+	{
+		self.lit().s0()
+	}
+	
+	fn s1() -> Parser<@~str>
+	{
+		self.lit().s1()
 	}
 }
 
@@ -755,7 +777,7 @@ trait Combinators<T: copy owned>
 	
 	/// Parses the text and fails if all the text was not consumed. Leading space is allowed.
 	/// 
-	/// This is typically used in conjunction with the parse function. Note that space has to have the
+	/// This is typically used in conjunction with the parse method. Note that space has to have the
 	/// same type as parser which is backwards from how it is normally used.
 	fn everything<U: copy owned>(space: Parser<U>) -> Parser<T>;
 	
@@ -775,6 +797,9 @@ trait Combinators<T: copy owned>
 	
 	/// Returns a parser which first tries parser1, and if that fails, parser2.
 	fn or(parser2: Parser<T>) -> Parser<T>;
+	
+	/// Uses parser to parse text. Also see everything method.
+	fn parse(file: @~str, text: &str) -> ParseStatus<T>;
 	
 	/// Succeeds if parser matches input n to m times (inclusive).
 	fn r(n: uint, m: uint) -> Parser<@~[T]>;
@@ -1019,6 +1044,24 @@ impl<T: copy owned> Parser<T> : Combinators<T>
 						result::Err({mesg: or_mesg(failure1.mesg, failure2.mesg), ..failure2})
 					}
 				}
+			}
+		}
+	}
+	
+	fn parse(file: @~str, text: &str) -> ParseStatus<T>
+	{
+		let chars = chars_with_eot(text);
+		let input = {file: file, text: chars, index: 0u, line: 1};
+		match self(input)
+		{
+			result::Ok(pass) =>
+			{
+				result::Ok(pass.value)
+			}
+			result::Err(failure) =>
+			{
+				let col = get_col(chars, failure.err_state.index);
+				result::Err({file: failure.old_state.file, line: failure.err_state.line as uint, col: col, mesg: failure.mesg})
 			}
 		}
 	}

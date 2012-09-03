@@ -1,40 +1,40 @@
 // Test a grammar capable of evaluating simple mathematical expressions.
 use c99_parsers::*;
-use combinators::*;
+use parsers::*;
 use test_helpers::*;
 
-fn expr_parser() -> parser<int>
+fn expr_parser() -> Parser<int>
 {
 	let int_literal = decimal_number().err("number").s0();
 	
 	// Parenthesized expressions require a forward reference to the expr parser
 	// so we initialize a function pointer to something of the right type, create
 	// a parser using the parser expr_ptr points to, and fixup expr_ptr later.
-	let expr_ptr = @mut return(0i);
+	let expr_ptr = @mut ret(0i);
 	let expr_ref = forward_ref(expr_ptr);
 	
 	// sub_expr := [-+]? '(' expr ')'
 	// The err function provides better error messages if the factor parser fails
 	// on the very first character.
-	let sub_expr = or_v(~[
+	let sub_expr = or_v(@~[
 		seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
-		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene(|v| return(-v) ),
-		seq3_ret1(             "(".s0(), expr_ref, ")".s0())]).err("sub-expression");
+		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene(|v| ret(-v) ),
+		seq3_ret1(               "(".s0(), expr_ref, ")".s0())]).err("sub-expression");
 	
 	// factor := integer | sub_expr
 	let factor = int_literal.or(sub_expr);
 	
 	// term := factor ([*/] factor)*
 	let term = do factor.chainl1("*".s0().or("/".s0()))
-		|lhs, op, rhs| { if op == ~"*" {lhs*rhs} else {lhs/rhs}};
+		|lhs, op, rhs| {if op == @~"*" {lhs*rhs} else {lhs/rhs}};
 	
 	// expr := term ([+-] term)*
 	let expr = term.chainl1("+".s0().or("-".s0()),
-		|lhs, op, rhs| { if op == ~"+" {lhs + rhs} else {lhs - rhs}}).err("expression");
+		|lhs, op, rhs| {if op == @~"+" {lhs + rhs} else {lhs - rhs}}).err("expression");
 	*expr_ptr = expr;
 	
 	// start := s0 expr EOT
-	let s = return(0).s0();
+	let s = ret(0).s0();
 	expr.everything(s)
 }
 
@@ -89,13 +89,13 @@ fn test_expr()
 #[test]
 fn test_usage()
 {
-	match expr_parser().parse(~"test", ~"2+3*5")
+	match expr_parser().parse(@~"test", ~"2+3*5")
 	{
 		result::Ok(value) =>
 		{
 			assert value == 17;
 		}
-		result::Err({file, line, col, mesg}) =>
+		result::Err(_) =>
 		{
 			assert false;
 		}
