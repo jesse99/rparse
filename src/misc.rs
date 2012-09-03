@@ -115,15 +115,3 @@ fn munge_chars(chars: @[char]) -> ~str
 	do vec::iter(chars) |ch| { str::push_char(value, if is_print(ch) {ch} else {bullet});}
 	return value;
 }
-
-// TODO: Hopefully rust will provide something better for converting and mixing ~str and & str.
-// See https://github.com/mozilla/rust/issues/2992
-//fn unslice(s: &str) -> ~str
-//{
-//	s.slice(0, s.len())
-//}
-//
-//fn unslice_vec<T: copy>(s: &[T]) -> ~[T]
-//{
-//	s.slice(0, s.len())
-//}
