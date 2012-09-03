@@ -83,6 +83,40 @@ fn test_litv()
 }
 
 #[test]
+fn test_seq3()
+{
+	let p = do seq3("+-".anyc(), anycp(is_digit), anycp(is_digit))
+		|a, b, c|
+		{
+			let x = (10*char::to_digit(b, 10).get() + char::to_digit(c, 10).get()) as int; 
+			result::Ok(if a == '-' {-x} else {x})
+		};
+	
+	assert check_int_ok("+23", p, 23);
+	assert check_int_ok("+239", p, 23);
+	assert check_int_ok("-19", p, -19);
+	assert check_int_failed("", p, "[+-]", 1);
+	assert check_int_failed("+2", p, "", 1);
+	assert check_int_failed("2", p, "[+-]", 1);
+}
+
+#[test]
+fn test_then()
+{
+	let p = "<".lit().then("foo".lit()).then(">".lit());
+	
+	assert check_str_ok("<foo>", p, ">");
+	assert check_str_failed("", p, "'<'", 1);
+	assert check_str_failed("<", p, "'foo'", 1);
+	assert check_str_failed("<foo", p, "'>'", 1);
+	assert check_str_failed("<foo-", p, "'>'", 1);
+	
+	let text = chars_with_eot("<foo-");
+	let result = p({file: @~"unit test", text: text, index: 0u, line: 1});
+	assert result::get_err(result).old_state.index == 0u;	// if any of the then clauses fails we need to start over
+}
+
+#[test]
 fn test_thene()
 {
 	let p = do parse_unary().thene |c| {parse_num(c)};

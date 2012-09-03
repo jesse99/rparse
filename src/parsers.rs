@@ -20,11 +20,11 @@ fn anycp(predicate: fn@ (char) -> bool) -> Parser<char>
 		
 		if i > input.index
 		{
-			result::Ok({new_state: {index: i ,.. input}, value: input.text[input.index]})
+			result::Ok({new_state: {index: i, ..input}, value: input.text[input.index]})
 		}
 		else
 		{
-			result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: @~""})
+			result::Err({old_state: input, err_state: {index: i, ..input}, mesg: @~""})
 		}
 	}
 }
@@ -57,11 +57,11 @@ impl &str : CharParsers
 			
 			if i > input.index
 			{
-				result::Ok({new_state: {index: i ,.. input}, value: input.text[input.index]})
+				result::Ok({new_state: {index: i, ..input}, value: input.text[input.index]})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: @fmt!("[%s]", s)})
+				result::Err({old_state: input, err_state: {index: i, ..input}, mesg: @fmt!("[%s]", s)})
 			}
 		}
 	}
@@ -80,11 +80,11 @@ impl &str : CharParsers
 			
 			if i > input.index
 			{
-				result::Ok({new_state: {index: i ,.. input}, value: input.text[input.index]})
+				result::Ok({new_state: {index: i, ..input}, value: input.text[input.index]})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: i ,.. input}, mesg: @fmt!("[^%s]", s)})
+				result::Err({old_state: input, err_state: {index: i, ..input}, mesg: @fmt!("[^%s]", s)})
 			}
 		}
 	}
@@ -158,6 +158,120 @@ fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> Parser<@~
 	prefix.thene(|p| suffix.thene(|s| ret(@(*p + *s))))
 }
 
+/// Calls fun once and matches the number of characters returned by fun. 
+/// 
+/// This does increment line.  Note that this succeeds even if zero characters are matched.
+fn scan(fun: fn@ (@[char], uint) -> uint) -> Parser<@~str>
+{
+	|input: State|
+	{
+		let mut i = input.index;
+		let mut line = input.line;
+		
+		let count = fun(input.text, i);
+		if count > 0u && input.text[i] != EOT		// EOT check makes it easier to write funs that do stuff like matching chars that are not something
+		{
+			for uint::range(0u, count)
+			|_k| {
+				if input.text[i] == '\r'
+				{
+					line += 1;
+				}
+				else if input.text[i] == '\n' && (i == 0u || input.text[i-1u] != '\r')
+				{
+					line += 1;
+				}
+				i += 1u;
+			}
+			let text = str::from_chars(vec::slice(input.text, input.index, i));
+			result::Ok({new_state: {index: i, line: line, ..input}, value: @text})
+		}
+		else
+		{
+			result::Ok({new_state: {index: i, line: line, ..input}, value: @~""})
+		}
+	}
+}
+
+
+/// If all the parsers are successful then the matched text is returned.
+fn seq2_ret_str<T0: copy owned, T1: copy owned>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<@~str>
+{
+	|input: State|
+	{
+		match p0.then(p1)(input)
+		{
+			result::Ok(pass) =>
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
+				result::Ok({new_state: pass.new_state, value: @text})
+			}
+			result::Err(failure) =>
+			{
+				result::Err({old_state: input, ..failure})
+			}
+		}
+	}
+}
+
+/// If all the parsers are successful then the matched text is returned.
+fn seq3_ret_str<T0: copy owned, T1: copy owned, T2: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<@~str>
+{
+	|input: State|
+	{
+		match p0.then(p1). then(p2)(input)
+		{
+			result::Ok(pass) =>
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
+				result::Ok({new_state: pass.new_state, value: @text})
+			}
+			result::Err(failure) =>
+			{
+				result::Err({old_state: input, ..failure})
+			}
+		}
+	}
+}
+
+/// If all the parsers are successful then the matched text is returned.
+fn seq4_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<@~str>
+{
+	|input: State| {
+		match p0.then(p1). then(p2).then(p3)(input)
+		{
+			result::Ok(pass) =>
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
+				result::Ok({new_state: pass.new_state, value: @text})
+			}
+			result::Err(failure) =>
+			{
+				result::Err({old_state: input, ..failure})
+			}
+		}
+	}
+}
+
+/// If all the parsers are successful then the matched text is returned.
+fn seq5_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>, p4: Parser<T4>) -> Parser<@~str>
+{
+	|input: State| {
+		match p0.then(p1). then(p2).then(p3).then(p4)(input)
+		{
+			result::Ok(pass) =>
+			{
+				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
+				result::Ok({new_state: pass.new_state, value: @text})
+			}
+			result::Err(failure) =>
+			{
+				result::Err({old_state: input, ..failure})
+			}
+		}
+	}
+}
+
 /// Parse functions which return a string.
 trait StringParsers
 {
@@ -195,11 +309,11 @@ impl &str : StringParsers
 			if i == str::len(s)
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, j));
-				result::Ok({new_state: {index: j ,.. input}, value: @text})
+				result::Ok({new_state: {index: j, ..input}, value: @text})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: j ,.. input}, mesg: @fmt!("'%s'", s)})
+				result::Err({old_state: input, err_state: {index: j, ..input}, mesg: @fmt!("'%s'", s)})
 			}
 		}
 	}
@@ -229,11 +343,11 @@ impl &str : StringParsers
 			if i == str::len(s)
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, j));
-				result::Ok({new_state: {index: j ,.. input}, value: @text})
+				result::Ok({new_state: {index: j, ..input}, value: @text})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: j ,.. input}, mesg: @fmt!("'%s'", s)})
+				result::Err({old_state: input, err_state: {index: j, ..input}, mesg: @fmt!("'%s'", s)})
 			}
 		}
 	}
@@ -253,6 +367,194 @@ fn ret<T: copy owned>(value: T) -> Parser<T>
 	|input: State| result::Ok({new_state: input, value: value})
 }
 
+/// seq2 := e0 e1
+fn seq2<T0: copy owned, T1: copy owned, R: copy owned>
+	(parser0: Parser<T0>, parser1: Parser<T1>, eval: fn@ (T0, T1) -> result::Result<R, @~str>) -> Parser<R>
+{
+	do parser0.thene() |a0| {
+	do parser1.thene() |a1| {
+		match eval(a0, a1)
+		{
+			result::Ok(value) =>
+			{
+				ret(value)
+			}
+			result::Err(mesg) =>
+			{
+				fails(*mesg)
+			}
+		}
+	}}
+}
+
+/// seq3 := e0 e1 e2
+fn seq3<T0: copy owned, T1: copy owned, T2: copy owned, R: copy owned>
+	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, eval: fn@ (T0, T1, T2) -> result::Result<R, @~str>) -> Parser<R>
+{
+	do parser0.thene() |a0| {
+	do parser1.thene() |a1| {
+	do parser2.thene() |a2| {
+		match eval(a0, a1, a2)
+		{
+			result::Ok(value) =>
+			{
+				ret(value)
+			}
+			result::Err(mesg) =>
+			{
+				fails(*mesg)
+			}
+		}
+	}}}
+}
+
+/// seq4 := e0 e1 e2 e3
+fn seq4<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, R: copy owned>
+	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::Result<R, @~str>) -> Parser<R>
+{
+	do parser0.thene() |a0| {
+	do parser1.thene() |a1| {
+	do parser2.thene() |a2| {
+	do parser3.thene() |a3| {
+		match eval(a0, a1, a2, a3)
+		{
+			result::Ok(value) =>
+			{
+				ret(value)
+			}
+			result::Err(mesg) =>
+			{
+				fails(*mesg)
+			}
+		}
+	}}}}
+}
+
+/// seq5 := e0 e1 e2 e3 e4
+fn seq5<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, R: copy owned>
+	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::Result<R, @~str>) -> Parser<R>
+{
+	do parser0.thene() |a0| {
+	do parser1.thene() |a1| {
+	do parser2.thene() |a2| {
+	do parser3.thene() |a3| {
+	do parser4.thene() |a4| {
+		match eval(a0, a1, a2, a3, a4)
+		{
+			result::Ok(value) =>
+			{
+				ret(value)
+			}
+			result::Err(mesg) =>
+			{
+				fails(*mesg)
+			}
+		}
+	}}}}}
+}
+
+/// seq6 := e0 e1 e2 e3 e4 e5
+fn seq6<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, T5: copy owned, R: copy owned>
+	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, parser5: Parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::Result<R, @~str>) -> Parser<R>
+{
+	do parser0.thene() |a0| {
+	do parser1.thene() |a1| {
+	do parser2.thene() |a2| {
+	do parser3.thene() |a3| {
+	do parser4.thene() |a4| {
+	do parser5.thene() |a5| {
+		match eval(a0, a1, a2, a3, a4, a5)
+		{
+			result::Ok(value) =>
+			{
+				ret(value)
+			}
+			result::Err(mesg) =>
+			{
+				fails(*mesg)
+			}
+		}
+	}}}}}}
+}
+
+/// seq7 := e0 e1 e2 e3 e4 e5 e6
+fn seq7<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, T5: copy owned, T6: copy owned, R: copy owned>
+	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, parser5: Parser<T5>, parser6: Parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::Result<R, @~str>) -> Parser<R>
+{
+	do parser0.thene() |a0| {
+	do parser1.thene() |a1| {
+	do parser2.thene() |a2| {
+	do parser3.thene() |a3| {
+	do parser4.thene() |a4| {
+	do parser5.thene() |a5| {
+	do parser6.thene() |a6| {
+		match eval(a0, a1, a2, a3, a4, a5, a6)
+		{
+			result::Ok(value) =>
+			{
+				ret(value)
+			}
+			result::Err(mesg) =>
+			{
+				fails(*mesg)
+			}
+		}
+	}}}}}}}
+}
+
+/// seq8 := e0 e1 e2 e3 e4 e5 e6 e7
+fn seq8<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, T5: copy owned, T6: copy owned, T7: copy owned, R: copy owned>
+	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, parser5: Parser<T5>, parser6: Parser<T6>, parser7: Parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::Result<R, @~str>) -> Parser<R>
+{
+	do parser0.thene() |a0| {
+	do parser1.thene() |a1| {
+	do parser2.thene() |a2| {
+	do parser3.thene() |a3| {
+	do parser4.thene() |a4| {
+	do parser5.thene() |a5| {
+	do parser6.thene() |a6| {
+	do parser7.thene() |a7| {
+		match eval(a0, a1, a2, a3, a4, a5, a6, a7)
+		{
+			result::Ok(value) =>
+			{
+				ret(value)
+			}
+			result::Err(mesg) =>
+			{
+				fails(*mesg)
+			}
+		}
+	}}}}}}}}
+}
+
+/// seq9 := e0 e1 e2 e3 e4 e5 e6 e7 e8
+fn seq9<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy owned, T5: copy owned, T6: copy owned, T7: copy owned, T8: copy owned, R: copy owned>
+	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, parser5: Parser<T5>, parser6: Parser<T6>, parser7: Parser<T7>, parser8: Parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::Result<R, @~str>) -> Parser<R>
+{
+	do parser0.thene() |a0| {
+	do parser1.thene() |a1| {
+	do parser2.thene() |a2| {
+	do parser3.thene() |a3| {
+	do parser4.thene() |a4| {
+	do parser5.thene() |a5| {
+	do parser6.thene() |a6| {
+	do parser7.thene() |a7| {
+	do parser8.thene() |a8| {
+		match eval(a0, a1, a2, a3, a4, a5, a6, a7, a8)
+		{
+			result::Ok(value) =>
+			{
+				ret(value)
+			}
+			result::Err(mesg) =>
+			{
+				fails(*mesg)
+			}
+		}
+	}}}}}}}}}
+}
+
 /// Parse functions which return a generic type.
 trait GenericParsers
 {
@@ -262,6 +564,10 @@ trait GenericParsers
 
 trait Combinators<T: copy owned>
 {
+	/// If parser1 is successful is successful then parser2 is called (and the value from parser1
+	/// is ignored). If parser1 fails parser2 is not called.
+	fn then<U: copy owned>(parser2: Parser<U>) -> Parser<U>;
+	
 	/// If parser is successful then the function returned by eval is called
 	/// with parser's result. If parser fails eval is not called.
 	/// 
@@ -271,6 +577,19 @@ trait Combinators<T: copy owned>
 
 impl<T: copy owned> Parser<T> : Combinators<T>
 {
+	fn then<U: copy owned>(parser2: Parser<U>) -> Parser<U>
+	{
+		|input: State|
+		{
+			do result::chain(self(input))
+			|pass|
+			{
+				do result::chain_err(parser2(pass.new_state))
+					|failure| {result::Err({old_state: input, ..failure})}
+			}
+		}
+	}
+	
 	fn thene<U: copy owned>(eval: fn@ (T) -> Parser<U>) -> Parser<U>
 	{
 		|input: State|

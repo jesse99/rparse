@@ -2,6 +2,17 @@ use misc::*;
 use parsers::*;
 use test_helpers::*;
 
+// [^"]*
+fn string_body(chars: @[char], index: uint) -> uint
+{
+	let mut i = index;
+	while chars[i] != '"' && chars[i] != EOT
+	{
+		i += 1;
+	}
+	i - index
+}
+
 #[test]
 fn test_lit()
 {
@@ -61,4 +72,29 @@ fn test_match1_0()
 	assert check_str_ok("foo23z", p, "foo23z");
 	assert check_str_failed("", p, "", 1);
 	assert check_str_failed("34foo", p, "", 1);
+}
+
+#[test]
+fn test_scan()
+{
+	let p = do seq3("\"".lit(), scan(string_body), "\"".lit())
+		|_a, b, _c| {result::Ok(b)};
+	
+	assert check_str_ok("\"hmm\"", p, "hmm");
+	assert check_str_ok("\"\"", p, "");
+	assert check_str_ok("\"hmm\"blech", p, "hmm");
+	assert check_str_failed("", p, "'\"'", 1);
+	assert check_str_failed("\"hmm", p, "'\"'", 1);
+}
+
+#[test]
+fn test_seq3_ret_str()
+{
+	let p = seq3_ret_str("\"".lit(), scan(string_body), "\"".lit());
+	
+	assert check_str_ok("\"hmm\"", p, "\"hmm\"");
+	assert check_str_ok("\"\"", p, "\"\"");
+	assert check_str_ok("\"hmm\"blech", p, "\"hmm\"");
+	assert check_str_failed("", p, "'\"'", 1);
+	assert check_str_failed("\"hmm", p, "'\"'", 1);
 }

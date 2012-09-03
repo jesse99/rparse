@@ -20,43 +20,6 @@ pure fn is_identifier_suffix(ch: char) -> bool
 }
 
 #[test]
-fn test_fails()
-{
-	let p = fails("oops");
-	
-	assert check_int_failed("", p, "oops", 1);
-	assert check_int_failed("1", p, "oops", 1);
-	assert check_int_failed("hello", p, "oops", 1);
-}
-
-#[test]
-fn test_return()
-{
-	let p = return(42);
-	
-	assert check_int_ok("", p, 42);
-	assert check_int_ok("1", p, 42);
-	assert check_int_ok("22", p, 42);
-}
-
-#[test]
-fn test_then()
-{
-	let p = "<".lit().then("foo".lit()).then(">".lit());
-	
-	assert check_str_ok("<foo>", p, ">");
-	assert check_str_failed("", p, "'<'", 1);
-	assert check_str_failed("<", p, "'foo'", 1);
-	assert check_str_failed("<foo", p, "'>'", 1);
-	assert check_str_failed("<foo-", p, "'>'", 1);
-	
-	let text = chars_with_eot("<foo-");
-	let result = p({file: ~"unit test", text: text, index: 0u, line: 1});
-	assert get_err(result).old_state.index == 0u;	// if any of the then clauses fails we need to start over
-}
-
-
-#[test]
 fn test_seq()
 {
 	let prefix = match1(is_identifier_prefix);

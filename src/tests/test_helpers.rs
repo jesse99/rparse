@@ -160,7 +160,7 @@ fn check_failed<T: copy owned>(result: Status<T>, expected: &str, line: int) -> 
 		}
 		result::Err(failure) =>
 		{
-			if failure.mesg != @expected.to_unique()
+			if !str::eq(failure.mesg, &expected.to_unique())
 			{
 				io::stderr().write_line(fmt!("Expected error '%s' but found error '%s'", expected.to_unique(), *failure.mesg));
 				return false;
