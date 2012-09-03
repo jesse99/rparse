@@ -91,14 +91,8 @@ fn test_usage()
 {
 	match expr_parser().parse(@~"test", ~"2+3*5")
 	{
-		result::Ok(value) =>
-		{
-			assert value == 17;
-		}
-		result::Err(_) =>
-		{
-			assert false;
-		}
+		result::Ok(value) => assert value == 17,
+		result::Err(_) => assert false,
 	}
 }
 

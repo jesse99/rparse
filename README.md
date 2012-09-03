@@ -8,45 +8,45 @@ The parse functions all take a state record as input containing the text to be p
 has been parsed. They return a result that is either passed or failed. If passed the result includes a new 
 state record and a generic T value. If failed the result consists of the input state and an error string.
 
-The library has been tested with Rust from github as of April 2012 (i.e. post 0.2).
+The library has been tested with Rust from github as of Sep 1 2012 (i.e. pre 0.4).
 
 ## Example
 Here is an example of a simple parser which can be used to evaluate mathematical expressions.
 
     import rparse::*;
     
-    fn expr_parser() -> parser<int>
+    fn expr_parser() -> Parser<int>
     {
         let int_literal = decimal_number().err("number").s0();
         
         // Parenthesized expressions require a forward reference to the expr parser
         // so we initialize a function pointer to something of the right type, create
         // a parser using the parser expr_ptr points to, and fixup expr_ptr later.
-        let expr_ptr = @mut return(0i);
+        let expr_ptr = @mut ret(0i);
         let expr_ref = forward_ref(expr_ptr);
         
         // sub_expr := [-+]? '(' expr ')'
         // The err function provides better error messages if the factor parser fails
         // on the very first character.
-        let sub_expr = or_v([
+        let sub_expr = or_v(@~[
             seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
-            seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene(|v| return(-v) ),
-            seq3_ret1(             "(".s0(), expr_ref, ")".s0())]/~).err("sub-expression");
+            seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene(|v| ret(-v) ),
+            seq3_ret1(               "(".s0(), expr_ref, ")".s0())]).err("sub-expression");
         
         // factor := integer | sub_expr
         let factor = int_literal.or(sub_expr);
         
         // term := factor ([*/] factor)*
         let term = do factor.chainl1("*".s0().or("/".s0()))
-            |lhs, op, rhs| { if op == "*" {lhs*rhs} else {lhs/rhs}};
+            |lhs, op, rhs| {if op == @~"*" {lhs*rhs} else {lhs/rhs}};
         
         // expr := term ([+-] term)*
         let expr = term.chainl1("+".s0().or("-".s0()),
-            |lhs, op, rhs| { if op == "+" {lhs + rhs} else {lhs - rhs}}).err("expression");
+            |lhs, op, rhs| {if op == @~"+" {lhs + rhs} else {lhs - rhs}}).err("expression");
         *expr_ptr = expr;
         
         // start := s0 expr EOT
-        let s = return(0).s0();
+        let s = ret(0).s0();
         expr.everything(s)
     }
 
@@ -54,15 +54,9 @@ Usage looks like this:
 
     fn test_usage()
     {
-        alt expr_parser().parse("test", "2+3*5")
+        match expr_parser().parse(@~"test", ~"2+3*5")
         {
-            result::ok(value)
-            {
-                assert value == 17;
-            }
-            result::err({file, line, col, mesg})
-            {
-                assert false;
-            }
+            result::Ok(value) => assert value == 17,
+            result::Err(_) => assert false,
         }
     }

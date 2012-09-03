@@ -15,6 +15,7 @@ type ParseFailed = {file: @~str, line: uint, col: uint, mesg: @~str};
 // ---- weird parsers -----------------------------------------------------------------------------
 // Returns a parser which matches the end of the input.
 // Clients should use everything instead of this.
+#[doc(hidden)]
 fn eot() -> Parser<()>
 {
 	|input: State|
@@ -53,7 +54,7 @@ fn anycp(predicate: fn@ (char) -> bool) -> Parser<char>
 	}
 }
 
-/// Parse functions which return a character.
+/// Parse methods which return a character.
 trait CharParsers
 {
 	/// Attempts to match any character in self. If matched the char is returned.
@@ -296,7 +297,7 @@ fn seq5_ret_str<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, 
 	}
 }
 
-/// Parse functions which return a string.
+/// Parse methods which return a string.
 trait StringParsers
 {
 	/// Returns the input that matches self. Also see liti and litv.
@@ -746,14 +747,14 @@ fn or_mesg(mesg1: @~str, mesg2: @~str) -> @~str
 	}
 }
 
-/// Parse functions which return a generic type.
+/// Parse methods which return a generic type.
 trait GenericParsers
 {
 	/// Returns value if input matches s. Also see lit.
 	fn litv<T: copy owned>(value: T) -> Parser<T>;
 }
 
-/// Parse functions used to compose parsers.
+/// Parse methods used to compose parsers.
 ///
 /// Note that these don't actually consume input (although the parsers they are invoked with normally will).
 trait Combinators<T: copy owned>

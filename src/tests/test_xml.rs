@@ -3,59 +3,58 @@
 // that returns objects instead of evaluating in-place.
 //use to_str::to_str;
 use c99_parsers::*;
-use combinators::*;
+use parsers::*;
 use result::*;
-use str_parsers::*;
 use test_helpers::*;
 
-type attribute = {name: ~str, value: ~str};
+type Attribute = {name: @~str, value: @~str};
 
-enum xml
+enum Xml
 {
 	// element name, attributes, children, content
-	xxml(~str, ~[attribute], ~[xml], ~str)
+	XXml(@~str, @~[Attribute], @~[Xml], @~str)
 }
 
-impl  xml : ToStr 
+impl  Xml : ToStr 
 {
 	fn to_str() -> ~str
 	{
 		match self
 		{
-			xxml(name, attributes, children, content) =>
+			XXml(name, attributes, children, content) =>
 			{
-				let attrs = vec::map(attributes, |a| fmt!("%s=\"%s\"", a.name, a.value) );
-				let childs = vec::map(children, |c| c.to_str() );
+				let attrs = vec::map(*attributes, |a| fmt!("%s=\"%s\"", *a.name, *a.value) );
+				let childs = vec::map(*children, |c| c.to_str() );
 				if vec::len(attrs) > 0u
 				{
-					return fmt!("<%s %s>%s%s</%s>", name, str::connect(attrs, ~" "), str::connect(childs, ~""), content, name);
+					return fmt!("<%s %s>%s%s</%s>", *name, str::connect(attrs, ~" "), str::connect(childs, ~""), *content, *name);
 				}
 				else
 				{
-					return fmt!("<%s>%s%s</%s>", name, str::connect(childs, ~""), content, name);
+					return fmt!("<%s>%s%s</%s>", *name, str::connect(childs, ~""), *content, *name);
 				}
 			}
 		}
 	}
 }
 
-impl  attribute : ToStr 
+impl  Attribute : ToStr 
 {
 	fn to_str() -> ~str
 	{
-		return fmt!("%s = \"%s\"", self.name, self.value);
+		return fmt!("%s = \"%s\"", *self.name, *self.value);
 	}
 }
 
-fn check_xml_ok(inText: &str, expected: &str, parser: parser<xml>) -> bool
+fn check_xml_ok(inText: &str, expected: &str, parser: Parser<Xml>) -> bool
 {
 	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
-	match parser({file: ~"unit test", text: text, index: 0u, line: 1,})
+	match parser({file: @~"unit test", text: text, index: 0u, line: 1,})
 	{
 		result::Ok(pass) =>
 		{
-			check_ok(result::Ok({new_state: pass.new_state, value: pass.value.to_str()}), unslice(expected))
+			check_ok(result::Ok({new_state: pass.new_state, value: @pass.value.to_str()}), @expected.to_unique())
 		}
 		result::Err(failure) =>
 		{
@@ -64,56 +63,76 @@ fn check_xml_ok(inText: &str, expected: &str, parser: parser<xml>) -> bool
 	}
 }
 
-fn check_xml_failed(inText: &str, parser: parser<xml>, expected: &str, line: int) -> bool
+fn check_xml_failed(inText: &str, parser: Parser<Xml>, expected: &str, line: int) -> bool
 {
 	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
-	let result = parser({file: ~"unit test", text: text, index: 0u, line: 1});
+	let result = parser({file: @~"unit test", text: text, index: 0u, line: 1});
 	return check_failed(result, expected, line);
 }
 
 // string_body := [^"]*
-fn string_body() -> parser<~str>
+fn string_body() -> Parser<@~str>
 {
-	do scan0()
-	|chars, i| {
-		if chars[i] == '\\' && chars[i+1u] == '"'
+	fn body(chars: @[char], index: uint) -> uint
+	{
+		let mut i = index;
+		loop
 		{
-			2u
-		}
-		else if chars[i] != '"'
-		{
-			1u
-		}
-		else
-		{
-			0u
+			if chars[i] == EOT
+			{
+				return 0;
+			}
+			else if chars[i] == '\\' && chars[i+1] == '"'
+			{
+				i += 2;
+			}
+			else if chars[i] != '"'
+			{
+				i += 1;
+			}
+			else
+			{
+				return i - index;
+			}
 		}
 	}
+	
+	scan(body)
 }
 
 // content := (anything but '</')*
-fn content() -> parser<~str>
+fn content() -> Parser<@~str>
 {
-	do scan0()
-	|chars, i| {
-		if chars[i] == '<' && chars[i+1u] == '/'
+	fn body(chars: @[char], index: uint) -> uint
+	{
+		let mut i = index;
+		loop
 		{
-			0u
-		}
-		else
-		{
-			1u
+			if chars[i] == EOT
+			{
+				return 0;
+			}
+			else if chars[i] == '<' && chars[i+1u] == '/'
+			{
+				return i - index;
+			}
+			else
+			{
+				i += 1;
+			}
 		}
 	}
+	
+	scan(body)
 }
 
-fn xml_parser() -> parser<xml>
+fn xml_parser() -> Parser<Xml>
 {
 	let name = identifier().s0();
 	
-	let dummy = xxml(~"dummy", ~[], ~[], ~"");
-	let element_ptr = @mut return(dummy);
+	let dummy = XXml(@~"dummy", @~[], @~[], @~"");
+	let element_ptr = @mut ret(dummy);
 	let element_ref = forward_ref(element_ptr); 
 	
 	// attribute := name '=' '"' string_body '"'
@@ -125,19 +144,20 @@ fn xml_parser() -> parser<xml>
 	// empty_element := '<' name attribute* '/>'
 	let empty_element = do seq4("<".s0(), name, attribute.r0(), "/>".s0())
 	|_a1, name, attrs, _a4| {
-		result::Ok(xxml(name, attrs, ~[], ~""))
+		result::Ok(XXml(name, attrs, @~[], @~""))
 	};
 	
 	// complex_element := '<' name attribute* '>' element* content '</' name '>'
 	let complex_element = do seq9("<".s0(), name, attribute.r0(), ">".s0(), element_ref.r0(), content(), "</".s0(), name, ">".s0())
-	|_a1, name1, attrs, _a4, children, chars, _a5, name2, _a7| {
+	|_a1, name1, attrs, _a4, children, chars, _a5, name2, _a7|
+	{
 		if name1 == name2
 		{
-			result::Ok(xxml(name1, attrs, children, chars))
+			result::Ok(XXml(name1, attrs, children, chars))
 		}
 		else
 		{
-			result::Err(fmt!("end tag '%s' but found '%s'", name1, name2))
+			result::Err(@fmt!("end tag '%s' but found '%s'", *name1, *name2))
 		}
 	};
 	
@@ -146,7 +166,7 @@ fn xml_parser() -> parser<xml>
 	*element_ptr = element;
 	
 	// start := s0 element EOT
-	let s = return(dummy).s0();
+	let s = ret(dummy).s0();
 	element.everything(s)
 }
 
