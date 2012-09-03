@@ -6,6 +6,24 @@
 use misc::*;
 use types::{Parser, State, Status};
 
+// ---- weird parsers -----------------------------------------------------------------------------
+// Returns a parser which matches the end of the input.
+// Clients should use everything instead of this.
+fn eot() -> Parser<()>
+{
+	|input: State|
+	{
+		if input.text[input.index] == EOT
+		{
+			result::Ok({new_state: {index: input.index + 1u, ..input}, value: ()})
+		}
+		else
+		{
+			result::Err({old_state: input, err_state: input, mesg: @~"EOT"})
+		}
+	}
+}
+
 // ---- char parsers ------------------------------------------------------------------------------
 /// Consumes a character which must satisfy the predicate.
 /// Returns the matched character.
@@ -613,6 +631,60 @@ fn seq9<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 	}}}}}}}}}
 }
 
+/// seq2_ret0 := e0 e1
+fn seq2_ret0<T0: copy owned, T1: copy owned>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<T0>
+{
+	seq2(p0, p1, |a0, _a1| result::Ok(a0))
+}
+
+/// seq2_ret1 := e0 e1
+fn seq2_ret1<T0: copy owned, T1: copy owned>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<T1>
+{
+	seq2(p0, p1, |_a0, a1| result::Ok(a1))
+}
+
+/// seq3_ret0 := e0 e1 e2
+fn seq3_ret0<T0: copy owned, T1: copy owned, T2: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T0>
+{
+	seq3(p0, p1, p2, |a0, _a1, _a2| result::Ok(a0))
+}
+
+/// seq3_ret1 := e0 e1 e2
+fn seq3_ret1<T0: copy owned, T1: copy owned, T2: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T1>
+{
+	seq3(p0, p1, p2, |_a0, a1, _a2| result::Ok(a1))
+}
+
+/// seq3_ret2 := e0 e1 e2
+fn seq3_ret2<T0: copy owned, T1: copy owned, T2: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T2>
+{
+	seq3(p0, p1, p2, |_a0, _a1, a2| result::Ok(a2))
+}
+
+/// seq4_ret0 := e0 e1 e2 e3
+fn seq4_ret0<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T0>
+{
+	seq4(p0, p1, p2, p3, |a0, _a1, _a2, _a3| result::Ok(a0))
+}
+
+/// seq4_ret1 := e0 e1 e2 e3
+fn seq4_ret1<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T1>
+{
+	seq4(p0, p1, p2, p3, |_a0, a1, _a2, _a3| result::Ok(a1))
+}
+
+/// seq4_ret2 := e0 e1 e2 e3
+fn seq4_ret2<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T2>
+{
+	seq4(p0, p1, p2, p3, |_a0, _a1, a2, _a3| result::Ok(a2))
+}
+
+/// seq4_ret3 := e0 e1 e2 e3
+fn seq4_ret3<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T3>
+{
+	seq4(p0, p1, p2, p3, |_a0, _a1, _a2, a3| result::Ok(a3))
+}
+
 // chain_suffix := (op e)*
 #[doc(hidden)]
 fn chain_suffix<T: copy owned, U: copy owned>(parser: Parser<T>, op: Parser<U>) -> Parser<@~[(U, T)]>
@@ -681,6 +753,12 @@ trait Combinators<T: copy owned>
 	/// Non-empty labels should look like \"expression\" or \"statement\".
 	fn err(label: &str) -> Parser<T>;
 	
+	/// Parses the text and fails if all the text was not consumed. Leading space is allowed.
+	/// 
+	/// This is typically used in conjunction with the parse function. Note that space has to have the
+	/// same type as parser which is backwards from how it is normally used.
+	fn everything<U: copy owned>(space: Parser<U>) -> Parser<T>;
+	
 	/// list := e (sep e)*
 	/// 
 	/// Values for each parsed e are returned.
@@ -716,33 +794,6 @@ trait Combinators<T: copy owned>
 	
 	/// s1 := e [ \t\r\n]+
 	fn s1() -> Parser<T>;
-	
-	/// seq2_ret0 := e0 e1
-	fn seq2_ret0<T1: copy owned>(p1: Parser<T1>) -> Parser<T>;
-	
-	/// seq2_ret1 := e0 e1
-	fn seq2_ret1<T1: copy owned>(p1: Parser<T1>) -> Parser<T1>;
-	
-	/// seq3_ret0 := e0 e1 e2
-	fn seq3_ret0<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T>;
-	
-	/// seq3_ret1 := e0 e1 e2
-	fn seq3_ret1<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T1>;
-	
-	/// seq3_ret2 := e0 e1 e2
-	fn seq3_ret2<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T2>;
-	
-	/// seq4_ret0 := e0 e1 e2 e3
-	fn seq4_ret0<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T>;
-	
-	/// seq4_ret1 := e0 e1 e2 e3
-	fn seq4_ret1<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T1>;
-	
-	/// seq4_ret2 := e0 e1 e2 e3
-	fn seq4_ret2<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T2>;
-	
-	/// seq4_ret3 := e0 e1 e2 e3
-	fn seq4_ret3<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T3>;
 	
 	/// If parser1 is successful is successful then parser2 is called (and the value from parser1
 	/// is ignored). If parser1 fails parser2 is not called.
@@ -850,6 +901,11 @@ impl<T: copy owned> Parser<T> : Combinators<T>
 				}
 			}
 		}
+	}
+	
+	fn everything<U: copy owned>(space: Parser<U>) -> Parser<T>
+	{
+		seq3_ret1(space, self, eot())
 	}
 	
 	fn list<U: copy owned>(sep: Parser<U>) -> Parser<@~[T]>
@@ -1067,51 +1123,6 @@ impl<T: copy owned> Parser<T> : Combinators<T>
 				}
 			}
 		}
-	}
-	
-	fn seq2_ret0<T1: copy owned>(p1: Parser<T1>) -> Parser<T>
-	{
-		seq2(self, p1, |a0, _a1| result::Ok(a0))
-	}
-	
-	fn seq2_ret1<T1: copy owned>(p1: Parser<T1>) -> Parser<T1>
-	{
-		seq2(self, p1, |_a0, a1| result::Ok(a1))
-	}
-	
-	fn seq3_ret0<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T>
-	{
-		seq3(self, p1, p2, |a0, _a1, _a2| result::Ok(a0))
-	}
-	
-	fn seq3_ret1<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T1>
-	{
-		seq3(self, p1, p2, |_a0, a1, _a2| result::Ok(a1))
-	}
-	
-	fn seq3_ret2<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T2>
-	{
-		seq3(self, p1, p2, |_a0, _a1, a2| result::Ok(a2))
-	}
-	
-	fn seq4_ret0<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T>
-	{
-		seq4(self, p1, p2, p3, |a0, _a1, _a2, _a3| result::Ok(a0))
-	}
-	
-	fn seq4_ret1<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T1>
-	{
-		seq4(self, p1, p2, p3, |_a0, a1, _a2, _a3| result::Ok(a1))
-	}
-	
-	fn seq4_ret2<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T2>
-	{
-		seq4(self, p1, p2, p3, |_a0, _a1, a2, _a3| result::Ok(a2))
-	}
-	
-	fn seq4_ret3<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T3>
-	{
-		seq4(self, p1, p2, p3, |_a0, _a1, _a2, a3| result::Ok(a3))
 	}
 	
 	fn then<U: copy owned>(parser2: Parser<U>) -> Parser<U>
