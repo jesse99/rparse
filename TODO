@@ -94,21 +94,3 @@ fn scan1(fun: fn@ (@[char], uint) -> uint) -> Parser<@~str>
 		}
 	}
 }
-
-/// optional := e?
-fn optional_str(parser: parser<~str>) -> parser<~str>
-{
-	|input: state| {
-		match parser(input)
-		{
-			result::Ok(pass) =>
-			{
-				result::Ok({new_state: pass.new_state, value: pass.value})
-			}
-			result::Err(_failure) =>
-			{
-				result::Ok({new_state: input, value: ~""})
-			}
-		}
-	}
-}

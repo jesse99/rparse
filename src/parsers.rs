@@ -183,6 +183,21 @@ fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> Parser<@~
 	prefix.thene(|p| suffix.thene(|s| ret(@(*p + *s))))
 }
 
+/// optional_str := e?
+///
+/// Returns an empty string on failure.
+fn optional_str(parser: Parser<@~str>) -> Parser<@~str>
+{
+	|input: State|
+	{
+		match parser(input)
+		{
+			result::Ok(pass)		=> result::Ok({new_state: pass.new_state, value: pass.value}),
+			result::Err(_failure)	=> result::Ok({new_state: input, value: @~""}),
+		}
+	}
+}
+
 /// Calls fun once and matches the number of characters returned by fun. 
 /// 
 /// This does increment line.  Note that this succeeds even if zero characters are matched.
