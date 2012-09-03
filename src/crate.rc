@@ -9,9 +9,9 @@
 #[author = "Jesse Jones"];
 #[license = "MIT"];
 
-#[allow(unused_imports)]; 			// can't figure out which imports it's warning about
 #[allow(deprecated_pattern)];			// not sure how to get code to compile with this on
 #[allow(deprecated_mode)];			// think we want to use T instead of @T for succeeded type (and zillions of other places)
+#[warn(unused_imports)];
 #[warn(non_camel_case_types)];
 
 use std;
