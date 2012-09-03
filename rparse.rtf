@@ -393,6 +393,42 @@
 
 \i \cf3 /// Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions).
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
+
+\i\b \cf3 ///
+\i0\b0 \cf0 \
+
+\i\b \cf3 /// 
+\b0 \cf3 // create a pointer that we can initialize later with the real expr parser
+\i0 \cf0 \
+
+\i\b \cf3 /// 
+\i0 let
+\b0 \cf3  expr_ptr = @
+\b \cf3 mut
+\b0 \cf3  ret(0i);\cf0 \
+
+\i\b \cf3 /// 
+\i0 let
+\b0 \cf3  expr_ref = forward_ref(expr_ptr);\cf0 \
+
+\i\b \cf3 /// 
+\i0\b0 \cf0 \
+
+\i\b \cf3 /// 
+\b0 \cf3 // expr_ref can be used to parse expressions
+\i0 \cf0 \
+
+\i\b \cf3 /// 
+\i0\b0 \cf0 \
+
+\i\b \cf3 /// 
+\b0 \cf3 // initialize the expr_ptr with the real parser
+\i0 \cf0 \
+
+\i\b \cf3 /// 
+\i0\b0 \cf3 *expr_ptr = expr;\cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  

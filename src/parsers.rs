@@ -430,6 +430,19 @@ fn fails<T: copy owned>(mesg: &str) -> Parser<T>
 }
 
 /// Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions).
+///
+/// # Usage is like this:
+///
+/// ~~~
+/// // create a pointer that we can initialize later with the real expr parser
+/// let expr_ptr = @mut ret(0i);
+/// let expr_ref = forward_ref(expr_ptr);
+/// 
+/// // expr_ref can be used to parse expressions
+/// 
+/// // initialize the expr_ptr with the real parser
+/// *expr_ptr = expr;
+/// ~~~
 fn forward_ref<T: copy owned>(parser: @mut Parser<T>) -> Parser<T>
 {
 	|input: State| (*parser)(input)
