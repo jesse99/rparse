@@ -3,6 +3,17 @@
 //! Clients should not need to use these.
 const EOT: char = '\u0003';
 
+pure fn at_connect(v: &[@~str], sep: &str) -> ~str
+{
+	let mut s = ~"", first = true;
+	for vec::each(v) |ss|
+	{
+		if first {first = false;} else {unchecked {str::push_str(s, sep);}}
+		unchecked {str::push_str(s, *ss)};
+	}
+	return s;
+}
+
 /// Converts a string to an array of char and appends an EOT character.
 fn chars_with_eot(s: &str) -> @[char]
 {

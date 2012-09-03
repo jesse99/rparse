@@ -85,6 +85,7 @@ fn test_scan()
 	assert check_str_ok("\"hmm\"blech", p, "hmm");
 	assert check_str_failed("", p, "'\"'", 1);
 	assert check_str_failed("\"hmm", p, "'\"'", 1);
+	assert check_str_failed("\"hmm\nline 2\nblah", p, "'\"'", 3);
 }
 
 #[test]

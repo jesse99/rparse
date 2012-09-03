@@ -361,6 +361,64 @@ fn fails<T: copy owned>(mesg: &str) -> Parser<T>
 	|input: State| result::Err({old_state: input, err_state: input, mesg: @copy mesg})
 }
 
+/// Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions).
+fn forward_ref<T: copy owned>(parser: @mut Parser<T>) -> Parser<T>
+{
+	|input: State| (*parser)(input)
+}
+
+/// or_v := e0 | e1 | …
+/// 
+/// This is a version of or that is nicer to use when there are more than two alternatives.
+fn or_v<T: copy owned>(parsers: @~[Parser<T>]) -> Parser<T>
+{
+	// A recursive algorithm would be a lot simpler, but it's not clear how that could
+	// produce good error messages.
+	assert vec::is_not_empty(*parsers);
+	
+	|input: State|
+	{
+		let mut result: Option<Status<T>> = None;
+		let mut errors = ~[];
+		let mut max_index = uint::max_value;
+		let mut i = 0u;
+		while i < vec::len(*parsers) && option::is_none(result)
+		{
+			match parsers[i](input)
+			{
+				result::Ok(pass) =>
+				{
+					result = option::Some(result::Ok(pass));
+				}
+				result::Err(failure) =>
+				{
+					if failure.err_state.index > max_index || max_index == uint::max_value
+					{
+						errors = ~[failure.mesg];
+						max_index = failure.err_state.index;
+					}
+					else if failure.err_state.index == max_index
+					{
+						vec::push(errors, failure.mesg);
+					}
+				}
+			}
+			i += 1u;
+		}
+		
+		if option::is_some(result)
+		{
+			option::get(result)
+		}
+		else
+		{
+			let errs = do vec::filter(errors) |s| {str::is_not_empty(*s)};
+			let mesg = at_connect(errs, ~" or ");
+			result::Err({old_state: input, err_state: {index: max_index, ..input}, mesg: @mesg})
+		}
+	}
+}
+
 /// Returns a parser which always succeeds, but does not consume any input.
 fn ret<T: copy owned>(value: T) -> Parser<T>
 {
@@ -555,6 +613,45 @@ fn seq9<T0: copy owned, T1: copy owned, T2: copy owned, T3: copy owned, T4: copy
 	}}}}}}}}}
 }
 
+// chain_suffix := (op e)*
+#[doc(hidden)]
+fn chain_suffix<T: copy owned, U: copy owned>(parser: Parser<T>, op: Parser<U>) -> Parser<@~[(U, T)]>
+{
+	let q = op.thene(
+	|operator|
+	{
+		parser.thene(
+		|value|
+		{
+			ret((operator, value))
+		})
+	});
+	q.r0()
+}
+
+// When using tag it can be useful to use empty messages for interior parsers
+// so we need to handle that case.
+#[doc(hidden)]
+fn or_mesg(mesg1: @~str, mesg2: @~str) -> @~str
+{
+	if str::is_not_empty(*mesg1) && str::is_not_empty(*mesg2)
+	{
+		@(*mesg1 + " or " + *mesg2)
+	}
+	else if str::is_not_empty(*mesg1)
+	{
+		mesg1
+	}
+	else if str::is_not_empty(*mesg2)
+	{
+		mesg2
+	}
+	else
+	{
+		@~""
+	}
+}
+
 /// Parse functions which return a generic type.
 trait GenericParsers
 {
@@ -562,8 +659,91 @@ trait GenericParsers
 	fn litv<T: copy owned>(value: T) -> Parser<T>;
 }
 
+/// Parse functions used to compose parsers.
+///
+/// Note that these don't actually consume input (although the parsers they are invoked with normally will).
 trait Combinators<T: copy owned>
 {
+	/// chainl1 := e (op e)*
+	/// 
+	/// Left associative binary operator. eval is called for each parsed op.
+	fn chainl1<U: copy owned>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
+	
+	/// chainr1 := e (op e)*
+	/// 
+	/// Right associative binary operator. eval is called for each parsed op.
+	fn chainr1<U: copy owned>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
+	
+	/// Like note except that the mesg is also used for error reporting.
+	/// 
+	/// If label is not empty then it is used if the previous parser completely failed to parse or if its error
+	/// message was empty. Otherwise it suppresses errors from the parser (in favor of a later err function).
+	/// Non-empty labels should look like \"expression\" or \"statement\".
+	fn err(label: &str) -> Parser<T>;
+	
+	/// list := e (sep e)*
+	/// 
+	/// Values for each parsed e are returned.
+	fn list<U: copy owned>(sep: Parser<U>) -> Parser<@~[T]>;
+	
+	/// Logs the result of the previous parser.
+	/// 
+	/// If it was successful then the log is at INFO level. Otherwise it is at DEBUG level.
+	/// Also see err method.
+	fn note(mesg: &str) -> Parser<T>;
+	
+	/// optional := e?
+	fn optional() -> Parser<Option<T>>;
+	
+	/// Returns a parser which first tries parser1, and if that fails, parser2.
+	fn or(parser2: Parser<T>) -> Parser<T>;
+	
+	/// Succeeds if parser matches input n to m times (inclusive).
+	fn r(n: uint, m: uint) -> Parser<@~[T]>;
+	
+	/// r0 := e*
+	/// 
+	/// Values for each parsed e are returned.
+	fn r0() -> Parser<@~[T]>;
+	
+	/// r1 := e+
+	/// 
+	/// Values for each parsed e are returned.
+	fn r1() -> Parser<@~[T]>;
+	
+	/// s0 := e [ \t\r\n]*
+	fn s0() -> Parser<T>;
+	
+	/// s1 := e [ \t\r\n]+
+	fn s1() -> Parser<T>;
+	
+	/// seq2_ret0 := e0 e1
+	fn seq2_ret0<T1: copy owned>(p1: Parser<T1>) -> Parser<T>;
+	
+	/// seq2_ret1 := e0 e1
+	fn seq2_ret1<T1: copy owned>(p1: Parser<T1>) -> Parser<T1>;
+	
+	/// seq3_ret0 := e0 e1 e2
+	fn seq3_ret0<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T>;
+	
+	/// seq3_ret1 := e0 e1 e2
+	fn seq3_ret1<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T1>;
+	
+	/// seq3_ret2 := e0 e1 e2
+	fn seq3_ret2<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T2>;
+	
+	/// seq4_ret0 := e0 e1 e2 e3
+	fn seq4_ret0<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T>;
+	
+	/// seq4_ret1 := e0 e1 e2 e3
+	fn seq4_ret1<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T1>;
+	
+	/// seq4_ret2 := e0 e1 e2 e3
+	fn seq4_ret2<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T2>;
+	
+	/// seq4_ret3 := e0 e1 e2 e3
+	fn seq4_ret3<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T3>;
+	
 	/// If parser1 is successful is successful then parser2 is called (and the value from parser1
 	/// is ignored). If parser1 fails parser2 is not called.
 	fn then<U: copy owned>(parser2: Parser<U>) -> Parser<U>;
@@ -577,6 +757,363 @@ trait Combinators<T: copy owned>
 
 impl<T: copy owned> Parser<T> : Combinators<T>
 {
+	fn chainl1<U: copy owned>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
+	{
+		|input: State|
+		{
+			do result::chain(self(input))
+			|pass|
+			{
+				match chain_suffix(self, op)(pass.new_state)
+				{
+					result::Ok(pass2) =>
+					{
+						let value = vec::foldl(pass.value, *pass2.value, {|lhs, rhs: (U, T)| eval(lhs, rhs.first(), rhs.second())});
+						result::Ok({new_state: pass2.new_state, value: value})
+					}
+					result::Err(failure) =>
+					{
+						result::Err({old_state: input, ..failure})
+					}
+				}
+			}
+		}
+	}
+	
+	fn chainr1<U: copy owned>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
+	{
+		|input: State|
+		{
+			do result::chain(self(input))
+			|pass|
+			{
+				match chain_suffix(self, op)(pass.new_state)
+				{
+					result::Ok(pass2) =>
+					{
+						if vec::is_not_empty(*pass2.value)
+						{
+							// e1 and [(op1 e2), (op2 e3)]
+							let e1 = pass.value;
+							let terms = pass2.value;
+							
+							// e1 and [op1, op2] and [e2, e3]
+							let (ops, parsers) = vec::unzip(copy *terms);
+							
+							// [op1, op2] and [e1, e2] and e3
+							let e3 = vec::last(parsers);
+							let parsers = ~[e1] + vec::slice(parsers, 0u, vec::len(parsers) - 1u);
+							
+							// [(e1 op1), (e2 op2)] and e3
+							let terms = vec::zip(parsers, ops);
+							
+							let value = vec::foldr(terms, e3, {|lhs: (T, U), rhs| eval(lhs.first(), lhs.second(), rhs)});
+							result::Ok({new_state: pass2.new_state, value: value})
+						}
+						else
+						{
+							result::Ok({new_state: pass2.new_state, value: pass.value})
+						}
+					}
+					result::Err(failure) =>
+					{
+						result::Err({old_state: input ,.. failure})
+					}
+				}
+			}
+		}
+	}
+	
+	fn err(label: &str) -> Parser<T>
+	{
+		let label = label.to_unique();
+		
+		|input: State|
+		{
+			do result::chain_err((self.note(label))(input))
+			|failure| 
+			{
+				if str::is_empty(label)
+				{
+					result::Err({mesg: @~"", ..failure})
+				}
+				else if failure.err_state.index == input.index || str::is_empty(*failure.mesg)
+				{
+					result::Err({mesg: @copy label, ..failure})
+				}
+				else
+				{
+					// If we managed to parse something then it is usually better to
+					// use that error message. (If that's not what you want then use
+					// empty strings there).
+					result::Err(failure)
+				}
+			}
+		}
+	}
+	
+	fn list<U: copy owned>(sep: Parser<U>) -> Parser<@~[T]>
+	{
+		let term = sep.then(self).r0();
+		
+		|input: State|
+		{
+			do result::chain(self(input))
+			|pass|
+			{
+				match term(pass.new_state)
+				{
+					result::Ok(pass2) =>
+					{
+						result::Ok({value: @(~[pass.value] + *pass2.value), ..pass2})
+					}
+					result::Err(failure) =>
+					{
+						result::Err({old_state: input, ..failure})
+					}
+				}
+			}
+		}
+	}
+	
+	fn note(mesg: &str) -> Parser<T>
+	{
+		let mesg = mesg.to_unique();
+		
+		|input: State|
+		{
+			match self(input)
+			{
+				result::Ok(pass) =>
+				{
+					// Note that we make multiple calls to munge_chars which is fairly slow, but
+					// we only do that when actually logging: when info or debug logging is off
+					// the munge_chars calls aren't evaluated.
+					assert pass.new_state.index >= input.index;			// can't go backwards on success (but no progress is fine, eg e*)
+					if pass.new_state.index > input.index
+					{
+						info!("%s", munge_chars(input.text));
+						info!("%s^ %s parsed '%s'", repeat_char(' ', pass.new_state.index), mesg, str::slice(munge_chars(input.text), input.index, pass.new_state.index));
+					}
+					else
+					{
+						info!("%s", munge_chars(input.text));
+						info!("%s^ %s passed", repeat_char(' ', pass.new_state.index), mesg);
+					}
+					result::Ok(pass)
+				}
+				result::Err(failure) =>
+				{
+					assert failure.old_state.index == input.index;			// on errors the next parser must begin at the start
+					assert failure.err_state.index >= input.index;			// errors can't be before the input
+					
+					debug!("%s", munge_chars(input.text));
+					if failure.err_state.index > input.index 
+					{
+						debug!("%s^%s! %s failed", repeat_char('-', input.index), repeat_char(' ', failure.err_state.index - input.index), mesg);
+					}
+					else
+					{
+						debug!("%s^ %s failed", repeat_char('-', input.index), mesg);
+					}
+					result::Err(failure)
+				}
+			}
+		}
+	}
+	
+	fn optional() -> Parser<Option<T>>
+	{
+		|input: State|
+		{
+			match self(input)
+			{
+				result::Ok(pass) =>
+				{
+					result::Ok({new_state: pass.new_state, value: option::Some(pass.value)})
+				}
+				result::Err(_failure) =>
+				{
+					result::Ok({new_state: input, value: option::None})
+				}
+			}
+		}
+	}
+	
+	fn or(parser2: Parser<T>) -> Parser<T>
+	{
+		|input: State|
+		{
+			do result::chain_err(self(input))
+			|failure1|
+			{
+				do result::chain_err(parser2(input))
+				|failure2|
+				{
+					if failure1.err_state.index > failure2.err_state.index
+					{
+						result::Err(failure1)
+					}
+					else if failure1.err_state.index < failure2.err_state.index
+					{
+						result::Err(failure2)
+					}
+					else
+					{
+						result::Err({mesg: or_mesg(failure1.mesg, failure2.mesg), ..failure2})
+					}
+				}
+			}
+		}
+	}
+	
+	fn r(n: uint, m: uint) -> Parser<@~[T]>
+	{
+		|input: State|
+		{
+			let mut output = input;
+			let mut values = ~[];
+			loop
+			{
+				match self(output)
+				{
+					result::Ok(pass) =>
+					{
+						assert pass.new_state.index > output.index;	// must make progress to ensure loop termination
+						output = pass.new_state;
+						vec::push(values, pass.value);
+					}
+					result::Err(_) =>
+					{
+						break;
+					}
+				}
+			}
+			
+			let count = vec::len(values);
+			if n <= count && count <= m
+			{
+				result::Ok({new_state: output, value: @values})
+			}
+			else
+			{
+				result::Err({old_state: input, err_state: output, mesg: @~""})
+			}
+		}
+	}
+	
+	fn r0() -> Parser<@~[T]>
+	{
+		self.r(0u, uint::max_value)
+	}
+	
+	fn r1() -> Parser<@~[T]>
+	{
+		self.r(1u, uint::max_value)
+	}
+	
+	fn s0() -> Parser<T>
+	{
+		// It would be simpler to write this with scan0, but scan0 is relatively inefficient
+		// and s0 is typically called a lot.
+		|input: State|
+		{
+			do result::chain(self(input))
+			|pass|
+			{
+				let mut i = pass.new_state.index;
+				let mut line = pass.new_state.line;
+				loop
+				{
+					if input.text[i] == '\r' && input.text[i+1u] == '\n'
+					{
+						line += 1;
+						i += 1u;
+					}
+					else if input.text[i] == '\n'
+					{
+						line += 1;
+					}
+					else if input.text[i] == '\r'
+					{
+						line += 1;
+					}
+					else if input.text[i] != ' ' && input.text[i] != '\t'
+					{
+						break;
+					}
+					i += 1u;
+				}
+				
+				result::Ok({new_state: {index: i, line: line, ..pass.new_state}, value: pass.value})
+			}
+		}
+	}
+	
+	fn s1() -> Parser<T>
+	{
+		|input: State|
+		{
+			do result::chain(self.s0()(input))
+			|pass|
+			{
+				if option::is_some(str::find_char(" \t\r\n", input.text[pass.new_state.index - 1u]))	// little cheesy, but saves us from adding a helper fn
+				{
+					result::Ok(pass)
+				}
+				else
+				{
+					result::Err({old_state: input, err_state: pass.new_state, mesg: @~"whitespace"})
+				}
+			}
+		}
+	}
+	
+	fn seq2_ret0<T1: copy owned>(p1: Parser<T1>) -> Parser<T>
+	{
+		seq2(self, p1, |a0, _a1| result::Ok(a0))
+	}
+	
+	fn seq2_ret1<T1: copy owned>(p1: Parser<T1>) -> Parser<T1>
+	{
+		seq2(self, p1, |_a0, a1| result::Ok(a1))
+	}
+	
+	fn seq3_ret0<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T>
+	{
+		seq3(self, p1, p2, |a0, _a1, _a2| result::Ok(a0))
+	}
+	
+	fn seq3_ret1<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T1>
+	{
+		seq3(self, p1, p2, |_a0, a1, _a2| result::Ok(a1))
+	}
+	
+	fn seq3_ret2<T1: copy owned, T2: copy owned>(p1: Parser<T1>, p2: Parser<T2>) -> Parser<T2>
+	{
+		seq3(self, p1, p2, |_a0, _a1, a2| result::Ok(a2))
+	}
+	
+	fn seq4_ret0<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T>
+	{
+		seq4(self, p1, p2, p3, |a0, _a1, _a2, _a3| result::Ok(a0))
+	}
+	
+	fn seq4_ret1<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T1>
+	{
+		seq4(self, p1, p2, p3, |_a0, a1, _a2, _a3| result::Ok(a1))
+	}
+	
+	fn seq4_ret2<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T2>
+	{
+		seq4(self, p1, p2, p3, |_a0, _a1, a2, _a3| result::Ok(a2))
+	}
+	
+	fn seq4_ret3<T1: copy owned, T2: copy owned, T3: copy owned>(p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T3>
+	{
+		seq4(self, p1, p2, p3, |_a0, _a1, _a2, a3| result::Ok(a3))
+	}
+	
 	fn then<U: copy owned>(parser2: Parser<U>) -> Parser<U>
 	{
 		|input: State|

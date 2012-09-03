@@ -4,34 +4,6 @@ use str_parsers::*;
 use test_helpers::*;
 
 #[test]
-fn test_s0()
-{
-	let p = "x".lit().s0().then("y".lit());
-	
-	assert check_str_ok("xy", p, "y");
-	assert check_str_ok("x y", p, "y");
-	assert check_str_ok("x \n\t y", p, "y");
-	
-	assert check_str_failed("x z", p, "'y'", 1);
-	assert check_str_failed("x\nz", p, "'y'", 2);
-	assert check_str_failed("x\n\r\nz", p, "'y'", 3);
-}
-
-#[test]
-fn test_s1()
-{
-	let p = "x".lit().s1().then("y".lit());
-	
-	assert check_str_ok("x y", p, "y");
-	assert check_str_ok("x \n\t y", p, "y");
-	
-	assert check_str_failed("xy", p, "whitespace", 1);
-	assert check_str_failed("x z", p, "'y'", 1);
-	assert check_str_failed("x\nz", p, "'y'", 2);
-	assert check_str_failed("x\n\r\nz", p, "'y'", 3);
-}
-
-#[test]
 fn test_match1()
 {
 	let p = match1(is_digit).err("digits");

@@ -69,7 +69,7 @@ fn check_str_failed(inText: &str, parser: Parser<@~str>, expected: &str, line: i
 	return check_failed(result, expected, line);
 }
 
-fn check_str_array_ok(inText: &str, parser: Parser<@~[~str]>, expected: &[~str]) -> bool
+fn check_str_array_ok(inText: &str, parser: Parser<@~[@~str]>, expected: @~[@~str]) -> bool
 {
 	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
@@ -77,7 +77,7 @@ fn check_str_array_ok(inText: &str, parser: Parser<@~[~str]>, expected: &[~str])
 	return check_ok_str_arrays(result, expected);
 }
 
-fn check_str_array_failed(inText: &str, parser: Parser<@~[~str]>, expected: &str, line: int) -> bool
+fn check_str_array_failed(inText: &str, parser: Parser<@~[@~str]>, expected: &str, line: int) -> bool
 {
 	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
@@ -128,13 +128,13 @@ fn check_ok_strs(result: Status<@~str>, expected: &str) -> bool
 	}
 }
 
-fn check_ok_str_arrays(result: Status<@~[~str]>, expected: &[~str]) -> bool
+fn check_ok_str_arrays(result: Status<@~[@~str]>, expected: @~[@~str]) -> bool
 {
 	match result
 	{
 		result::Ok(pass) =>
 		{
-			if !vec::eq(*pass.value, expected)
+			if pass.value != expected
 			{
 				io::stderr().write_line(fmt!("Expected %? but found %?", expected, pass.value));
 				return false;

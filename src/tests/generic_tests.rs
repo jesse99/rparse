@@ -51,6 +51,35 @@ fn parse_num(op: char) -> Parser<int>
 	}
 }
 
+
+#[test]
+fn test_chainl1()
+{
+	let factor = parse_digit();
+	let op = "*".lit().or("/".lit());
+	let p = factor.chainl1(op, |lhs, op, rhs| if op == @~"*" {lhs * rhs} else {lhs / rhs} );
+	
+	assert check_int_ok("2", p, 2);
+	assert check_int_ok("2*3", p, 6);
+	assert check_int_ok("2*3/4", p, 1);
+	assert check_int_ok("2*3/4/2", p, 0);
+	assert check_int_ok("2*3-4", p, 6);
+}
+
+#[test]
+fn test_chainr1()
+{
+	let factor = parse_digit();
+	let op = "*".lit().or("/".lit());
+	let p = factor.chainr1(op, |lhs, op, rhs| if op == @~"*" {lhs * rhs} else {lhs / rhs} );
+	
+	assert check_int_ok("2", p, 2);
+	assert check_int_ok("2*3", p, 6);
+	assert check_int_ok("2*3/4", p, 0);
+	assert check_int_ok("2*3/4/2", p, 2);
+	assert check_int_ok("2*3-4", p, 6);
+}
+
 #[test]
 fn test_fails()
 {
@@ -58,6 +87,45 @@ fn test_fails()
 	
 	assert check_char_failed("", p, "ack", 1);
 	assert check_char_failed("9", p, "ack", 1);
+}
+
+#[test]
+fn test_list()
+{
+	let p = "b".lit().list(",".lit());
+	
+	assert check_str_array_ok("b", p, @~[@~"b"]);
+	assert check_str_array_ok("b,b", p, @~[@~"b", @~"b"]);
+	assert check_str_array_ok("b,b,b", p, @~[@~"b", @~"b", @~"b"]);
+	assert check_str_array_ok("b,b,c", p, @~[@~"b", @~"b"]);
+	
+	assert check_str_array_failed("", p, "'b'", 1);
+	assert check_str_array_failed("c", p, "'b'", 1);
+}
+
+#[test]
+fn test__r0()
+{
+	let p = "b".lit().r0();
+	
+	assert check_str_array_ok("", p, @~[]);
+	assert check_str_array_ok("b", p, @~[@~"b"]);
+	assert check_str_array_ok("bb", p, @~[@~"b", @~"b"]);
+	assert check_str_array_ok("bbb", p, @~[@~"b", @~"b", @~"b"]);
+	assert check_str_array_ok("c", p, @~[]);
+}
+
+#[test]
+fn test__r1()
+{
+	let p = "b".lit().r1().err("b's");
+	
+	assert check_str_array_ok("b", p, @~[@~"b"]);
+	assert check_str_array_ok("bb", p, @~[@~"b", @~"b"]);
+	assert check_str_array_ok("bbb", p, @~[@~"b", @~"b", @~"b"]);
+	
+	assert check_str_array_failed("", p, "b's", 1);
+	assert check_str_array_failed("c", p, "b's", 1);
 }
 
 #[test]
@@ -80,6 +148,61 @@ fn test_litv()
 	assert check_str_failed("", p, "'foo'", 1);
 	assert check_str_failed("bar", p, "'foo'", 1);
 	assert check_str_failed("pseudo foo", p, "'foo'", 1);
+}
+
+#[test]
+fn test_optional()
+{
+	let p = seq3_ret_str("a".lit(), "b".lit().optional(), "c".lit());
+	
+	assert check_str_ok("abc", p, "abc");
+	assert check_str_ok("ac", p, "ac");
+	assert check_str_failed("ad", p, "'c'", 1);
+	assert check_str_failed("dbe", p, "'a'", 1);
+}
+
+#[test]
+fn test_or_v()
+{
+	let p = or_v(@~["a".lit(), "bb".lit(), "c".lit()]);
+	
+	assert check_str_ok("a", p, "a");
+	assert check_str_ok("bb", p, "bb");
+	assert check_str_ok("c", p, "c");
+	assert check_str_ok("ca", p, "c");
+	assert check_str_failed("", p, "'a' or 'bb' or 'c'", 1);
+	
+	let text = chars_with_eot("bz");
+	let result = p({file: @~"unit test", text: text, index: 0u, line: 1});
+	assert result::get_err(result).old_state.index == 0u;
+}
+
+#[test]
+fn test_s0()
+{
+	let p = "x".lit().s0().then("y".lit());
+	
+	assert check_str_ok("xy", p, "y");
+	assert check_str_ok("x y", p, "y");
+	assert check_str_ok("x \n\t y", p, "y");
+	
+	assert check_str_failed("x z", p, "'y'", 1);
+	assert check_str_failed("x\nz", p, "'y'", 2);
+	assert check_str_failed("x\n\r\nz", p, "'y'", 3);
+}
+
+#[test]
+fn test_s1()
+{
+	let p = "x".lit().s1().then("y".lit());
+	
+	assert check_str_ok("x y", p, "y");
+	assert check_str_ok("x \n\t y", p, "y");
+	
+	assert check_str_failed("xy", p, "whitespace", 1);
+	assert check_str_failed("x z", p, "'y'", 1);
+	assert check_str_failed("x\nz", p, "'y'", 2);
+	assert check_str_failed("x\n\r\nz", p, "'y'", 3);
 }
 
 #[test]
