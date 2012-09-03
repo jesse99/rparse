@@ -186,6 +186,33 @@ fn match1_0(prefix: fn@ (char) -> bool, suffix: fn@ (char) -> bool) -> Parser<@~
 /// Calls fun once and matches the number of characters returned by fun. 
 /// 
 /// This does increment line.  Note that this succeeds even if zero characters are matched.
+///
+/// # Fun's are typically written like this:
+///
+/// ~~~
+/// fn to_new_line(chars: @[char], index: uint) -> uint
+/// {
+///     let mut i = index;
+///     loop
+///     {
+///         // Chars will always have an EOT character. If we hit it then
+///         // we failed to find a new-line character so match nothing. 
+///         if chars[i] == EOT
+///         {
+///             return 0;
+///         }
+///         else if chars[i] == '\r' || chars[i] == '\n'
+///         {
+///             // Match all the characters up to, but not including, the first new line.
+///             return i - index;
+///         }
+///         else
+///         {
+///             i += 1;
+///         }
+///     }
+/// }
+/// ~~~
 fn scan(fun: fn@ (@[char], uint) -> uint) -> Parser<@~str>
 {
 	|input: State|

@@ -8,11 +8,9 @@
 
 \f0\i\fs28 \cf2 In general all T types must have the copy kind.
 \f1\i0\fs24 \cf0 \
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
-\cf0 \
-\pard\pardeftab480\pardirnatural
+\
 
-\f0\b\fs48 \cf0 char parsers
+\f0\b\fs48 char parsers
 \fs36 \
 \pard\pardeftab480\pardirnatural
 
@@ -21,7 +19,6 @@
 
 \i \cf3 /// Returns the matched character.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -41,8 +38,7 @@
 \b\fs40 \shad\shadx21\shady-22\shadr0\shado85 \shadc0 CharParsers
 \b0\fs32 \shad0 \
 \{\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \i \cf3 \cb1 /// Attempts to match any character in self. If matched the char is returned.
 \i0 \cf0 \
 \cb6 	
@@ -60,7 +56,7 @@
 \b noc
 \b0 () -> Parser<\cf5 char\cf0 >;\
 \}\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -80,7 +76,6 @@
 
 \i \cf3 /// Note that this does not increment line.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -91,7 +86,6 @@
 \b \cf4 fn
 \b0 \cf0 @ (\cf5 char\cf0 ) -> \cf5 bool\cf0 ) -> Parser<@~\cf5 str\cf0 >\
 \
-\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// Consumes one or more characters matching the predicate.
 \i0 \cf0 \
@@ -104,7 +98,6 @@
 
 \i \cf3 /// Note that this does not increment line.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -121,7 +114,6 @@
 
 \f2\i\fs32 \cf3 /// match1_0 := prefix+ suffix*
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -135,7 +127,7 @@
 \i0 \cf0  
 \b \cf4 fn
 \b0 \cf0 @ (\cf5 char\cf0 ) -> \cf5 bool\cf0 ) -> Parser<@~\cf5 str\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -150,6 +142,97 @@
 \i0 \cf0 \
 \pard\pardeftab480\pardirnatural
 
+\i \cf3 ///
+\i0 \cf0 \
+
+\i \cf3 /// 
+\i0\b \cf3 fn
+\b0 \cf3  \ul to_new_line\ulnone (chars: @[
+\b \cf3 char
+\b0 \cf3 ], index: 
+\b \cf3 uint
+\b0 \cf3 ) -> 
+\b \cf3 uint
+\b0 \cf0 \
+
+\i \cf3 /// 
+\i0 \{\cf0 \
+
+\i \cf3 ///  
+\i0    
+\b \cf3 let
+\b0 \cf3  mut i = index;\cf0 \
+
+\i \cf3 ///  
+\i0    
+\b \cf3 loop
+\b0 \cf0 \
+
+\i \cf3 ///  
+\i0    \{\cf0 \
+
+\i \cf3 ///         // Chars will always have an EOT character. If we hit it then
+\i0 \cf0 \
+
+\i \cf3 ///         // we failed to find a new-line character so match nothing. 
+\i0 \cf0 \
+
+\i \cf3 ///  
+\i0        
+\b \cf3 if
+\b0 \cf3  chars[i] == EOT\cf0 \
+
+\i \cf3 ///  
+\i0        \{\cf0 \
+
+\i \cf3 ///  
+\i0            
+\b \cf3 return
+\b0 \cf3  0;\cf0 \
+
+\i \cf3 ///  
+\i0        \}\cf0 \
+
+\i \cf3 ///  
+\i0        
+\b \cf3 else
+\b0 \cf3  
+\b \cf3 if
+\b0 \cf3  chars[i] == '\\r' || chars[i] == '\\n'\cf0 \
+
+\i \cf3 ///  
+\i0        \{\cf0 \
+
+\i \cf3 ///             // Match all the characters up to, but not including, the first new line.
+\i0 \cf0 \
+
+\i \cf3 ///  
+\i0            return i - index;\cf0 \
+
+\i \cf3 ///  
+\i0        \}\cf0 \
+
+\i \cf3 ///  
+\i0        
+\b \cf3 else
+\b0 \cf0 \
+
+\i \cf3 ///  
+\i0        \{\cf0 \
+
+\i \cf3 ///  
+\i0            i += 1;\cf0 \
+
+\i \cf3 ///  
+\i0        \}\cf0 \
+
+\i \cf3 ///  
+\i0    \}\cf0 \
+
+\i \cf3 /// 
+\i0 \}\cf0 \
+\pard\pardeftab480\pardirnatural
+
 \b \cf4 fn
 \b0 \cf0  
 \b scan
@@ -158,14 +241,13 @@
 \i0 \cf0  
 \b \cf4 fn
 \b0 \cf0 @ (@[\cf5 char\cf0 ], \cf5 uint\cf0 ) -> \cf5 uint\cf0 ) -> Parser<@~\cf5 str\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f2\i\fs32 \cf3 /// If all the parsers are successful then the matched text is returned.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -242,7 +324,7 @@
 \i0 \cf0  Parser<T3>, 
 \i \cf4 p4:
 \i0 \cf0  Parser<T4>) -> Parser<@~\cf5 str\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -252,8 +334,7 @@
 \b\fs40 \shad\shadx21\shady-22\shadr0\shado85 \shadc0 StringParsers
 \b0\fs32 \shad0 \
 \{\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \i \cf3 \cb1 /// Returns the input that matches self. Also see liti and litv.
 \i0 \cf0 \
 \cb6 	
@@ -289,7 +370,7 @@
 \b s1
 \b0 () -> Parser<@~\cf5 str\cf0 >;\
 \}\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -299,7 +380,6 @@
 
 \f2\i\b0\fs32 \cf3 /// Returns a parser which always fails.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -310,11 +390,9 @@
 \i \cf4 mesg:
 \i0 \cf0  &\cf5 str\cf0 ) -> Parser<T>\
 \
-\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions).
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -327,7 +405,6 @@
 \b \cf4 mut
 \b0 \cf0  Parser<T>) -> Parser<T>\
 \
-\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// or_v := e0 | e1 | \'85
 \i0 \cf0 \
@@ -337,7 +414,6 @@
 
 \i \cf3 /// This is a version of or that is nicer to use when there are more than two alternatives.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -348,11 +424,9 @@
 \i \cf4 parsers:
 \i0 \cf0  @~[Parser<T>]) -> Parser<T>\
 \
-\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// Returns a parser which always succeeds, but does not consume any input.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -363,11 +437,9 @@
 \i \cf4 value:
 \i0 \cf0  T) -> Parser<T>\
 \
-\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// seqN := e0 e1 ... eN
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -631,7 +703,6 @@
 
 \f2\i\fs32 \cf3 /// seq parsers that return the nth result
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -710,7 +781,7 @@ fn
 \i0 \cf0  Parser<T1>, 
 \i \cf4 p2:
 \i0 \cf0  Parser<T2>) -> Parser<T2>\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -798,7 +869,7 @@ fn
 \i0 \cf0  Parser<T2>, 
 \i \cf4 p3:
 \i0 \cf0  Parser<T3>) -> Parser<T3>\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -808,8 +879,7 @@ fn
 \b\fs40 \shad\shadx21\shady-22\shadr0\shado85 \shadc0 GenericParsers
 \b0\fs32 \shad0 \
 \{\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \i \cf3 \cb1 /// Returns value if input matches s. Also see lit.
 \i0 \cf0 \
 \cb6 	
@@ -822,7 +892,7 @@ fn
 \i \cf4 value:
 \i0 \cf0  T) -> Parser<T>;\
 \}\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -834,8 +904,7 @@ fn
 \i \cf4 T
 \i0 \cf0 >\
 \{\
-\pard\pardeftab480\pardirnatural
-\cf0 \cb6 	
+\cb6 	
 \i \cf3 \cb1 /// chainl1 := e (op e)*
 \i0 \cf0 \
 \cb6 	
@@ -1099,7 +1168,7 @@ fn
 \b \cf4 fn
 \b0 \cf0 @ (T) -> Parser<U>) -> Parser<U>;\
 \}\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \
@@ -1116,13 +1185,12 @@ fn
 
 \i \cf3 /// Note that match1_0 can be used to easily implement custom identifier parsers.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b identifier
 \b0 () -> Parser<@~\cf5 str\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -1138,39 +1206,36 @@ fn
 
 \i \cf3 /// but we do so to make this parser more reusable.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b decimal_number
 \b0 () -> Parser<\cf5 int\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f2\i\fs32 \cf3 /// octal_number := 0 [0-7]*
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b octal_number
 \b0 () -> Parser<\cf5 int\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f2\i\fs32 \cf3 /// hex_number := 0[xX] [0-9a-fA-F]+
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b hex_number
 \b0 () -> Parser<\cf5 int\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -1192,13 +1257,12 @@ fn
 
 \i \cf3 /// exponent := [eE] [+-]? [0-9]+
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b float_number
 \b0 () -> Parser<\cf5 f64\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -1214,13 +1278,12 @@ fn
 
 \i \cf3 /// c_char_sequence := escape_sequence
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b char_literal
 \b0 () -> Parser<\cf5 char\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -1236,13 +1299,12 @@ fn
 
 \i \cf3 /// s_char := escape_sequence
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b string_literal
 \b0 () -> Parser<@~\cf5 str\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
@@ -1255,26 +1317,24 @@ fn
 
 \i \cf3 /// Note that these do not nest.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b comment
 \b0 () -> Parser<@~\cf5 str\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 \pard\pardeftab480\pardirnatural
 
 \f2\i\fs32 \cf3 /// line_comment := '//' [^\\r\\n]*
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
 \b line_comment
 \b0 () -> Parser<@~\cf5 str\cf0 >\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\pardeftab480\pardirnatural
 
 \f1\fs24 \cf0 \
 }

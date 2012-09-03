@@ -176,11 +176,7 @@ fn line_comment() -> Parser<@~str>
 		let mut i = index;
 		loop
 		{
-			if chars[i] == EOT
-			{
-				return 0;
-			}
-			else if chars[i] == '\r' || chars[i] == '\n'
+			if chars[i] == '\r' || chars[i] == '\n' || chars[i] == EOT
 			{
 				return i - index;
 			}
