@@ -13,7 +13,7 @@ The library has been tested with Rust from github as of Sep 1 2012 (i.e. pre 0.4
 ## Example
 Here is an example of a simple parser which can be used to evaluate mathematical expressions.
 
-    import rparse::*;
+    use rparse::rparse::*;
     
     fn expr_parser() -> Parser<int>
     {
