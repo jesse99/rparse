@@ -1,22 +1,20 @@
 //! General purpose parser combinator library"
 // If the version is changed also change the dist target in the Makefile.
-use std;
-
 #[link(name = "rparse",
 	vers = "0.6",
 	uuid = "0188129D-F459-4EA4-A928-A5BA5632EF2E",
-	url = "https://github.com/jesse99/rparse")]
-#[crate_type = "lib"]
+	url = "https://github.com/jesse99/rparse")];
+#[crate_type = "lib"];
 
-#[author = "Jesse Jones"]
-#[license = "MIT"]
+#[author = "Jesse Jones"];
+#[license = "MIT"];
 
-// TODO: commented out because they don't do anything with
-// my rust (Makefile enables them via the command line)
-//#[allow(unused_imports)] 			// can't figure out which imports it's warning about
-//#[allow(deprecated_pattern)]		// not sure how to get code to compile with this on
-//#[allow(deprecated_mode)]			// think we want to use T instead of @T for succeeded type (and zillions of other places)
-#[warn(non_camel_case_types)]
+#[allow(unused_imports)]; 			// can't figure out which imports it's warning about
+#[allow(deprecated_pattern)];			// not sure how to get code to compile with this on
+#[allow(deprecated_mode)];			// think we want to use T instead of @T for succeeded type (and zillions of other places)
+#[warn(non_camel_case_types)];
+
+use std;
 
 mod c99_parsers;
 mod misc;
