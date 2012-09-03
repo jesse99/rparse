@@ -21,7 +21,7 @@ use std;
 //mod c99_parsers;
 mod misc;
 mod parsers;
-//mod parser;
+mod parse;
 //mod rparse;
 mod types;
 
@@ -32,6 +32,7 @@ mod tests
 //	mod test_c99_parser;
 //	mod test_parsers;
 	mod generic_tests;
+	mod parse_tests;
 	mod string_tests;
 	mod test_helpers;
 //	mod test_expr;

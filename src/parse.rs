@@ -1,18 +1,16 @@
-//! Parser traits and top-level parse functions.
-
-//use char_parsers::*;
-//use combinators::*;
-//use misc::*;
-//use types::*;
+//! Top-level parse function.
+use misc::*;
+use parsers::*;
+use types::*;
 
 /// Return type of parse function.
-type parse_status<T: copy owned> = result::Result<T, parse_failed>;
+type ParseStatus<T: copy owned> = result::Result<T, ParseFailed>;
 
 /// Returned by parse function on error. Line and col are both 1-based.
-type parse_failed = {file: ~str, line: uint, col: uint, mesg: ~str};
+type ParseFailed = {file: @~str, line: uint, col: uint, mesg: @~str};
 
 /// Uses parser to parse text. Also see everything function.
-fn parse<T: copy owned>(parser: Parser<T>, file: ~str, text: &str) -> parse_status<T>
+fn parse<T: copy owned>(parser: Parser<T>, file: @~str, text: &str) -> ParseStatus<T>
 {
 	let chars = chars_with_eot(text);
 	let input = {file: file, text: chars, index: 0u, line: 1};
