@@ -13,6 +13,7 @@
 #[allow(deprecated_mode)];			// think we want to use T instead of @T for succeeded type (and zillions of other places)
 #[warn(unused_imports)];
 #[warn(non_camel_case_types)];
+#[allow(structural_records)];
 
 use std;
 
