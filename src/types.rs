@@ -21,3 +21,5 @@ type Succeeded<T: Copy Owned> = {new_state: State, value: T};
 /// old_state should be identical to the input state. err_state is where 
 /// the error happened.
 type Failed = {old_state: State, err_state: State, mesg: @~str};
+
+priv type Blah = int;
