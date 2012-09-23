@@ -4,13 +4,13 @@
 // TODO: probably should use individual modules for these, but the dependencies
 // are painful (see https://github.com/mozilla/rust/issues/3352).
 use misc::*;
-use types::{Parser, State, Status};
+use types::{Parser, State, Status, Succeeded, Failed};
 
 /// Return type of parse function.
 type ParseStatus<T: Copy Owned> = result::Result<T, ParseFailed>;
 
 /// Returned by parse function on error. Line and col are both 1-based.
-type ParseFailed = {file: @~str, line: uint, col: uint, mesg: @~str};
+struct ParseFailed {file: @~str, line: uint, col: uint, mesg: @~str}
 
 // ---- weird parsers -----------------------------------------------------------------------------
 // Returns a parser which matches the end of the input.
@@ -22,11 +22,11 @@ fn eot() -> Parser<()>
 	{
 		if input.text[input.index] == EOT
 		{
-			result::Ok({new_state: {index: input.index + 1u, ..input}, value: ()})
+			result::Ok(Succeeded {new_state: State {index: input.index + 1u, ..input}, value: ()})
 		}
 		else
 		{
-			result::Err({old_state: input, err_state: input, mesg: @~"EOT"})
+			result::Err(Failed {old_state: input, err_state: input, mesg: @~"EOT"})
 		}
 	}
 }
@@ -45,11 +45,11 @@ fn anycp(predicate: fn@ (char) -> bool) -> Parser<char>
 		
 		if i > input.index
 		{
-			result::Ok({new_state: {index: i, ..input}, value: input.text[input.index]})
+			result::Ok(Succeeded {new_state: State {index: i, ..input}, value: input.text[input.index]})
 		}
 		else
 		{
-			result::Err({old_state: input, err_state: {index: i, ..input}, mesg: @~""})
+			result::Err(Failed {old_state: input, err_state: State {index: i, ..input}, mesg: @~""})
 		}
 	}
 }
@@ -82,11 +82,11 @@ impl &str : CharParsers
 			
 			if i > input.index
 			{
-				result::Ok({new_state: {index: i, ..input}, value: input.text[input.index]})
+				result::Ok(Succeeded {new_state: State {index: i, ..input}, value: input.text[input.index]})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: i, ..input}, mesg: @fmt!("[%s]", s)})
+				result::Err(Failed {old_state: input, err_state: State {index: i, ..input}, mesg: @fmt!("[%s]", s)})
 			}
 		}
 	}
@@ -105,11 +105,11 @@ impl &str : CharParsers
 			
 			if i > input.index
 			{
-				result::Ok({new_state: {index: i, ..input}, value: input.text[input.index]})
+				result::Ok(Succeeded {new_state: State {index: i, ..input}, value: input.text[input.index]})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: i, ..input}, mesg: @fmt!("[^%s]", s)})
+				result::Err(Failed {old_state: input, err_state: State {index: i, ..input}, mesg: @fmt!("[^%s]", s)})
 			}
 		}
 	}
@@ -145,7 +145,7 @@ fn match0(predicate: fn@ (char) -> bool) -> Parser<@~str>
 		}
 		
 		let text = str::from_chars(vec::slice(input.text, input.index, i));
-		result::Ok({new_state: {index: i, ..input}, value: @text})
+		result::Ok(Succeeded {new_state: State {index: i, ..input}, value: @text})
 	}
 }
 
@@ -166,11 +166,11 @@ fn match1(predicate: fn@ (char) -> bool) -> Parser<@~str>
 		if i > input.index
 		{
 			let text = str::from_chars(vec::slice(input.text, input.index, i));
-			result::Ok({new_state: {index: i, ..input}, value: @text})
+			result::Ok(Succeeded {new_state: State {index: i, ..input}, value: @text})
 		}
 		else
 		{
-			result::Err({old_state: input, err_state: {index: i, ..input}, mesg: @~""})
+			result::Err(Failed {old_state: input, err_state: State {index: i, ..input}, mesg: @~""})
 		}
 	}
 }
@@ -192,8 +192,8 @@ fn optional_str(parser: Parser<@~str>) -> Parser<@~str>
 	{
 		match parser(input)
 		{
-			result::Ok(pass)		=> result::Ok({new_state: pass.new_state, value: pass.value}),
-			result::Err(_failure)	=> result::Ok({new_state: input, value: @~""}),
+			result::Ok(pass)		=> result::Ok(Succeeded {new_state: pass.new_state, value: pass.value}),
+			result::Err(_failure)	=> result::Ok(Succeeded {new_state: input, value: @~""}),
 		}
 	}
 }
@@ -251,11 +251,11 @@ fn scan(fun: fn@ (@[char], uint) -> uint) -> Parser<@~str>
 				i += 1u;
 			}
 			let text = str::from_chars(vec::slice(input.text, input.index, i));
-			result::Ok({new_state: {index: i, line: line, ..input}, value: @text})
+			result::Ok(Succeeded {new_state: State {index: i, line: line, ..input}, value: @text})
 		}
 		else
 		{
-			result::Ok({new_state: {index: i, line: line, ..input}, value: @~""})
+			result::Ok(Succeeded {new_state: State {index: i, line: line, ..input}, value: @~""})
 		}
 	}
 }
@@ -271,11 +271,11 @@ fn seq2_ret_str<T0: Copy Owned, T1: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>) 
 			result::Ok(pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				result::Ok({new_state: pass.new_state, value: @text})
+				result::Ok(Succeeded {new_state: pass.new_state, value: @text})
 			}
 			result::Err(failure) =>
 			{
-				result::Err({old_state: input, ..failure})
+				result::Err(Failed {old_state: input, ..failure})
 			}
 		}
 	}
@@ -291,11 +291,11 @@ fn seq3_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, 
 			result::Ok(pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				result::Ok({new_state: pass.new_state, value: @text})
+				result::Ok(Succeeded {new_state: pass.new_state, value: @text})
 			}
 			result::Err(failure) =>
 			{
-				result::Err({old_state: input, ..failure})
+				result::Err(Failed {old_state: input, ..failure})
 			}
 		}
 	}
@@ -310,11 +310,11 @@ fn seq4_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(
 			result::Ok(pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				result::Ok({new_state: pass.new_state, value: @text})
+				result::Ok(Succeeded {new_state: pass.new_state, value: @text})
 			}
 			result::Err(failure) =>
 			{
-				result::Err({old_state: input, ..failure})
+				result::Err(Failed {old_state: input, ..failure})
 			}
 		}
 	}
@@ -329,11 +329,11 @@ fn seq5_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, 
 			result::Ok(pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
-				result::Ok({new_state: pass.new_state, value: @text})
+				result::Ok(Succeeded {new_state: pass.new_state, value: @text})
 			}
 			result::Err(failure) =>
 			{
-				result::Err({old_state: input, ..failure})
+				result::Err(Failed {old_state: input, ..failure})
 			}
 		}
 	}
@@ -382,11 +382,11 @@ impl &str : StringParsers
 			if i == str::len(s)
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, j));
-				result::Ok({new_state: {index: j, ..input}, value: @text})
+				result::Ok(Succeeded {new_state: State {index: j, ..input}, value: @text})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: j, ..input}, mesg: @fmt!("'%s'", s)})
+				result::Err(Failed {old_state: input, err_state: State {index: j, ..input}, mesg: @fmt!("'%s'", s)})
 			}
 		}
 	}
@@ -416,11 +416,11 @@ impl &str : StringParsers
 			if i == str::len(s)
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, j));
-				result::Ok({new_state: {index: j, ..input}, value: @text})
+				result::Ok(Succeeded {new_state: State {index: j, ..input}, value: @text})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: {index: j, ..input}, mesg: @fmt!("'%s'", s)})
+				result::Err(Failed {old_state: input, err_state: State {index: j, ..input}, mesg: @fmt!("'%s'", s)})
 			}
 		}
 	}
@@ -441,7 +441,7 @@ impl &str : StringParsers
 fn fails<T: Copy Owned>(mesg: &str) -> Parser<T>
 {
 	let mesg = mesg.to_unique();
-	|input: State| result::Err({old_state: input, err_state: input, mesg: @copy mesg})
+	|input: State| result::Err(Failed {old_state: input, err_state: input, mesg: @copy mesg})
 }
 
 /// Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions).
@@ -510,7 +510,7 @@ fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
 		{
 			let errs = do vec::filter(errors) |s| {str::is_not_empty(*s)};
 			let mesg = at_connect(errs, ~" or ");
-			result::Err({old_state: input, err_state: {index: max_index, ..input}, mesg: @mesg})
+			result::Err(Failed {old_state: input, err_state: State {index: max_index, ..input}, mesg: @mesg})
 		}
 	}
 }
@@ -519,7 +519,7 @@ fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
 #[allow(deprecated_mode)]		// TODO: probably need to use &T instead
 fn ret<T: Copy Owned>(value: T) -> Parser<T>
 {
-	|input: State| result::Ok({new_state: input, value: value})
+	|input: State| result::Ok(Succeeded {new_state: input, value: value})
 }
 
 /// seq2 := e0 e1
@@ -902,11 +902,11 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 					result::Ok(pass2) =>
 					{
 						let value = vec::foldl(pass.value, *pass2.value, |lhs: T, rhs: (U, T)| {eval(lhs, rhs.first(), rhs.second())});
-						result::Ok({new_state: pass2.new_state, value: value})
+						result::Ok(Succeeded {new_state: pass2.new_state, value: value})
 					}
 					result::Err(failure) =>
 					{
-						result::Err({old_state: input, ..failure})
+						result::Err(Failed {old_state: input, ..failure})
 					}
 				}
 			}
@@ -941,16 +941,16 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 							let terms = vec::zip(parsers, ops);
 							
 							let value = vec::foldr(terms, e3, {|&&lhs: (T, U), &&rhs| eval(lhs.first(), lhs.second(), rhs)});
-							result::Ok({new_state: pass2.new_state, value: value})
+							result::Ok(Succeeded {new_state: pass2.new_state, value: value})
 						}
 						else
 						{
-							result::Ok({new_state: pass2.new_state, value: pass.value})
+							result::Ok(Succeeded {new_state: pass2.new_state, value: pass.value})
 						}
 					}
 					result::Err(failure) =>
 					{
-						result::Err({old_state: input ,.. failure})
+						result::Err(Failed {old_state: input ,.. failure})
 					}
 				}
 			}
@@ -968,11 +968,11 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			{
 				if str::is_empty(label)
 				{
-					result::Err({mesg: @~"", ..failure})
+					result::Err(Failed {mesg: @~"", ..failure})
 				}
 				else if failure.err_state.index == input.index || str::is_empty(*failure.mesg)
 				{
-					result::Err({mesg: @copy label, ..failure})
+					result::Err(Failed {mesg: @copy label, ..failure})
 				}
 				else
 				{
@@ -1003,11 +1003,11 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 				{
 					result::Ok(pass2) =>
 					{
-						result::Ok({value: @(~[pass.value] + *pass2.value), ..pass2})
+						result::Ok(Succeeded {value: @(~[pass.value] + *pass2.value), ..pass2})
 					}
 					result::Err(failure) =>
 					{
-						result::Err({old_state: input, ..failure})
+						result::Err(Failed {old_state: input, ..failure})
 					}
 				}
 			}
@@ -1068,11 +1068,11 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			{
 				result::Ok(pass) =>
 				{
-					result::Ok({new_state: pass.new_state, value: option::Some(pass.value)})
+					result::Ok(Succeeded {new_state: pass.new_state, value: option::Some(pass.value)})
 				}
 				result::Err(_failure) =>
 				{
-					result::Ok({new_state: input, value: option::None})
+					result::Ok(Succeeded {new_state: input, value: option::None})
 				}
 			}
 		}
@@ -1098,7 +1098,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 					}
 					else
 					{
-						result::Err({mesg: or_mesg(failure1.mesg, failure2.mesg), ..failure2})
+						result::Err(Failed {mesg: or_mesg(failure1.mesg, failure2.mesg), ..failure2})
 					}
 				}
 			}
@@ -1108,7 +1108,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 	fn parse(file: @~str, text: &str) -> ParseStatus<T>
 	{
 		let chars = chars_with_eot(text);
-		let input = {file: file, text: chars, index: 0u, line: 1};
+		let input = State {file: file, text: chars, index: 0u, line: 1};
 		match self(input)
 		{
 			result::Ok(pass) =>
@@ -1118,7 +1118,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			result::Err(failure) =>
 			{
 				let col = get_col(chars, failure.err_state.index);
-				result::Err({file: failure.old_state.file, line: failure.err_state.line as uint, col: col, mesg: failure.mesg})
+				result::Err(ParseFailed {file: failure.old_state.file, line: failure.err_state.line as uint, col: col, mesg: failure.mesg})
 			}
 		}
 	}
@@ -1149,11 +1149,11 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			let count = vec::len(values);
 			if n <= count && count <= m
 			{
-				result::Ok({new_state: output, value: @values})
+				result::Ok(Succeeded {new_state: output, value: @values})
 			}
 			else
 			{
-				result::Err({old_state: input, err_state: output, mesg: @~""})
+				result::Err(Failed {old_state: input, err_state: output, mesg: @~""})
 			}
 		}
 	}
@@ -1201,7 +1201,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 					i += 1u;
 				}
 				
-				result::Ok({new_state: {index: i, line: line, ..pass.new_state}, value: pass.value})
+				result::Ok(Succeeded {new_state: State {index: i, line: line, ..pass.new_state}, value: pass.value})
 			}
 		}
 	}
@@ -1219,7 +1219,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 				}
 				else
 				{
-					result::Err({old_state: input, err_state: pass.new_state, mesg: @~"whitespace"})
+					result::Err(Failed {old_state: input, err_state: pass.new_state, mesg: @~"whitespace"})
 				}
 			}
 		}
@@ -1233,7 +1233,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			|pass|
 			{
 				do result::chain_err(parser2(pass.new_state))
-					|failure| {result::Err({old_state: input, ..failure})}
+					|failure| {result::Err(Failed {old_state: input, ..failure})}
 			}
 		}
 	}
@@ -1246,7 +1246,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			|pass|
 			{
 				do result::chain_err(eval(pass.value)(pass.new_state))
-					|failure| {result::Err({old_state: input, ..failure})}
+					|failure| {result::Err(Failed {old_state: input, ..failure})}
 			}
 		}
 	}
@@ -1257,7 +1257,6 @@ impl &str : GenericParsers
 	fn litv<T: Copy Owned>(value: T) -> Parser<T>
 	{
 		let s = self.to_unique();
-//		let v = copy *value;
 		
 		|input: State|
 		{
@@ -1265,7 +1264,7 @@ impl &str : GenericParsers
 			{
 				result::Ok(pass) =>
 				{
-					result::Ok({new_state: pass.new_state, value: value})
+					result::Ok(Succeeded {new_state: pass.new_state, value: value})
 				}
 				result::Err(failure) =>
 				{

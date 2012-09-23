@@ -7,7 +7,7 @@ use parsers::*;
 use result::*;
 use test_helpers::*;
 
-type Attribute = {name: @~str, value: @~str};
+struct Attribute {name: @~str, value: @~str}
 
 enum Xml
 {
@@ -50,11 +50,11 @@ fn check_xml_ok(inText: &str, expected: &str, parser: Parser<Xml>) -> bool
 {
 	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
-	match parser({file: @~"unit test", text: text, index: 0u, line: 1,})
+	match parser(State {file: @~"unit test", text: text, index: 0u, line: 1,})
 	{
 		result::Ok(pass) =>
 		{
-			check_ok(&result::Ok({new_state: pass.new_state, value: @pass.value.to_str()}), &@expected.to_unique())
+			check_ok(&result::Ok(Succeeded {new_state: pass.new_state, value: @pass.value.to_str()}), &@expected.to_unique())
 		}
 		result::Err(failure) =>
 		{
@@ -67,7 +67,7 @@ fn check_xml_failed(inText: &str, parser: Parser<Xml>, expected: &str, line: int
 {
 	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
-	let result = parser({file: @~"unit test", text: text, index: 0u, line: 1});
+	let result = parser(State {file: @~"unit test", text: text, index: 0u, line: 1});
 	return check_failed(&result, expected, line);
 }
 
@@ -138,7 +138,7 @@ fn xml_parser() -> Parser<Xml>
 	// attribute := name '=' '"' string_body '"'
 	let attribute = do seq5(name, "=".s0(), "\"".s0(), string_body(), "\"".s0())
 	|name, _a2, _a3, body, _a5| {
-		result::Ok({name: name, value: body})
+		result::Ok(Attribute {name: name, value: body})
 	};
 	
 	// empty_element := '<' name attribute* '/>'
