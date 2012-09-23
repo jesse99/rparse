@@ -208,7 +208,7 @@ pure fn is_hex(ch: char) -> bool
 	return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
 }
 
-fn from_base_8(text: ~str) -> result::Result<int, ~str>
+fn from_base_8(text: &str) -> result::Result<int, ~str>
 {
 	let mut power = 1;
 	let mut result = 0;
@@ -233,7 +233,7 @@ fn from_base_8(text: ~str) -> result::Result<int, ~str>
 	return result::Ok(result);
 }
 
-fn from_base_16(text: ~str) -> result::Result<int, ~str>
+fn from_base_16(text: &str) -> result::Result<int, ~str>
 {
 	let mut power = 1;
 	let mut result = 0;

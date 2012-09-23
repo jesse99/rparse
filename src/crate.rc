@@ -11,7 +11,7 @@
 
 #[allow(structural_records)];
 #[warn(unused_imports)];
-#[allow(deprecated_mode)];
+#[allow(deprecated_mode)];	// TODO: can't seem to de-mode some generic closures
 #[allow(deprecated_pattern)];	// TODO: enable this
 
 extern mod std;

@@ -516,6 +516,7 @@ fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
 }
 
 /// Returns a parser which always succeeds, but does not consume any input.
+#[allow(deprecated_mode)]		// TODO: probably need to use &T instead
 fn ret<T: Copy Owned>(value: T) -> Parser<T>
 {
 	|input: State| result::Ok({new_state: input, value: value})
@@ -900,7 +901,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 				{
 					result::Ok(pass2) =>
 					{
-						let value = vec::foldl(pass.value, *pass2.value, {|&&lhs, &&rhs: (U, T)| eval(lhs, rhs.first(), rhs.second())});
+						let value = vec::foldl(pass.value, *pass2.value, |lhs: T, rhs: (U, T)| {eval(lhs, rhs.first(), rhs.second())});
 						result::Ok({new_state: pass2.new_state, value: value})
 					}
 					result::Err(failure) =>
@@ -1256,6 +1257,7 @@ impl &str : GenericParsers
 	fn litv<T: Copy Owned>(value: T) -> Parser<T>
 	{
 		let s = self.to_unique();
+//		let v = copy *value;
 		
 		|input: State|
 		{
