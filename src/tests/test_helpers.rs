@@ -42,7 +42,11 @@ fn check_float_ok(inText: &str, parser: Parser<f64>, expected: f64) -> bool
 	info!("----------------------------------------------------");
 	let text = chars_with_eot(inText);
 	let result = parser({file: @~"unit test", text: text, index: 0u, line: 1});
-	return check_ok(result, expected);
+	match result		// need this because Eq is missing for f64
+	{
+		result::Ok(pass) => check_ok(result::Ok({new_state: pass.new_state, value: pass.value as float}), expected as float),
+		result::Err(failed) => check_ok(result::Err(failed), expected as float),
+	}
 }
 
 fn check_float_failed(inText: &str, parser: Parser<f64>, expected: &str, line: int) -> bool
@@ -86,7 +90,7 @@ fn check_str_array_failed(inText: &str, parser: Parser<@~[@~str]>, expected: &st
 }
 
 // ---- Private Functions -----------------------------------------------------
-fn check_ok<T: Copy Owned>(result: Status<T>, expected: T) -> bool
+fn check_ok<T: Copy Owned cmp::Eq>(result: Status<T>, expected: T) -> bool
 {
 	match result
 	{

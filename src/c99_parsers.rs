@@ -5,13 +5,11 @@ use parsers::*;
 use types::Parser;
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
-export identifier, decimal_number, octal_number, hex_number, float_number,
-	char_literal, string_literal, comment, line_comment;
 
 /// identifier := [a-zA-Z_] [a-zA-Z0-9_]*
 /// 
 /// Note that match1_0 can be used to easily implement custom identifier parsers.
-fn identifier() -> Parser<@~str>
+pub fn identifier() -> Parser<@~str>
 {
 	// Supposed to support universal character names too, e.g.  
 	// fo\u006F is a valid C99 identifier.
@@ -22,7 +20,7 @@ fn identifier() -> Parser<@~str>
 /// 
 /// Technically this is not supposed to match numbers with leading zeros,
 /// but we do so to make this parser more reusable.
-fn decimal_number() -> Parser<int>
+pub fn decimal_number() -> Parser<int>
 {
 	do match1(is_digit).thene
 		|text|
@@ -42,7 +40,7 @@ fn decimal_number() -> Parser<int>
 }
 
 /// octal_number := 0 [0-7]*
-fn octal_number() -> Parser<int>
+pub fn octal_number() -> Parser<int>
 {
 	do match1_0(|c| c == '0', is_octal).thene
 		|text|
@@ -61,10 +59,8 @@ fn octal_number() -> Parser<int>
 		}
 }
 
-//fn or<T: copy>(parser1: parser<T>, parser2: parser<T>) -> parser<T>
-
 /// hex_number := 0[xX] [0-9a-fA-F]+
-fn hex_number() -> Parser<int>
+pub fn hex_number() -> Parser<int>
 {
 	let prefix = "0".lit().then("x".lit().or("X".lit()));
 	let digits = do match1(is_hex).thene()
@@ -91,7 +87,7 @@ fn hex_number() -> Parser<int>
 /// float2 := [0-9]+ '.' exponent?
 /// float3 := [0-9]+ exponent
 /// exponent := [eE] [+-]? [0-9]+
-fn float_number() -> Parser<f64>
+pub fn float_number() -> Parser<f64>
 {
 	let exponent = seq3_ret_str("eE".anyc(), "+-".anyc().optional(), match1(is_digit));
 	
@@ -114,7 +110,7 @@ fn float_number() -> Parser<f64>
 /// 
 /// c_char_sequence := [^'\n\r\\]
 /// c_char_sequence := escape_sequence
-fn char_literal() -> Parser<char>
+pub fn char_literal() -> Parser<char>
 {
 	// We don't support the [LuU] prefix (so the parser is reusable in other contexts).
 	let case1 = "'\n\r\\".noc().err("");
@@ -128,7 +124,7 @@ fn char_literal() -> Parser<char>
 /// 
 /// s_char := [^\"\n\r\\]
 /// s_char := escape_sequence
-fn string_literal() -> Parser<@~str>
+pub fn string_literal() -> Parser<@~str>
 {
 	// We don't support the encoding prefix (so the parser is reusable in other contexts).
 	let case1 = "\"\n\r\\".noc().err("");
@@ -142,7 +138,7 @@ fn string_literal() -> Parser<@~str>
 /// comment := '/*' ([^*] | '*' [^/])* '*/'
 /// 
 /// Note that these do not nest.
-fn comment() -> Parser<@~str>
+pub fn comment() -> Parser<@~str>
 {
 	fn comment_body(chars: @[char], index: uint) -> uint
 	{
@@ -169,7 +165,7 @@ fn comment() -> Parser<@~str>
 }
 
 /// line_comment := '//' [^\r\n]*
-fn line_comment() -> Parser<@~str>
+pub fn line_comment() -> Parser<@~str>
 {
 	fn comment_body(chars: @[char], index: uint) -> uint
 	{

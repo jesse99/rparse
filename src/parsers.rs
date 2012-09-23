@@ -900,7 +900,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 				{
 					result::Ok(pass2) =>
 					{
-						let value = vec::foldl(pass.value, *pass2.value, {|lhs, rhs: (U, T)| eval(lhs, rhs.first(), rhs.second())});
+						let value = vec::foldl(pass.value, *pass2.value, {|&&lhs, &&rhs: (U, T)| eval(lhs, rhs.first(), rhs.second())});
 						result::Ok({new_state: pass2.new_state, value: value})
 					}
 					result::Err(failure) =>
@@ -939,7 +939,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 							// [(e1 op1), (e2 op2)] and e3
 							let terms = vec::zip(parsers, ops);
 							
-							let value = vec::foldr(terms, e3, {|lhs: (T, U), rhs| eval(lhs.first(), lhs.second(), rhs)});
+							let value = vec::foldr(terms, e3, {|&&lhs: (T, U), &&rhs| eval(lhs.first(), lhs.second(), rhs)});
 							result::Ok({new_state: pass2.new_state, value: value})
 						}
 						else

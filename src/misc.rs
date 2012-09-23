@@ -8,8 +8,8 @@ pure fn at_connect(v: &[@~str], sep: &str) -> ~str
 	let mut s = ~"", first = true;
 	for vec::each(v) |ss|
 	{
-		if first {first = false;} else {unchecked {str::push_str(s, sep);}}
-		unchecked {str::push_str(s, *ss)};
+		if first {first = false;} else {unsafe {str::push_str(s, sep);}}
+		unsafe {str::push_str(s, **ss)};
 	}
 	return s;
 }
@@ -112,6 +112,6 @@ fn munge_chars(chars: @[char]) -> ~str
 	
 	let mut value = ~"";
 	str::reserve(value, vec::len(chars));
-	do vec::iter(chars) |ch| { str::push_char(value, if is_print(ch) {ch} else {bullet});}
+	for vec::each(chars) |ch| { str::push_char(value, if is_print(*ch) {*ch} else {bullet});}
 	return value;
 }
