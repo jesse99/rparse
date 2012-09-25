@@ -51,7 +51,7 @@ pub fn octal_number() -> Parser<int>
 				{
 					ret(value)
 				}
-				result::Err(mesg) =>
+				result::Err(copy mesg) =>
 				{
 					fails(mesg)
 				}
@@ -71,7 +71,7 @@ pub fn hex_number() -> Parser<int>
 				{
 					ret(value)
 				}
-				result::Err(mesg) =>
+				result::Err(copy mesg) =>
 				{
 					fails(mesg)
 				}
@@ -320,7 +320,7 @@ fn octal_digits() -> Parser<int>
 				{
 					ret(value)
 				}
-				result::Err(mesg) =>
+				result::Err(copy mesg) =>
 				{
 					fails(mesg)
 				}
@@ -338,7 +338,7 @@ fn hex_digits() -> Parser<int>
 				{
 					ret(value)
 				}
-				result::Err(mesg) =>
+				result::Err(copy mesg) =>
 				{
 					fails(mesg)
 				}

@@ -44,8 +44,8 @@ fn check_float_ok(inText: &str, parser: Parser<f64>, expected: f64) -> bool
 	let result = parser(State {file: @~"unit test", text: text, index: 0u, line: 1});
 	match result		// need this because Eq is missing for f64
 	{
-		result::Ok(pass) => check_ok(&result::Ok(Succeeded {new_state: pass.new_state, value: pass.value as float}), &(expected as float)),
-		result::Err(failed) => check_ok(&result::Err(failed), &(expected as float)),
+		result::Ok(ref pass) => check_ok(&result::Ok(Succeeded {new_state: pass.new_state, value: pass.value as float}), &(expected as float)),
+		result::Err(ref failed) => check_ok(&result::Err(*failed), &(expected as float)),
 	}
 }
 
@@ -94,7 +94,7 @@ fn check_ok<T: Copy Owned cmp::Eq>(result: &Status<T>, expected: &T) -> bool
 {
 	match *result
 	{
-		result::Ok(pass) =>
+		result::Ok(ref pass) =>
 		{
 			if pass.value != *expected
 			{
@@ -103,7 +103,7 @@ fn check_ok<T: Copy Owned cmp::Eq>(result: &Status<T>, expected: &T) -> bool
 			}
 			return true;
 		}
-		result::Err(failure) =>
+		result::Err(ref failure) =>
 		{
 			io::stderr().write_line(fmt!("Error: expected %? but found error %s", expected, *failure.mesg));
 			return false;
@@ -115,7 +115,7 @@ fn check_ok_strs(result: &Status<@~str>, expected: &str) -> bool
 {
 	match *result
 	{
-		result::Ok(pass) =>
+		result::Ok(ref pass) =>
 		{
 			if *pass.value != expected.to_unique()
 			{
@@ -124,7 +124,7 @@ fn check_ok_strs(result: &Status<@~str>, expected: &str) -> bool
 			}
 			return true;
 		}
-		result::Err(failure) =>
+		result::Err(ref failure) =>
 		{
 			io::stderr().write_line(fmt!("Error: expected %? but found error %s", expected, *failure.mesg));
 			return false;
@@ -136,7 +136,7 @@ fn check_ok_str_arrays(result: &Status<@~[@~str]>, expected: @~[@~str]) -> bool
 {
 	match *result
 	{
-		result::Ok(pass) =>
+		result::Ok(ref pass) =>
 		{
 			if pass.value != expected
 			{
@@ -145,7 +145,7 @@ fn check_ok_str_arrays(result: &Status<@~[@~str]>, expected: @~[@~str]) -> bool
 			}
 			return true;
 		}
-		result::Err(failure) =>
+		result::Err(ref failure) =>
 		{
 			io::stderr().write_line(fmt!("Error: expected %? but found error %s", expected, *failure.mesg));
 			return false;
@@ -157,12 +157,12 @@ fn check_failed<T: Copy Owned>(result: &Status<T>, expected: &str, line: int) ->
 {
 	match *result
 	{
-		result::Ok(pass) =>
+		result::Ok(ref pass) =>
 		{
 			io::stderr().write_line(fmt!("Expected error '%s' but found %?", expected.to_unique(), pass.value));
 			return false;
 		}
-		result::Err(failure) =>
+		result::Err(ref failure) =>
 		{
 			if !str::eq(failure.mesg, &expected.to_unique())
 			{

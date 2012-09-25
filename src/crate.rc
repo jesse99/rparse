@@ -9,10 +9,11 @@
 #[author = "Jesse Jones"];
 #[license = "MIT"];
 
-#[warn(unused_imports)];
+#[forbid(unused_imports)];
+#[forbid(implicit_copies)];
+#[forbid(deprecated_pattern)];
 #[allow(structural_records)];	// TODO: getting warnings in weird places tho my code no longer has structs
 #[allow(deprecated_mode)];	// TODO: can't seem to de-mode some generic closures
-#[allow(deprecated_pattern)];	// TODO: don't know how to get stuff to compile with this on
 
 extern mod std;
 

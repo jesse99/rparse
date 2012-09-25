@@ -192,8 +192,8 @@ fn optional_str(parser: Parser<@~str>) -> Parser<@~str>
 	{
 		match parser(input)
 		{
-			result::Ok(pass)		=> result::Ok(Succeeded {new_state: pass.new_state, value: pass.value}),
-			result::Err(_failure)	=> result::Ok(Succeeded {new_state: input, value: @~""}),
+			result::Ok(ref pass)		=> result::Ok(Succeeded {new_state: pass.new_state, value: pass.value}),
+			result::Err(ref _failure)		=> result::Ok(Succeeded {new_state: input, value: @~""}),
 		}
 	}
 }
@@ -268,14 +268,14 @@ fn seq2_ret_str<T0: Copy Owned, T1: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>) 
 	{
 		match p0.then(p1)(input)
 		{
-			result::Ok(pass) =>
+			result::Ok(ref pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
 				result::Ok(Succeeded {new_state: pass.new_state, value: @text})
 			}
-			result::Err(failure) =>
+			result::Err(ref failure) =>
 			{
-				result::Err(Failed {old_state: input, ..failure})
+				result::Err(Failed {old_state: input, ..*failure})
 			}
 		}
 	}
@@ -288,14 +288,14 @@ fn seq3_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, 
 	{
 		match p0.then(p1). then(p2)(input)
 		{
-			result::Ok(pass) =>
+			result::Ok(ref pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
 				result::Ok(Succeeded {new_state: pass.new_state, value: @text})
 			}
-			result::Err(failure) =>
+			result::Err(ref failure) =>
 			{
-				result::Err(Failed {old_state: input, ..failure})
+				result::Err(Failed {old_state: input, ..*failure})
 			}
 		}
 	}
@@ -307,14 +307,14 @@ fn seq4_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(
 	|input: State| {
 		match p0.then(p1). then(p2).then(p3)(input)
 		{
-			result::Ok(pass) =>
+			result::Ok(ref pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
 				result::Ok(Succeeded {new_state: pass.new_state, value: @text})
 			}
-			result::Err(failure) =>
+			result::Err(ref failure) =>
 			{
-				result::Err(Failed {old_state: input, ..failure})
+				result::Err(Failed {old_state: input, ..*failure})
 			}
 		}
 	}
@@ -326,14 +326,14 @@ fn seq5_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, 
 	|input: State| {
 		match p0.then(p1). then(p2).then(p3).then(p4)(input)
 		{
-			result::Ok(pass) =>
+			result::Ok(ref pass) =>
 			{
 				let text = str::from_chars(vec::slice(input.text, input.index, pass.new_state.index));
 				result::Ok(Succeeded {new_state: pass.new_state, value: @text})
 			}
-			result::Err(failure) =>
+			result::Err(ref failure) =>
 			{
-				result::Err(Failed {old_state: input, ..failure})
+				result::Err(Failed {old_state: input, ..*failure})
 			}
 		}
 	}
@@ -482,11 +482,11 @@ fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
 		{
 			match parsers[i](input)
 			{
-				result::Ok(pass) =>
+				result::Ok(ref pass) =>
 				{
-					result = option::Some(result::Ok(pass));
+					result = option::Some(result::Ok(*pass));
 				}
-				result::Err(failure) =>
+				result::Err(ref failure) =>
 				{
 					if failure.err_state.index > max_index || max_index == uint::max_value
 					{
@@ -530,9 +530,9 @@ fn seq2<T0: Copy Owned, T1: Copy Owned, R: Copy Owned>
 	do parser1.thene() |a1| {
 		match eval(a0, a1)
 		{
-			result::Ok(value) =>
+			result::Ok(ref value) =>
 			{
-				ret(value)
+				ret(*value)
 			}
 			result::Err(mesg) =>
 			{
@@ -551,9 +551,9 @@ fn seq3<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, R: Copy Owned>
 	do parser2.thene() |a2| {
 		match eval(a0, a1, a2)
 		{
-			result::Ok(value) =>
+			result::Ok(ref value) =>
 			{
-				ret(value)
+				ret(*value)
 			}
 			result::Err(mesg) =>
 			{
@@ -573,9 +573,9 @@ fn seq4<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, R: Copy 
 	do parser3.thene() |a3| {
 		match eval(a0, a1, a2, a3)
 		{
-			result::Ok(value) =>
+			result::Ok(ref value) =>
 			{
-				ret(value)
+				ret(*value)
 			}
 			result::Err(mesg) =>
 			{
@@ -596,9 +596,9 @@ fn seq5<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy
 	do parser4.thene() |a4| {
 		match eval(a0, a1, a2, a3, a4)
 		{
-			result::Ok(value) =>
+			result::Ok(ref value) =>
 			{
-				ret(value)
+				ret(*value)
 			}
 			result::Err(mesg) =>
 			{
@@ -620,9 +620,9 @@ fn seq6<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy
 	do parser5.thene() |a5| {
 		match eval(a0, a1, a2, a3, a4, a5)
 		{
-			result::Ok(value) =>
+			result::Ok(ref value) =>
 			{
-				ret(value)
+				ret(*value)
 			}
 			result::Err(mesg) =>
 			{
@@ -645,9 +645,9 @@ fn seq7<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy
 	do parser6.thene() |a6| {
 		match eval(a0, a1, a2, a3, a4, a5, a6)
 		{
-			result::Ok(value) =>
+			result::Ok(ref value) =>
 			{
-				ret(value)
+				ret(*value)
 			}
 			result::Err(mesg) =>
 			{
@@ -671,9 +671,9 @@ fn seq8<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy
 	do parser7.thene() |a7| {
 		match eval(a0, a1, a2, a3, a4, a5, a6, a7)
 		{
-			result::Ok(value) =>
+			result::Ok(ref value) =>
 			{
-				ret(value)
+				ret(*value)
 			}
 			result::Err(mesg) =>
 			{
@@ -698,9 +698,9 @@ fn seq9<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy
 	do parser8.thene() |a8| {
 		match eval(a0, a1, a2, a3, a4, a5, a6, a7, a8)
 		{
-			result::Ok(value) =>
+			result::Ok(ref value) =>
 			{
-				ret(value)
+				ret(*value)
 			}
 			result::Err(mesg) =>
 			{
@@ -899,14 +899,14 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			{
 				match chain_suffix(self, op)(pass.new_state)
 				{
-					result::Ok(pass2) =>
+					result::Ok(ref pass2) =>
 					{
 						let value = vec::foldl(pass.value, *pass2.value, |lhs: T, rhs: (U, T)| {eval(lhs, rhs.first(), rhs.second())});
 						result::Ok(Succeeded {new_state: pass2.new_state, value: value})
 					}
-					result::Err(failure) =>
+					result::Err(ref failure) =>
 					{
-						result::Err(Failed {old_state: input, ..failure})
+						result::Err(Failed {old_state: input, ..*failure})
 					}
 				}
 			}
@@ -922,7 +922,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			{
 				match chain_suffix(self, op)(pass.new_state)
 				{
-					result::Ok(pass2) =>
+					result::Ok(ref pass2) =>
 					{
 						if vec::is_not_empty(*pass2.value)
 						{
@@ -948,9 +948,9 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 							result::Ok(Succeeded {new_state: pass2.new_state, value: pass.value})
 						}
 					}
-					result::Err(failure) =>
+					result::Err(ref failure) =>
 					{
-						result::Err(Failed {old_state: input ,.. failure})
+						result::Err(Failed {old_state: input ,.. *failure})
 					}
 				}
 			}
@@ -1001,13 +1001,13 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			{
 				match term(pass.new_state)
 				{
-					result::Ok(pass2) =>
+					result::Ok(ref pass2) =>
 					{
-						result::Ok(Succeeded {value: @(~[pass.value] + *pass2.value), ..pass2})
+						result::Ok(Succeeded {value: @(~[pass.value] + *pass2.value), ..*pass2})
 					}
-					result::Err(failure) =>
+					result::Err(ref failure) =>
 					{
-						result::Err(Failed {old_state: input, ..failure})
+						result::Err(Failed {old_state: input, ..*failure})
 					}
 				}
 			}
@@ -1022,7 +1022,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 		{
 			match self(input)
 			{
-				result::Ok(pass) =>
+				result::Ok(ref pass) =>
 				{
 					// Note that we make multiple calls to munge_chars which is fairly slow, but
 					// we only do that when actually logging: when info or debug logging is off
@@ -1038,9 +1038,9 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 						info!("%s", munge_chars(input.text));
 						info!("%s^ %s passed", repeat_char(' ', pass.new_state.index), mesg);
 					}
-					result::Ok(pass)
+					result::Ok(*pass)
 				}
-				result::Err(failure) =>
+				result::Err(ref failure) =>
 				{
 					assert failure.old_state.index == input.index;			// on errors the next parser must begin at the start
 					assert failure.err_state.index >= input.index;			// errors can't be before the input
@@ -1054,7 +1054,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 					{
 						debug!("%s^ %s failed", repeat_char('-', input.index), mesg);
 					}
-					result::Err(failure)
+					result::Err(*failure)
 				}
 			}
 		}
@@ -1066,11 +1066,11 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 		{
 			match self(input)
 			{
-				result::Ok(pass) =>
+				result::Ok(ref pass) =>
 				{
 					result::Ok(Succeeded {new_state: pass.new_state, value: option::Some(pass.value)})
 				}
-				result::Err(_failure) =>
+				result::Err(ref _failure) =>
 				{
 					result::Ok(Succeeded {new_state: input, value: option::None})
 				}
@@ -1111,11 +1111,11 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 		let input = State {file: file, text: chars, index: 0u, line: 1};
 		match self(input)
 		{
-			result::Ok(pass) =>
+			result::Ok(ref pass) =>
 			{
 				result::Ok(pass.value)
 			}
-			result::Err(failure) =>
+			result::Err(ref failure) =>
 			{
 				let col = get_col(chars, failure.err_state.index);
 				result::Err(ParseFailed {file: failure.old_state.file, line: failure.err_state.line as uint, col: col, mesg: failure.mesg})
@@ -1133,7 +1133,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			{
 				match self(output)
 				{
-					result::Ok(pass) =>
+					result::Ok(ref pass) =>
 					{
 						assert pass.new_state.index > output.index;	// must make progress to ensure loop termination
 						output = pass.new_state;
@@ -1262,13 +1262,13 @@ impl &str : GenericParsers
 		{
 			match s.lit()(input)
 			{
-				result::Ok(pass) =>
+				result::Ok(ref pass) =>
 				{
 					result::Ok(Succeeded {new_state: pass.new_state, value: value})
 				}
-				result::Err(failure) =>
+				result::Err(ref failure) =>
 				{
-					result::Err(failure)
+					result::Err(*failure)
 				}
 			}
 		}

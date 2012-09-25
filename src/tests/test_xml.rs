@@ -52,13 +52,13 @@ fn check_xml_ok(inText: &str, expected: &str, parser: Parser<Xml>) -> bool
 	let text = chars_with_eot(inText);
 	match parser(State {file: @~"unit test", text: text, index: 0u, line: 1,})
 	{
-		result::Ok(pass) =>
+		result::Ok(ref pass) =>
 		{
 			check_ok(&result::Ok(Succeeded {new_state: pass.new_state, value: @pass.value.to_str()}), &@expected.to_unique())
 		}
-		result::Err(failure) =>
+		result::Err(ref failure) =>
 		{
-			check_ok_strs(&result::Err(failure), expected)
+			check_ok_strs(&result::Err(*failure), expected)
 		}
 	}
 }
