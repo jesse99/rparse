@@ -17,11 +17,11 @@
 
 extern mod std;
 
-mod c99_parsers;
-mod misc;
-mod parsers;
-mod rparse;
-mod types;
+pub mod c99_parsers;
+pub mod misc;
+pub mod parsers;
+pub mod rparse;
+pub mod types;
 
 #[cfg(test)]
 mod tests

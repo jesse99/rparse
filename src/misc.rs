@@ -1,9 +1,9 @@
 //! Various utility functions. 
 //!
 //! Clients should not need to use these.
-const EOT: char = '\u0003';
+pub const EOT: char = '\u0003';
 
-pure fn at_connect(v: &[@~str], sep: &str) -> ~str
+pub pure fn at_connect(v: &[@~str], sep: &str) -> ~str
 {
 	let mut s = ~"", first = true;
 	for vec::each(v) |ss|
@@ -15,7 +15,7 @@ pure fn at_connect(v: &[@~str], sep: &str) -> ~str
 }
 
 /// Converts a string to an array of char and appends an EOT character.
-fn chars_with_eot(s: &str) -> @[char]
+pub fn chars_with_eot(s: &str) -> @[char]
 {
 	do core::at_vec::build_sized(s.len() + 1)
 	|push|
@@ -34,37 +34,37 @@ fn chars_with_eot(s: &str) -> @[char]
 }
 
 /// Returns true if ch is in [a-zA-Z].
-pure fn is_alpha(ch: char) -> bool
+pub pure fn is_alpha(ch: char) -> bool
 {
 	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
 /// Returns true if ch is in [0-9].
-pure fn is_digit(ch: char) -> bool
+pub pure fn is_digit(ch: char) -> bool
 {
 	return ch >= '0' && ch <= '9';
 }
 
 /// Returns true if ch is_alpha or is_digit.
-pure fn is_alphanum(ch: char) -> bool
+pub pure fn is_alphanum(ch: char) -> bool
 {
 	return is_alpha(ch) || is_digit(ch);
 }
 
 /// Returns true if ch is 7-bit ASCII and not a control character.
-pure fn is_print(ch: char) -> bool
+pub pure fn is_print(ch: char) -> bool
 {
 	return ch >= ' ' && ch <= '~';
 }
 
 /// Returns true if ch is ' ', '\t', '\r', or '\n'.
-pure fn is_whitespace(ch: char) -> bool
+pub pure fn is_whitespace(ch: char) -> bool
 {
 	return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
 }
 
 /// Returns ch as lower case.
-pure fn lower_char(ch: char) -> char
+pub pure fn lower_char(ch: char) -> char
 {
 	if ch >= 'A' && ch <= 'Z'
 	{
@@ -77,7 +77,7 @@ pure fn lower_char(ch: char) -> char
 }
 
 /// Returns a string with count ch characters.
-fn repeat_char(ch: char, count: uint) -> ~str
+pub fn repeat_char(ch: char, count: uint) -> ~str
 {
 	let mut value = ~"";
 	str::reserve(&mut value, count);
@@ -86,7 +86,7 @@ fn repeat_char(ch: char, count: uint) -> ~str
 }
 
 #[doc(hidden)]
-fn get_col(text: @[char], index: uint) -> uint
+pub fn get_col(text: @[char], index: uint) -> uint
 {
 	let mut i = index;
 	
@@ -103,7 +103,7 @@ fn get_col(text: @[char], index: uint) -> uint
 // the right character).
 
 /// Replaces non-is_print characters with '.'."
-fn munge_chars(chars: @[char]) -> ~str
+pub fn munge_chars(chars: @[char]) -> ~str
 {
 	// TODO: I'd like to use bullet here, but while io::println handles it correctly
 	// the logging subsystem does not. See issue 2154.
