@@ -8,8 +8,8 @@ pure fn at_connect(v: &[@~str], sep: &str) -> ~str
 	let mut s = ~"", first = true;
 	for vec::each(v) |ss|
 	{
-		if first {first = false;} else {unsafe {str::push_str(s, sep);}}
-		unsafe {str::push_str(s, **ss)};
+		if first {first = false;} else {unsafe {str::push_str(&mut s, sep);}}
+		unsafe {str::push_str(&mut s, **ss)};
 	}
 	return s;
 }
@@ -80,8 +80,8 @@ pure fn lower_char(ch: char) -> char
 fn repeat_char(ch: char, count: uint) -> ~str
 {
 	let mut value = ~"";
-	str::reserve(value, count);
-	for uint::range(0u, count) |_i| { str::push_char(value, ch);}
+	str::reserve(&mut value, count);
+	for uint::range(0u, count) |_i| { str::push_char(&mut value, ch);}
 	return value;
 }
 
@@ -111,7 +111,7 @@ fn munge_chars(chars: @[char]) -> ~str
 	let bullet = '.';
 	
 	let mut value = ~"";
-	str::reserve(value, vec::len(chars));
-	for vec::each(chars) |ch| { str::push_char(value, if is_print(*ch) {*ch} else {bullet});}
+	str::reserve(&mut value, vec::len(chars));
+	for vec::each(chars) |ch| { str::push_char(&mut value, if is_print(*ch) {*ch} else {bullet});}
 	return value;
 }

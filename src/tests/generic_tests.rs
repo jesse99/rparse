@@ -28,7 +28,7 @@ fn parse_digit() -> Parser<int>
 		let ch = input.text[input.index];
 		if ch >= '0' && ch <= '9'
 		{
-			let value = option::get(char::to_digit(ch, 10u)) as int;
+			let value = option::get(&char::to_digit(ch, 10u)) as int;
 			result::Ok(Succeeded {new_state: State {index: input.index + 1u ,.. input}, value: value})
 		}
 		else
@@ -238,7 +238,7 @@ fn test_or_v()
 	
 	let text = chars_with_eot("bz");
 	let result = p(State {file: @~"unit test", text: text, index: 0u, line: 1});
-	assert result::get_err(result).old_state.index == 0u;
+	assert result::get_err(&result).old_state.index == 0u;
 }
 
 #[test]
@@ -300,7 +300,7 @@ fn test_then()
 	
 	let text = chars_with_eot("<foo-");
 	let result = p(State {file: @~"unit test", text: text, index: 0u, line: 1});
-	assert result::get_err(result).old_state.index == 0u;	// if any of the then clauses fails we need to start over
+	assert result::get_err(&result).old_state.index == 0u;	// if any of the then clauses fails we need to start over
 }
 
 #[test]
@@ -316,9 +316,9 @@ fn test_thene()
 	
 	let text = chars_with_eot("~9");
 	let result = p(State {file: @~"unit test", text: text, index: 0u, line: 1});
-	assert result::get_err(result).old_state.index == 0u;	// simple case where parse_unary fails
+	assert result::get_err(&result).old_state.index == 0u;	// simple case where parse_unary fails
 	
 	let text = chars_with_eot("--");
 	let result = p(State {file: @~"unit test", text: text, index: 0u, line: 1});
-	assert result::get_err(result).old_state.index == 0u;	// if parse_num fails we need to start over
+	assert result::get_err(&result).old_state.index == 0u;	// if parse_num fails we need to start over
 }

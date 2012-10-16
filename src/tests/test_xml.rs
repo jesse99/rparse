@@ -17,7 +17,7 @@ enum Xml
 
 impl  Xml : ToStr 
 {
-	fn to_str() -> ~str
+	pure fn to_str() -> ~str
 	{
 		match self
 		{
@@ -40,7 +40,7 @@ impl  Xml : ToStr
 
 impl  Attribute : ToStr 
 {
-	fn to_str() -> ~str
+	pure fn to_str() -> ~str
 	{
 		return fmt!("%s = \"%s\"", *self.name, *self.value);
 	}

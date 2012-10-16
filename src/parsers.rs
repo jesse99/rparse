@@ -478,7 +478,7 @@ fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
 		let mut errors = ~[];
 		let mut max_index = uint::max_value;
 		let mut i = 0u;
-		while i < vec::len(*parsers) && option::is_none(result)
+		while i < vec::len(*parsers) && option::is_none(&result)
 		{
 			match parsers[i](input)
 			{
@@ -495,20 +495,20 @@ fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
 					}
 					else if failure.err_state.index == max_index
 					{
-						vec::push(errors, failure.mesg);
+						vec::push(&mut errors, failure.mesg);
 					}
 				}
 			}
 			i += 1u;
 		}
 		
-		if option::is_some(result)
+		if option::is_some(&result)
 		{
-			option::get(result)
+			option::get(&result)
 		}
 		else
 		{
-			let errs = do vec::filter(errors) |s| {str::is_not_empty(*s)};
+			let errs = do vec::filter(errors) |s| {str::is_not_empty(**s)};
 			let mesg = at_connect(errs, ~" or ");
 			result::Err(Failed {old_state: input, err_state: State {index: max_index, ..input}, mesg: @mesg})
 		}
@@ -901,7 +901,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 				{
 					result::Ok(ref pass2) =>
 					{
-						let value = vec::foldl(pass.value, *pass2.value, |lhs: T, rhs: (U, T)| {eval(lhs, rhs.first(), rhs.second())});
+						let value = vec::foldl(pass.value, *pass2.value, |lhs: T, rhs: &(U, T)| {eval(lhs, rhs.first(), rhs.second())});
 						result::Ok(Succeeded {new_state: pass2.new_state, value: value})
 					}
 					result::Err(ref failure) =>
@@ -940,7 +940,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 							// [(e1 op1), (e2 op2)] and e3
 							let terms = vec::zip(parsers, ops);
 							
-							let value = vec::foldr(terms, e3, {|&&lhs: (T, U), &&rhs| eval(lhs.first(), lhs.second(), rhs)});
+							let value = vec::foldr(terms, e3, {|lhs: &(T, U), rhs| eval(lhs.first(), lhs.second(), rhs)});
 							result::Ok(Succeeded {new_state: pass2.new_state, value: value})
 						}
 						else
@@ -1137,7 +1137,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 					{
 						assert pass.new_state.index > output.index;	// must make progress to ensure loop termination
 						output = pass.new_state;
-						vec::push(values, pass.value);
+						vec::push(&mut values, pass.value);
 					}
 					result::Err(_) =>
 					{
@@ -1213,7 +1213,7 @@ impl<T: Copy Owned> Parser<T> : Combinators<T>
 			do result::chain(self.s0()(input))
 			|pass|
 			{
-				if option::is_some(str::find_char(" \t\r\n", input.text[pass.new_state.index - 1u]))	// little cheesy, but saves us from adding a helper fn
+				if option::is_some(&str::find_char(" \t\r\n", input.text[pass.new_state.index - 1u]))	// little cheesy, but saves us from adding a helper fn
 				{
 					result::Ok(pass)
 				}
