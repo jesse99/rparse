@@ -1,4 +1,4 @@
-Built with: 6b670c306b8de545afcbcea81bcd592c644409d7
+Built with: 39c0d3591e0326874b7263a621ce09ecd64f0eb2 (0.4)
 
 * Might want to replace list wih sepBy functions (see parsec3).
 * Update web page
