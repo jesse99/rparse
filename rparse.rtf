@@ -12,13 +12,13 @@
 
 \f0\b\fs48 char parsers
 \fs36 \
-\pard\pardeftab480\pardirnatural
 
 \f2\i\b0\fs32 \cf3 /// Consumes a character which must satisfy the predicate.
 \i0 \cf0 \
 
 \i \cf3 /// Returns the matched character.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -63,7 +63,6 @@
 
 \f0\b\fs48 \cf0 str parsers
 \fs36 \
-\pard\pardeftab480\pardirnatural
 
 \f2\i\b0\fs32 \cf3 /// Consumes zero or more characters matching the predicate.
 \i0 \cf0 \
@@ -76,6 +75,7 @@
 
 \i \cf3 /// Note that this does not increment line.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -86,6 +86,7 @@
 \b \cf4 fn
 \b0 \cf0 @ (\cf5 char\cf0 ) -> \cf5 bool\cf0 ) -> Parser<@~\cf5 str\cf0 >\
 \
+\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// Consumes one or more characters matching the predicate.
 \i0 \cf0 \
@@ -98,6 +99,7 @@
 
 \i \cf3 /// Note that this does not increment line.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -114,6 +116,7 @@
 
 \f2\i\fs32 \cf3 /// match1_0 := prefix+ suffix*
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -127,8 +130,7 @@
 \i0 \cf0  
 \b \cf4 fn
 \b0 \cf0 @ (\cf5 char\cf0 ) -> \cf5 bool\cf0 ) -> Parser<@~\cf5 str\cf0 >\
-\pard\pardeftab480\pardirnatural
-\cf0 \
+\
 \pard\pardeftab480\pardirnatural
 
 \i \cf3 /// optional_str := e?
@@ -160,19 +162,18 @@
 
 \i \cf3 /// This does increment line.  Note that this succeeds even if zero characters are matched.
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \i \cf3 ///
 \i0 \cf0 \
 
 \i \cf3 /// 
-\i0\b \cf3 fn
-\b0 \cf3  \ul to_new_line\ulnone (chars: @[
-\b \cf3 char
-\b0 \cf3 ], index: 
-\b \cf3 uint
-\b0 \cf3 ) -> 
-\b \cf3 uint
+\i0\b fn
+\b0  \ul to_new_line\ulnone (chars: @[
+\b char
+\b0 ], index: 
+\b uint
+\b0 ) -> 
+\b uint
 \b0 \cf0 \
 
 \i \cf3 /// 
@@ -180,12 +181,12 @@
 
 \i \cf3 ///  
 \i0    
-\b \cf3 let
-\b0 \cf3  mut i = index;\cf0 \
+\b let
+\b0  mut i = index;\cf0 \
 
 \i \cf3 ///  
 \i0    
-\b \cf3 loop
+\b loop
 \b0 \cf0 \
 
 \i \cf3 ///  
@@ -199,26 +200,26 @@
 
 \i \cf3 ///  
 \i0        
-\b \cf3 if
-\b0 \cf3  chars[i] == EOT\cf0 \
+\b if
+\b0  chars[i] == EOT\cf0 \
 
 \i \cf3 ///  
 \i0        \{\cf0 \
 
 \i \cf3 ///  
 \i0            
-\b \cf3 return
-\b0 \cf3  0;\cf0 \
+\b return
+\b0  0;\cf0 \
 
 \i \cf3 ///  
 \i0        \}\cf0 \
 
 \i \cf3 ///  
 \i0        
-\b \cf3 else
-\b0 \cf3  
-\b \cf3 if
-\b0 \cf3  chars[i] == '\\r' || chars[i] == '\\n'\cf0 \
+\b else
+\b0  
+\b if
+\b0  chars[i] == '\\r' || chars[i] == '\\n'\cf0 \
 
 \i \cf3 ///  
 \i0        \{\cf0 \
@@ -234,7 +235,7 @@
 
 \i \cf3 ///  
 \i0        
-\b \cf3 else
+\b else
 \b0 \cf0 \
 
 \i \cf3 ///  
@@ -268,6 +269,7 @@
 
 \f2\i\fs32 \cf3 /// If all the parsers are successful then the matched text is returned.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -396,10 +398,10 @@
 \pard\pardeftab480\pardirnatural
 
 \f0\b\fs48 \cf0 generic parsers\
-\pard\pardeftab480\pardirnatural
 
 \f2\i\b0\fs32 \cf3 /// Returns a parser which always fails.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -410,44 +412,44 @@
 \i \cf4 mesg:
 \i0 \cf0  &\cf5 str\cf0 ) -> Parser<T>\
 \
+\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// Parses with the aid of a pointer to a parser (useful for things like parenthesized expressions).
 \i0 \cf0 \
-\pard\pardeftab480\pardirnatural
 
 \i\b \cf3 ///
 \i0\b0 \cf0 \
 
 \i\b \cf3 /// 
-\b0 \cf3 // create a pointer that we can initialize later with the real expr parser
+\b0 // create a pointer that we can initialize later with the real expr parser
 \i0 \cf0 \
 
 \i\b \cf3 /// 
 \i0 let
-\b0 \cf3  expr_ptr = @
-\b \cf3 mut
-\b0 \cf3  ret(0i);\cf0 \
+\b0  expr_ptr = @
+\b mut
+\b0  ret(0i);\cf0 \
 
 \i\b \cf3 /// 
 \i0 let
-\b0 \cf3  expr_ref = forward_ref(expr_ptr);\cf0 \
+\b0  expr_ref = forward_ref(expr_ptr);\cf0 \
 
 \i\b \cf3 /// 
 \i0\b0 \cf0 \
 
 \i\b \cf3 /// 
-\b0 \cf3 // expr_ref can be used to parse expressions
+\b0 // expr_ref can be used to parse expressions
 \i0 \cf0 \
 
 \i\b \cf3 /// 
 \i0\b0 \cf0 \
 
 \i\b \cf3 /// 
-\b0 \cf3 // initialize the expr_ptr with the real parser
+\b0 // initialize the expr_ptr with the real parser
 \i0 \cf0 \
 
 \i\b \cf3 /// 
-\i0\b0 \cf3 *expr_ptr = expr;\cf0 \
+\i0\b0 *expr_ptr = expr;\cf0 \
 \pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
@@ -461,6 +463,7 @@
 \b \cf4 mut
 \b0 \cf0  Parser<T>) -> Parser<T>\
 \
+\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// or_v := e0 | e1 | \'85
 \i0 \cf0 \
@@ -470,6 +473,7 @@
 
 \i \cf3 /// This is a version of or that is nicer to use when there are more than two alternatives.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -480,9 +484,11 @@
 \i \cf4 parsers:
 \i0 \cf0  @~[Parser<T>]) -> Parser<T>\
 \
+\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// Returns a parser which always succeeds, but does not consume any input.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -493,9 +499,11 @@
 \i \cf4 value:
 \i0 \cf0  T) -> Parser<T>\
 \
+\pard\pardeftab480\pardirnatural
 
 \i \cf3 /// seqN := e0 e1 ... eN
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -506,7 +514,16 @@
 \i \cf4 T1
 \i0 \cf0 , 
 \i \cf4 R
-\i0 \cf0 >\
+\i0 \cf0 >(
+\i \cf4 parser0:
+\i0 \cf0  Parser<T0>, 
+\i \cf4 parser1:
+\i0 \cf0  Parser<T1>, 
+\i \cf4 eval:
+\i0 \cf0  
+\b \cf4 fn
+\b0 \cf0 @ (T0, T1) -> result::Result<R, @~\cf5 str\cf0 >) -> Parser<R>\
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -759,6 +776,7 @@
 
 \f2\i\fs32 \cf3 /// seq parsers that return the nth result
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1231,7 +1249,6 @@ fn
 \pard\pardeftab480\pardirnatural
 
 \f0\b\fs48 \cf0 C99 parsers\
-\pard\pardeftab480\pardirnatural
 
 \f2\i\b0\fs32 \cf3 /// identifier := [a-zA-Z_] [a-zA-Z0-9_]*
 \i0 \cf0 \
@@ -1241,6 +1258,7 @@ fn
 
 \i \cf3 /// Note that match1_0 can be used to easily implement custom identifier parsers.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1262,6 +1280,7 @@ fn
 
 \i \cf3 /// but we do so to make this parser more reusable.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1274,6 +1293,7 @@ fn
 
 \f2\i\fs32 \cf3 /// octal_number := 0 [0-7]*
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1286,6 +1306,7 @@ fn
 
 \f2\i\fs32 \cf3 /// hex_number := 0[xX] [0-9a-fA-F]+
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1313,6 +1334,7 @@ fn
 
 \i \cf3 /// exponent := [eE] [+-]? [0-9]+
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1334,6 +1356,7 @@ fn
 
 \i \cf3 /// c_char_sequence := escape_sequence
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1355,6 +1378,7 @@ fn
 
 \i \cf3 /// s_char := escape_sequence
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1373,6 +1397,7 @@ fn
 
 \i \cf3 /// Note that these do not nest.
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
@@ -1385,6 +1410,7 @@ fn
 
 \f2\i\fs32 \cf3 /// line_comment := '//' [^\\r\\n]*
 \i0 \cf0 \
+\pard\pardeftab480\pardirnatural
 
 \b \cf4 fn
 \b0 \cf0  
