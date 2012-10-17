@@ -40,10 +40,10 @@ dist: lib
 # setting an executable's name, but not libraries).
 .PHONY : lib
 lib:
-	$(RUSTC) --lib --out-dir bin -O src/crate.rc
+	$(RUSTC) --lib --out-dir bin -O src/rparse.rc
 
-bin/test-rparse: src/crate.rc src/*.rs src/tests/*.rs
+bin/test-rparse: src/rparse.rc src/*.rs src/tests/*.rs
 	$(RUSTC) --test -o $@ $<
 
-bin/test-rparse-release: src/crate.rc src/*.rs src/tests/*.rs
+bin/test-rparse-release: src/rparse.rc src/*.rs src/tests/*.rs
 	$(RUSTC) --test -O -o $@ $<

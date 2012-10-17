@@ -1,8 +1,5 @@
 //! Functions that can be used to parse C99 lexical elements (or with languages
 //! that have similar lexical elements).
-use misc::*;
-use parsers::*;
-use types::Parser;
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
 

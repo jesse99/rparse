@@ -3,8 +3,6 @@
 //! These can be divided into parsers that return chars, strings, and generic Ts.
 // TODO: probably should use individual modules for these, but the dependencies
 // are painful (see https://github.com/mozilla/rust/issues/3352).
-use misc::*;
-use types::{Parser, State, Status, Succeeded, Failed};
 
 /// Return type of parse function.
 pub type ParseStatus<T: Copy Owned> = result::Result<T, ParseFailed>;

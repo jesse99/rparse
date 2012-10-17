@@ -1,5 +1,4 @@
 //! Types used by all parse functions.
-use Result = result::Result;
 
 // TODO: should be able to get rid of all the owned bounds once
 // https://github.com/mozilla/rust/issues/2992 is fixed
