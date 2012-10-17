@@ -8,12 +8,12 @@ The parse functions all take a state record as input containing the text to be p
 has been parsed. They return a result that is either passed or failed. If passed the result includes a new 
 state record and a generic T value. If failed the result consists of the input state and an error string.
 
-The library has been tested with Rust from github as of Sep 1 2012 (i.e. pre 0.4).
+The library has been tested with Rust 0.4.
 
 ## Example
 Here is an example of a simple parser which can be used to evaluate mathematical expressions.
 
-    use rparse::rparse::*;
+    use rparse::*;    // but see https://github.com/mozilla/rust/issues/3781
     
     fn expr_parser() -> Parser<int>
     {
