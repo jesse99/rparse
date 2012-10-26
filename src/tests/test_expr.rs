@@ -15,21 +15,22 @@ fn expr_parser() -> Parser<int>
 	
 	// sub_expr := [-+]? '(' expr ')'
 	// The err function provides better error messages if the factor parser fails
-	// on the very first character.
-	let sub_expr = or_v(@~[
-		seq4_ret2("+".s0(), "(".s0(), expr_ref, ")".s0()),
-		seq4_ret2("-".s0(),  "(".s0(), expr_ref, ")".s0()).thene(|v| ret(-v) ),
-		seq3_ret1(               "(".s0(), expr_ref, ")".s0())]).err("sub-expression");
+	// on the very first character. The bitshift operators are overloaded to
+	// return the value of the parser they point to.
+	let sub_expr =
+		("+".s0() >> "(".s0() >> expr_ref << ")".s0() |
+		("-".s0() >> "(".s0() >> expr_ref << ")".s0()).thene(|v| ret(-v) ) |
+		(                  "(".s0() >> expr_ref << ")".s0())).err("sub-expression");
 	
 	// factor := integer | sub_expr
-	let factor = int_literal.or(sub_expr);
+	let factor = int_literal | sub_expr;
 	
 	// term := factor ([*/] factor)*
-	let term = do factor.chainl1("*".s0().or("/".s0()))
+	let term = do factor.chainl1("*".s0() | "/".s0())
 		|lhs, op, rhs| {if op == @~"*" {lhs*rhs} else {lhs/rhs}};
 	
 	// expr := term ([+-] term)*
-	let expr = term.chainl1("+".s0().or("-".s0()),
+	let expr = term.chainl1("+".s0() | "-".s0(),
 		|lhs, op, rhs| {if op == @~"+" {lhs + rhs} else {lhs - rhs}}).err("expression");
 	*expr_ptr = expr;
 	

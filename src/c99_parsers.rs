@@ -59,7 +59,7 @@ pub fn octal_number() -> Parser<int>
 /// hex_number := 0[xX] [0-9a-fA-F]+
 pub fn hex_number() -> Parser<int>
 {
-	let prefix = "0".lit().then("x".lit().or("X".lit()));
+	let prefix = "0".lit().then("x".lit() | "X".lit());
 	let digits = do match1(is_hex).thene()
 			|text| {
 			match from_base_16(*text)
@@ -75,7 +75,7 @@ pub fn hex_number() -> Parser<int>
 			}
 		};
 	
-	seq2_ret1(prefix, digits)
+	prefix >> digits
 }
 
 /// float_number := float1 | float2 | float3
@@ -92,7 +92,7 @@ pub fn float_number() -> Parser<f64>
 	let float2 = seq3_ret_str(match1(is_digit), ".".lit(), exponent.optional()).err("");
 	let float3 = seq2_ret_str(match1(is_digit), exponent).err("");
 	
-	let number = or_v(@~[float1, float2, float3]);
+	let number = float1 | float2 | float3;
 	
 	do number.thene()
 		|text| {
@@ -112,9 +112,9 @@ pub fn char_literal() -> Parser<char>
 	// We don't support the [LuU] prefix (so the parser is reusable in other contexts).
 	let case1 = "'\n\r\\".noc().err("");
 	let case2 = escape_sequence().err("escape character");
-	let char_sequence = case1.or(case2);
+	let char_sequence = case1 | case2;
 	
-	seq3_ret1("'".lit(), char_sequence, "'".lit())
+	"'".lit() >> char_sequence << "'".lit()
 }
 
 /// string_literal := '\"' s_char* '\"'
@@ -126,10 +126,10 @@ pub fn string_literal() -> Parser<@~str>
 	// We don't support the encoding prefix (so the parser is reusable in other contexts).
 	let case1 = "\"\n\r\\".noc().err("");
 	let case2 = escape_sequence().err("escape character");
-	let s_char = case1.or(case2);
+	let s_char = case1 | case2;
 	let body = do s_char.r0().thene() |chars| { ret(@str::from_chars(*chars))};
 	
-	seq3_ret1("\"".lit(), body, "\"".lit())
+	"\"".lit() >> body << "\"".lit()
 }
 
 /// comment := '/*' ([^*] | '*' [^/])* '*/'
@@ -158,7 +158,7 @@ pub fn comment() -> Parser<@~str>
 	}
 	
 	let body = scan(comment_body);
-	seq3_ret1("/*".lit(), body, "*/".lit())
+	"/*".lit() >> body << "*/".lit()
 }
 
 /// line_comment := '//' [^\r\n]*
@@ -181,7 +181,7 @@ pub fn line_comment() -> Parser<@~str>
 	}
 	
 	let body = scan(comment_body);
-	seq2_ret1("//".lit(), body)
+	"//".lit() >> body
 }
 
 // ---- Helpers ---------------------------------------------------------------
@@ -352,18 +352,18 @@ fn escape_sequence() -> Parser<char>
 	let escape = do "'\"?abfnrtv\\".anyc().thene()
 		|ch| {ret(escape_to_char(ch))};
 	
-	let case1 = seq2_ret1("\\".lit(), escape);
-	let case2 = seq2_ret1("\\".lit(), octal_digits().thene(|n| ret(n as char) ));
-	let case3 = seq2_ret1("\\x".lit(), hex_digits().thene(|n| ret(n as char) ));
+	let case1 = "\\".lit() >> escape;
+	let case2 = ("\\".lit() >> octal_digits().thene(|n| ret(n as char) ));
+	let case3 = ("\\x".lit() >> hex_digits().thene(|n| ret(n as char) ));
 	let case4 = universal_character_name();
-	or_v(@~[case1, case2, case3, case4]).err("")
+	(case1 | case2 | case3 | case4).err("")
 }
 
 // universal-character-name := '\\u' hex-digit{4}
 // universal-character-name := '\\U' hex-digit{8}
 fn universal_character_name() -> Parser<char>
 {
-	seq3_ret2("\\".lit(), "uU".anyc(), hex_digits()).thene(|n| ret(n as char) )
+	("\\".lit() >> "uU".anyc() >> hex_digits()).thene(|n| ret(n as char) )
 }
 
 

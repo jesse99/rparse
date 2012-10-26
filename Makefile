@@ -11,10 +11,10 @@ all: parser
 parser: lib
 
 check: bin/test-rparse
-	export RUST_LOG=rparse=1 && ./bin/test-rparse
+	export RUST_LOG=rparse=1 && ./bin/test-rparse 
 
 check1: bin/test-rparse
-	export RUST_LOG=rparse=3 && ./bin/test-rparse test_expr::test_expr
+	export RUST_LOG=rparse=3 && ./bin/test-rparse test_simple_element
 
 # Run unit tests with optimizations enabled (which is how we build the lib).
 check-release: bin/test-rparse-release
@@ -27,7 +27,7 @@ clean:
 	rm -rf bin
 	
 dist: lib
-	tar --create --compress --exclude \*/.git --exclude \*/.git/\* --file=rparse-0.6.tar.gz \
+	tar --create --compress --exclude \*/.git --exclude \*/.git/\* --file=rparse-0.7.tar.gz \
 		CHANGES MIT.X11 Makefile README.md rparse.rtf src
 
 # ------------------

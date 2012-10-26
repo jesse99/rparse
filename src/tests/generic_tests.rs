@@ -56,7 +56,7 @@ fn parse_num(op: char) -> Parser<int>
 fn test_chainl1()
 {
 	let factor = parse_digit();
-	let op = "*".lit().or("/".lit());
+	let op = "*".lit() | "/".lit();
 	let p = factor.chainl1(op, |lhs, op, rhs| if op == @~"*" {lhs * rhs} else {lhs / rhs} );
 	
 	assert check_int_ok("2", p, 2);
@@ -70,7 +70,7 @@ fn test_chainl1()
 fn test_chainr1()
 {
 	let factor = parse_digit();
-	let op = "*".lit().or("/".lit());
+	let op = "*".lit() | "/".lit();
 	let p = factor.chainr1(op, |lhs, op, rhs| if op == @~"*" {lhs * rhs} else {lhs / rhs} );
 	
 	assert check_int_ok("2", p, 2);
@@ -228,7 +228,7 @@ fn test_optional()
 #[test]
 fn test_or_v()
 {
-	let p = or_v(@~["a".lit(), "bb".lit(), "c".lit()]);
+	let p = "a".lit() | "bb".lit() | "c".lit();
 	
 	assert check_str_ok("a", p, "a");
 	assert check_str_ok("bb", p, "bb");

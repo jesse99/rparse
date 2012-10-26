@@ -12,7 +12,7 @@ pub struct ParseFailed {file: @~str, line: uint, col: uint, mesg: @~str}
 
 // ---- weird parsers -----------------------------------------------------------------------------
 // Returns a parser which matches the end of the input.
-// Clients should use everything instead of this.
+// Clients should use the everything function instead of this.
 #[doc(hidden)]
 pub fn eot() -> Parser<()>
 {
@@ -461,63 +461,167 @@ pub fn forward_ref<T: Copy Owned>(parser: @mut Parser<T>) -> Parser<T>
 	|input: State| (*parser)(input)
 }
 
-/// or_v := e0 | e1 | …
-/// 
-/// This is a version of or that is nicer to use when there are more than two alternatives.
-pub fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
+/// Returns a parser which always succeeds, but does not consume any input.
+#[allow(deprecated_mode)]		// TODO: probably need to use &T instead
+pub pure fn ret<T: Copy Owned>(value: T) -> Parser<T>
 {
-	// A recursive algorithm would be a lot simpler, but it's not clear how that could
-	// produce good error messages.
-	assert vec::is_not_empty(*parsers);
-	
-	|input: State|
+	|input: State| result::Ok(Succeeded {new_state: input, value: value})
+}
+
+/// Parse either parser and return the value for the first that parsed.
+pub impl<T: Copy Owned> Parser<T> : ops::BitOr<Parser<T>, Parser<T>>
+{
+	pure fn bitor(rhs: &Parser<T>) -> Parser<T>
 	{
-		let mut result: Option<Status<T>> = None;
-		let mut errors = ~[];
-		let mut max_index = uint::max_value;
-		let mut i = 0u;
-		while i < vec::len(*parsers) && option::is_none(&result)
+		let r = *rhs;			// can't use rhs within the closure so need to dereference and copy the fn ptr
+		|input: State|
 		{
-			match parsers[i](input)
+			match self(input)
 			{
-				result::Ok(ref pass) =>
+				result::Ok(ref pass1) =>
 				{
-					result = option::Some(result::Ok(*pass));
+					result::Ok(Succeeded {new_state: pass1.new_state, value: pass1.value})
 				}
-				result::Err(ref failure) =>
+				result::Err(ref failure1) =>
 				{
-					if failure.err_state.index > max_index || max_index == uint::max_value
+					match r(input)
 					{
-						errors = ~[failure.mesg];
-						max_index = failure.err_state.index;
-					}
-					else if failure.err_state.index == max_index
-					{
-						vec::push(&mut errors, failure.mesg);
+						result::Ok(ref pass2) =>
+						{
+							result::Ok(Succeeded {new_state: pass2.new_state, value: pass2.value})
+						}
+						result::Err(ref failure2) =>
+						{
+							if failure1.err_state.index > failure2.err_state.index
+							{
+								result::Err(Failed {old_state: input, ..*failure1})
+							}
+							else if failure1.err_state.index < failure2.err_state.index
+							{
+								result::Err(Failed {old_state: input, ..*failure2})
+							}
+							else
+							{
+								let mesg =
+									if failure1.mesg.is_not_empty() && failure2.mesg.is_not_empty()
+									{
+										@fmt!("%s or %s", *failure1.mesg, *failure2.mesg)
+									}
+									else if failure1.mesg.is_not_empty()
+									{
+										failure1.mesg
+									}
+									else
+									{
+										failure2.mesg
+									};
+								result::Err(Failed {old_state: input, mesg: mesg, ..*failure2})
+							}
+						}
 					}
 				}
 			}
-			i += 1u;
-		}
-		
-		if option::is_some(&result)
-		{
-			option::get(&result)
-		}
-		else
-		{
-			let errs = do vec::filter(errors) |s| {str::is_not_empty(**s)};
-			let mesg = at_connect(errs, ~" or ");
-			result::Err(Failed {old_state: input, err_state: State {index: max_index, ..input}, mesg: @mesg})
 		}
 	}
 }
 
-/// Returns a parser which always succeeds, but does not consume any input.
-#[allow(deprecated_mode)]		// TODO: probably need to use &T instead
-pub fn ret<T: Copy Owned>(value: T) -> Parser<T>
+/// Sequences two parsers and returns the result of both.
+pub impl<T: Copy Owned, U: Copy Owned> Parser<T> : ops::BitAnd<Parser<U>, Parser<(T, U)>>
 {
-	|input: State| result::Ok(Succeeded {new_state: input, value: value})
+	pure fn bitand(rhs: &Parser<U>) -> Parser<(T, U)>
+	{
+		let r = *rhs;			// can't use rhs within the closure so need to dereference and copy the fn ptr
+		|input: State|
+		{
+			match self(input)
+			{
+				result::Ok(ref pass1) =>
+				{
+					match r(pass1.new_state)
+					{
+						result::Ok(ref pass2) =>
+						{
+							result::Ok(Succeeded {new_state: pass2.new_state, value: (pass1.value, pass2.value)})
+						}
+						result::Err(ref failure2) =>
+						{
+							result::Err(Failed {old_state: input, ..*failure2})
+						}
+					}
+				}
+				result::Err(ref failure1) =>
+				{
+					result::Err(Failed {old_state: input, ..*failure1})
+				}
+			}
+		}
+	}
+}
+
+/// Sequences two parsers and returns the result of the right parser.
+pub impl<T: Copy Owned, U: Copy Owned> Parser<T> : ops::Shr<Parser<U>, Parser<U>>
+{
+	pure fn shr(rhs: &Parser<U>) -> Parser<U>
+	{
+		let r = *rhs;
+		|input: State|
+		{
+			match self(input)
+			{
+				result::Ok(ref pass1) =>
+				{
+					match r(pass1.new_state)
+					{
+						result::Ok(ref pass2) =>
+						{
+							result::Ok(Succeeded {new_state: pass2.new_state, value: pass2.value})
+						}
+						result::Err(ref failure2) =>
+						{
+							result::Err(Failed {old_state: input, ..*failure2})
+						}
+					}
+				}
+				result::Err(ref failure1) =>
+				{
+					result::Err(Failed {old_state: input, ..*failure1})
+				}
+			}
+		}
+	}
+}
+
+/// Sequences two parsers and returns the result of the left parser.
+pub impl<T: Copy Owned, U: Copy Owned> Parser<T> : ops::Shl<Parser<U>, Parser<T>>
+{
+	pure fn shl(rhs: &Parser<U>) -> Parser<T>
+	{
+		let r = *rhs;
+		|input: State|
+		{
+			match self(input)
+			{
+				result::Ok(ref pass1) =>
+				{
+					match r(pass1.new_state)
+					{
+						result::Ok(ref pass2) =>
+						{
+							result::Ok(Succeeded {new_state: pass2.new_state, value: pass1.value})
+						}
+						result::Err(ref failure2) =>
+						{
+							result::Err(Failed {old_state: input, ..*failure2})
+						}
+					}
+				}
+				result::Err(ref failure1) =>
+				{
+					result::Err(Failed {old_state: input, ..*failure1})
+				}
+			}
+		}
+	}
 }
 
 /// seq2 := e0 e1
@@ -708,60 +812,6 @@ pub fn seq9<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: 
 	}}}}}}}}}
 }
 
-/// seq2_ret0 := e0 e1
-pub fn seq2_ret0<T0: Copy Owned, T1: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<T0>
-{
-	seq2(p0, p1, |a0, _a1| result::Ok(a0))
-}
-
-/// seq2_ret1 := e0 e1
-pub fn seq2_ret1<T0: Copy Owned, T1: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<T1>
-{
-	seq2(p0, p1, |_a0, a1| result::Ok(a1))
-}
-
-/// seq3_ret0 := e0 e1 e2
-pub fn seq3_ret0<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T0>
-{
-	seq3(p0, p1, p2, |a0, _a1, _a2| result::Ok(a0))
-}
-
-/// seq3_ret1 := e0 e1 e2
-pub fn seq3_ret1<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T1>
-{
-	seq3(p0, p1, p2, |_a0, a1, _a2| result::Ok(a1))
-}
-
-/// seq3_ret2 := e0 e1 e2
-pub fn seq3_ret2<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T2>
-{
-	seq3(p0, p1, p2, |_a0, _a1, a2| result::Ok(a2))
-}
-
-/// seq4_ret0 := e0 e1 e2 e3
-pub fn seq4_ret0<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T0>
-{
-	seq4(p0, p1, p2, p3, |a0, _a1, _a2, _a3| result::Ok(a0))
-}
-
-/// seq4_ret1 := e0 e1 e2 e3
-pub fn seq4_ret1<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T1>
-{
-	seq4(p0, p1, p2, p3, |_a0, a1, _a2, _a3| result::Ok(a1))
-}
-
-/// seq4_ret2 := e0 e1 e2 e3
-pub fn seq4_ret2<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T2>
-{
-	seq4(p0, p1, p2, p3, |_a0, _a1, a2, _a3| result::Ok(a2))
-}
-
-/// seq4_ret3 := e0 e1 e2 e3
-pub fn seq4_ret3<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T3>
-{
-	seq4(p0, p1, p2, p3, |_a0, _a1, _a2, a3| result::Ok(a3))
-}
-
 // chain_suffix := (op e)*
 #[doc(hidden)]
 pub fn chain_suffix<T: Copy Owned, U: Copy Owned>(parser: Parser<T>, op: Parser<U>) -> Parser<@~[(U, T)]>
@@ -849,9 +899,6 @@ pub trait Combinators<T: Copy Owned>
 	
 	/// optional := e?
 	fn optional() -> Parser<Option<T>>;
-	
-	/// Returns a parser which first tries parser1, and if that fails, parser2.
-	fn or(parser2: Parser<T>) -> Parser<T>;
 	
 	/// Uses parser to parse text. Also see everything method.
 	fn parse(file: @~str, text: &str) -> ParseStatus<T>;
@@ -985,7 +1032,8 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 	
 	fn everything<U: Copy Owned>(space: Parser<U>) -> Parser<T>
 	{
-		seq3_ret1(space, self, eot())
+		seq3(space, self, eot(), |_a0, a1, _a2| result::Ok(a1))
+//		space >> self << eot()
 	}
 	
 	fn list<U: Copy Owned>(sep: Parser<U>) -> Parser<@~[T]>
@@ -1071,33 +1119,6 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 				result::Err(ref _failure) =>
 				{
 					result::Ok(Succeeded {new_state: input, value: option::None})
-				}
-			}
-		}
-	}
-	
-	fn or(parser2: Parser<T>) -> Parser<T>
-	{
-		|input: State|
-		{
-			do result::chain_err(self(input))
-			|failure1|
-			{
-				do result::chain_err(parser2(input))
-				|failure2|
-				{
-					if failure1.err_state.index > failure2.err_state.index
-					{
-						result::Err(failure1)
-					}
-					else if failure1.err_state.index < failure2.err_state.index
-					{
-						result::Err(failure2)
-					}
-					else
-					{
-						result::Err(Failed {mesg: or_mesg(failure1.mesg, failure2.mesg), ..failure2})
-					}
 				}
 			}
 		}
