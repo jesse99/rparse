@@ -1032,8 +1032,8 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 	
 	fn everything<U: Copy Owned>(space: Parser<U>) -> Parser<T>
 	{
-		seq3(space, self, eot(), |_a0, a1, _a2| result::Ok(a1))
-//		space >> self << eot()
+//		seq3(space, self, eot(), |_a0, a1, _a2| result::Ok(a1))
+		space >> self << eot()
 	}
 	
 	fn list<U: Copy Owned>(sep: Parser<U>) -> Parser<@~[T]>
