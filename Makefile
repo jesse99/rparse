@@ -21,7 +21,7 @@ check-release: bin/test-rparse-release
 	export RUST_LOG=rparse=1 && ./bin/test-rparse-release
 
 install:
-	install `find bin -name "librparse*" -type f -maxdepth 1` /usr/local/lib/rust/
+	install `find bin -maxdepth 1 -name "librparse*" -type f` /usr/local/lib/rust/
 
 clean:
 	rm -rf bin
