@@ -3,9 +3,10 @@
 //! These can be divided into parsers that return chars, strings, and generic Ts.
 // TODO: probably should use individual modules for these, but the dependencies
 // are painful (see https://github.com/mozilla/rust/issues/3352).
+use core::str::CharRange;
 
 /// Return type of parse function.
-pub type ParseStatus<T: Copy Owned> = result::Result<T, ParseFailed>;
+pub type ParseStatus<T: Copy Durable> = result::Result<T, ParseFailed>;
 
 /// Returned by parse function on error. Line and col are both 1-based.
 pub struct ParseFailed {file: @~str, line: uint, col: uint, mesg: @~str}
@@ -68,7 +69,7 @@ pub impl &str : CharParsers
 	{
 		// Note that we're handing this string off to a closure so we can't get rid of this copy
 		// even if we make the impl on ~str.
-		let s = self.to_unique();
+		let s = self.to_owned();
 		
 		|input: State|
 		{
@@ -91,7 +92,7 @@ pub impl &str : CharParsers
 	
 	fn noc() -> Parser<char>
 	{
-		let s = self.to_unique();
+		let s = self.to_owned();
 		
 		|input: State|
 		{
@@ -260,7 +261,7 @@ pub fn scan(fun: fn@ (@[char], uint) -> uint) -> Parser<@~str>
 
 
 /// If all the parsers are successful then the matched text is returned.
-pub fn seq2_ret_str<T0: Copy Owned, T1: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<@~str>
+pub fn seq2_ret_str<T0: Copy Durable, T1: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<@~str>
 {
 	|input: State|
 	{
@@ -280,7 +281,7 @@ pub fn seq2_ret_str<T0: Copy Owned, T1: Copy Owned>(p0: Parser<T0>, p1: Parser<T
 }
 
 /// If all the parsers are successful then the matched text is returned.
-pub fn seq3_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<@~str>
+pub fn seq3_ret_str<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<@~str>
 {
 	|input: State|
 	{
@@ -300,7 +301,7 @@ pub fn seq3_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T
 }
 
 /// If all the parsers are successful then the matched text is returned.
-pub fn seq4_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<@~str>
+pub fn seq4_ret_str<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<@~str>
 {
 	|input: State| {
 		match p0.then(p1). then(p2).then(p3)(input)
@@ -319,7 +320,7 @@ pub fn seq4_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Own
 }
 
 /// If all the parsers are successful then the matched text is returned.
-pub fn seq5_ret_str<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>, p4: Parser<T4>) -> Parser<@~str>
+pub fn seq5_ret_str<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable, T4: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>, p4: Parser<T4>) -> Parser<@~str>
 {
 	|input: State| {
 		match p0.then(p1). then(p2).then(p3).then(p4)(input)
@@ -357,7 +358,7 @@ pub impl &str : StringParsers
 {
 	fn lit() -> Parser<@~str>
 	{
-		let s = self.to_unique();
+		let s = self.to_owned();
 		
 		|input: State|
 		{
@@ -365,7 +366,7 @@ pub impl &str : StringParsers
 			let mut j = input.index;
 			while i < str::len(s)
 			{
-				let {ch, next} = str::char_range_at(s, i);
+				let CharRange {ch, next} = str::char_range_at(s, i);
 				if ch == input.text[j]
 				{
 					i = next;
@@ -399,7 +400,7 @@ pub impl &str : StringParsers
 			let mut j = input.index;
 			while i < str::len(s)
 			{
-				let {ch, next} = str::char_range_at(s, i);
+				let CharRange {ch, next} = str::char_range_at(s, i);
 				if ch == lower_char(input.text[j])
 				{
 					i = next;
@@ -436,9 +437,9 @@ pub impl &str : StringParsers
 
 // ---- generic parsers ---------------------------------------------------------------------------
 /// Returns a parser which always fails.
-pub fn fails<T: Copy Owned>(mesg: &str) -> Parser<T>
+pub fn fails<T: Copy Durable>(mesg: &str) -> Parser<T>
 {
-	let mesg = mesg.to_unique();
+	let mesg = mesg.to_owned();
 	|input: State| result::Err(Failed {old_state: input, err_state: input, mesg: @copy mesg})
 }
 
@@ -456,7 +457,7 @@ pub fn fails<T: Copy Owned>(mesg: &str) -> Parser<T>
 /// // initialize the expr_ptr with the real parser
 /// *expr_ptr = expr;
 /// ~~~
-pub fn forward_ref<T: Copy Owned>(parser: @mut Parser<T>) -> Parser<T>
+pub fn forward_ref<T: Copy Durable>(parser: @mut Parser<T>) -> Parser<T>
 {
 	|input: State| (*parser)(input)
 }
@@ -464,7 +465,7 @@ pub fn forward_ref<T: Copy Owned>(parser: @mut Parser<T>) -> Parser<T>
 /// or_v := e0 | e1 | …
 /// 
 /// This is a version of or that is nicer to use when there are more than two alternatives.
-pub fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
+pub fn or_v<T: Copy Durable>(parsers: @~[Parser<T>]) -> Parser<T>
 {
 	// A recursive algorithm would be a lot simpler, but it's not clear how that could
 	// produce good error messages.
@@ -502,7 +503,7 @@ pub fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
 		
 		if option::is_some(&result)
 		{
-			option::get(&result)
+			option::get(result)
 		}
 		else
 		{
@@ -515,13 +516,13 @@ pub fn or_v<T: Copy Owned>(parsers: @~[Parser<T>]) -> Parser<T>
 
 /// Returns a parser which always succeeds, but does not consume any input.
 #[allow(deprecated_mode)]		// TODO: probably need to use &T instead
-pub fn ret<T: Copy Owned>(value: T) -> Parser<T>
+pub fn ret<T: Copy Durable>(value: T) -> Parser<T>
 {
 	|input: State| result::Ok(Succeeded {new_state: input, value: value})
 }
 
 /// seq2 := e0 e1
-pub fn seq2<T0: Copy Owned, T1: Copy Owned, R: Copy Owned>
+pub fn seq2<T0: Copy Durable, T1: Copy Durable, R: Copy Durable>
 	(parser0: Parser<T0>, parser1: Parser<T1>, eval: fn@ (T0, T1) -> result::Result<R, @~str>) -> Parser<R>
 {
 	do parser0.thene() |a0| {
@@ -541,7 +542,7 @@ pub fn seq2<T0: Copy Owned, T1: Copy Owned, R: Copy Owned>
 }
 
 /// seq3 := e0 e1 e2
-pub fn seq3<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, R: Copy Owned>
+pub fn seq3<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, R: Copy Durable>
 	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, eval: fn@ (T0, T1, T2) -> result::Result<R, @~str>) -> Parser<R>
 {
 	do parser0.thene() |a0| {
@@ -562,7 +563,7 @@ pub fn seq3<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, R: Copy Owned>
 }
 
 /// seq4 := e0 e1 e2 e3
-pub fn seq4<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, R: Copy Owned>
+pub fn seq4<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable, R: Copy Durable>
 	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, eval: fn@ (T0, T1, T2, T3) -> result::Result<R, @~str>) -> Parser<R>
 {
 	do parser0.thene() |a0| {
@@ -584,7 +585,7 @@ pub fn seq4<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, R: C
 }
 
 /// seq5 := e0 e1 e2 e3 e4
-pub fn seq5<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy Owned, R: Copy Owned>
+pub fn seq5<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable, T4: Copy Durable, R: Copy Durable>
 	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, eval: fn@ (T0, T1, T2, T3, T4) -> result::Result<R, @~str>) -> Parser<R>
 {
 	do parser0.thene() |a0| {
@@ -607,7 +608,7 @@ pub fn seq5<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: 
 }
 
 /// seq6 := e0 e1 e2 e3 e4 e5
-pub fn seq6<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy Owned, T5: Copy Owned, R: Copy Owned>
+pub fn seq6<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable, T4: Copy Durable, T5: Copy Durable, R: Copy Durable>
 	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, parser5: Parser<T5>, eval: fn@ (T0, T1, T2, T3, T4, T5) -> result::Result<R, @~str>) -> Parser<R>
 {
 	do parser0.thene() |a0| {
@@ -631,7 +632,7 @@ pub fn seq6<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: 
 }
 
 /// seq7 := e0 e1 e2 e3 e4 e5 e6
-pub fn seq7<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy Owned, T5: Copy Owned, T6: Copy Owned, R: Copy Owned>
+pub fn seq7<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable, T4: Copy Durable, T5: Copy Durable, T6: Copy Durable, R: Copy Durable>
 	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, parser5: Parser<T5>, parser6: Parser<T6>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6) -> result::Result<R, @~str>) -> Parser<R>
 {
 	do parser0.thene() |a0| {
@@ -656,7 +657,7 @@ pub fn seq7<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: 
 }
 
 /// seq8 := e0 e1 e2 e3 e4 e5 e6 e7
-pub fn seq8<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy Owned, T5: Copy Owned, T6: Copy Owned, T7: Copy Owned, R: Copy Owned>
+pub fn seq8<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable, T4: Copy Durable, T5: Copy Durable, T6: Copy Durable, T7: Copy Durable, R: Copy Durable>
 	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, parser5: Parser<T5>, parser6: Parser<T6>, parser7: Parser<T7>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7) -> result::Result<R, @~str>) -> Parser<R>
 {
 	do parser0.thene() |a0| {
@@ -682,7 +683,7 @@ pub fn seq8<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: 
 }
 
 /// seq9 := e0 e1 e2 e3 e4 e5 e6 e7 e8
-pub fn seq9<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: Copy Owned, T5: Copy Owned, T6: Copy Owned, T7: Copy Owned, T8: Copy Owned, R: Copy Owned>
+pub fn seq9<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable, T4: Copy Durable, T5: Copy Durable, T6: Copy Durable, T7: Copy Durable, T8: Copy Durable, R: Copy Durable>
 	(parser0: Parser<T0>, parser1: Parser<T1>, parser2: Parser<T2>, parser3: Parser<T3>, parser4: Parser<T4>, parser5: Parser<T5>, parser6: Parser<T6>, parser7: Parser<T7>, parser8: Parser<T8>, eval: fn@ (T0, T1, T2, T3, T4, T5, T6, T7, T8) -> result::Result<R, @~str>) -> Parser<R>
 {
 	do parser0.thene() |a0| {
@@ -709,62 +710,62 @@ pub fn seq9<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned, T4: 
 }
 
 /// seq2_ret0 := e0 e1
-pub fn seq2_ret0<T0: Copy Owned, T1: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<T0>
+pub fn seq2_ret0<T0: Copy Durable, T1: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<T0>
 {
 	seq2(p0, p1, |a0, _a1| result::Ok(a0))
 }
 
 /// seq2_ret1 := e0 e1
-pub fn seq2_ret1<T0: Copy Owned, T1: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<T1>
+pub fn seq2_ret1<T0: Copy Durable, T1: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>) -> Parser<T1>
 {
 	seq2(p0, p1, |_a0, a1| result::Ok(a1))
 }
 
 /// seq3_ret0 := e0 e1 e2
-pub fn seq3_ret0<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T0>
+pub fn seq3_ret0<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T0>
 {
 	seq3(p0, p1, p2, |a0, _a1, _a2| result::Ok(a0))
 }
 
 /// seq3_ret1 := e0 e1 e2
-pub fn seq3_ret1<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T1>
+pub fn seq3_ret1<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T1>
 {
 	seq3(p0, p1, p2, |_a0, a1, _a2| result::Ok(a1))
 }
 
 /// seq3_ret2 := e0 e1 e2
-pub fn seq3_ret2<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T2>
+pub fn seq3_ret2<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>) -> Parser<T2>
 {
 	seq3(p0, p1, p2, |_a0, _a1, a2| result::Ok(a2))
 }
 
 /// seq4_ret0 := e0 e1 e2 e3
-pub fn seq4_ret0<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T0>
+pub fn seq4_ret0<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T0>
 {
 	seq4(p0, p1, p2, p3, |a0, _a1, _a2, _a3| result::Ok(a0))
 }
 
 /// seq4_ret1 := e0 e1 e2 e3
-pub fn seq4_ret1<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T1>
+pub fn seq4_ret1<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T1>
 {
 	seq4(p0, p1, p2, p3, |_a0, a1, _a2, _a3| result::Ok(a1))
 }
 
 /// seq4_ret2 := e0 e1 e2 e3
-pub fn seq4_ret2<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T2>
+pub fn seq4_ret2<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T2>
 {
 	seq4(p0, p1, p2, p3, |_a0, _a1, a2, _a3| result::Ok(a2))
 }
 
 /// seq4_ret3 := e0 e1 e2 e3
-pub fn seq4_ret3<T0: Copy Owned, T1: Copy Owned, T2: Copy Owned, T3: Copy Owned>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T3>
+pub fn seq4_ret3<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Copy Durable>(p0: Parser<T0>, p1: Parser<T1>, p2: Parser<T2>, p3: Parser<T3>) -> Parser<T3>
 {
 	seq4(p0, p1, p2, p3, |_a0, _a1, _a2, a3| result::Ok(a3))
 }
 
 // chain_suffix := (op e)*
 #[doc(hidden)]
-pub fn chain_suffix<T: Copy Owned, U: Copy Owned>(parser: Parser<T>, op: Parser<U>) -> Parser<@~[(U, T)]>
+pub fn chain_suffix<T: Copy Durable, U: Copy Durable>(parser: Parser<T>, op: Parser<U>) -> Parser<@~[(U, T)]>
 {
 	let q = op.thene(
 	|operator|
@@ -805,23 +806,23 @@ pub fn or_mesg(mesg1: @~str, mesg2: @~str) -> @~str
 pub trait GenericParsers
 {
 	/// Returns value if input matches s. Also see lit.
-	fn litv<T: Copy Owned>(value: T) -> Parser<T>;
+	fn litv<T: Copy Durable>(value: T) -> Parser<T>;
 }
 
 /// Parse methods used to compose parsers.
 ///
 /// Note that these don't actually consume input (although the parsers they are invoked with normally will).
-pub trait Combinators<T: Copy Owned>
+pub trait Combinators<T: Copy Durable>
 {
 	/// chainl1 := e (op e)*
 	/// 
 	/// Left associative binary operator. eval is called for each parsed op.
-	fn chainl1<U: Copy Owned>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
+	fn chainl1<U: Copy Durable>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
 	
 	/// chainr1 := e (op e)*
 	/// 
 	/// Right associative binary operator. eval is called for each parsed op.
-	fn chainr1<U: Copy Owned>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
+	fn chainr1<U: Copy Durable>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
 	
 	/// Like note except that the mesg is also used for error reporting.
 	/// 
@@ -834,12 +835,12 @@ pub trait Combinators<T: Copy Owned>
 	/// 
 	/// This is typically used in conjunction with the parse method. Note that space has to have the
 	/// same type as parser which is backwards from how it is normally used.
-	fn everything<U: Copy Owned>(space: Parser<U>) -> Parser<T>;
+	fn everything<U: Copy Durable>(space: Parser<U>) -> Parser<T>;
 	
 	/// list := e (sep e)*
 	/// 
 	/// Values for each parsed e are returned.
-	fn list<U: Copy Owned>(sep: Parser<U>) -> Parser<@~[T]>;
+	fn list<U: Copy Durable>(sep: Parser<U>) -> Parser<@~[T]>;
 	
 	/// Logs the result of the previous parser.
 	/// 
@@ -877,18 +878,18 @@ pub trait Combinators<T: Copy Owned>
 	
 	/// If parser1 is successful is successful then parser2 is called (and the value from parser1
 	/// is ignored). If parser1 fails parser2 is not called.
-	fn then<U: Copy Owned>(parser2: Parser<U>) -> Parser<U>;
+	fn then<U: Copy Durable>(parser2: Parser<U>) -> Parser<U>;
 	
 	/// If parser is successful then the function returned by eval is called
 	/// with parser's result. If parser fails eval is not called.
 	/// 
 	/// Often used to translate parsed values: `p().thene({|pvalue| return(2*pvalue)})`
-	fn thene<U: Copy Owned>(eval: fn@ (T) -> Parser<U>) -> Parser<U>;
+	fn thene<U: Copy Durable>(eval: fn@ (T) -> Parser<U>) -> Parser<U>;
 }
 
-pub impl<T: Copy Owned> Parser<T> : Combinators<T>
+pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 {
-	fn chainl1<U: Copy Owned>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
+	fn chainl1<U: Copy Durable>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
 	{
 		|input: State|
 		{
@@ -911,7 +912,7 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn chainr1<U: Copy Owned>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
+	fn chainr1<U: Copy Durable>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
 	{
 		|input: State|
 		{
@@ -957,7 +958,7 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 	
 	fn err(label: &str) -> Parser<T>
 	{
-		let label = label.to_unique();
+		let label = label.to_owned();
 		
 		|input: State|
 		{
@@ -983,12 +984,12 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn everything<U: Copy Owned>(space: Parser<U>) -> Parser<T>
+	fn everything<U: Copy Durable>(space: Parser<U>) -> Parser<T>
 	{
 		seq3_ret1(space, self, eot())
 	}
 	
-	fn list<U: Copy Owned>(sep: Parser<U>) -> Parser<@~[T]>
+	fn list<U: Copy Durable>(sep: Parser<U>) -> Parser<@~[T]>
 	{
 		let term = sep.then(self).r0();
 		
@@ -1014,7 +1015,7 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 	
 	fn note(mesg: &str) -> Parser<T>
 	{
-		let mesg = mesg.to_unique();
+		let mesg = mesg.to_owned();
 		
 		|input: State|
 		{
@@ -1223,7 +1224,7 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn then<U: Copy Owned>(parser2: Parser<U>) -> Parser<U>
+	fn then<U: Copy Durable>(parser2: Parser<U>) -> Parser<U>
 	{
 		|input: State|
 		{
@@ -1236,7 +1237,7 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn thene<U: Copy Owned>(eval: fn@ (T) -> Parser<U>) -> Parser<U>
+	fn thene<U: Copy Durable>(eval: fn@ (T) -> Parser<U>) -> Parser<U>
 	{
 		|input: State|
 		{
@@ -1252,9 +1253,9 @@ pub impl<T: Copy Owned> Parser<T> : Combinators<T>
 
 impl &str : GenericParsers
 {
-	fn litv<T: Copy Owned>(value: T) -> Parser<T>
+	fn litv<T: Copy Durable>(value: T) -> Parser<T>
 	{
-		let s = self.to_unique();
+		let s = self.to_owned();
 		
 		|input: State|
 		{

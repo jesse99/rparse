@@ -1,6 +1,6 @@
 use misc::*;
 use parsers::*;
-use test_helpers::*;
+use tests::test_helpers::*;
 
 #[test]
 fn test_anycp()

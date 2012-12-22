@@ -5,7 +5,7 @@
 use c99_parsers::*;
 use parsers::*;
 use result::*;
-use test_helpers::*;
+use tests::test_helpers::*;
 
 struct Attribute {name: @~str, value: @~str}
 
@@ -54,7 +54,7 @@ fn check_xml_ok(inText: &str, expected: &str, parser: Parser<Xml>) -> bool
 	{
 		result::Ok(ref pass) =>
 		{
-			check_ok(&result::Ok(Succeeded {new_state: pass.new_state, value: @pass.value.to_str()}), &@expected.to_unique())
+			check_ok(&result::Ok(Succeeded {new_state: pass.new_state, value: @pass.value.to_str()}), &@expected.to_owned())
 		}
 		result::Err(ref failure) =>
 		{

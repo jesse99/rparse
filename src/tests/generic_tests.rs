@@ -1,6 +1,6 @@
 use misc::*;
 use parsers::*;
-use test_helpers::*;
+use tests::test_helpers::*;
 
 // Usually these would be written using then, but we are using this
 // to test then and don't want to confuse things by testing then 
@@ -28,7 +28,7 @@ fn parse_digit() -> Parser<int>
 		let ch = input.text[input.index];
 		if ch >= '0' && ch <= '9'
 		{
-			let value = option::get(&char::to_digit(ch, 10u)) as int;
+			let value = option::get(char::to_digit(ch, 10u)) as int;
 			result::Ok(Succeeded {new_state: State {index: input.index + 1u ,.. input}, value: value})
 		}
 		else

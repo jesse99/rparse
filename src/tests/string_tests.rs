@@ -1,6 +1,6 @@
 use misc::*;
 use parsers::*;
-use test_helpers::*;
+use tests::test_helpers::*;
 
 // [^"]*
 fn string_body(chars: @[char], index: uint) -> uint

@@ -17,10 +17,16 @@
 
 extern mod std;
 
+use Result = result::Result;
+
+pub use c99_parsers::*;
+pub use misc::*;
+pub use parsers::*;
+pub use types::*;
+
 pub mod c99_parsers;
 pub mod misc;
 pub mod parsers;
-pub mod rparse;
 pub mod types;
 
 #[cfg(test)]

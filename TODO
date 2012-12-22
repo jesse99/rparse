@@ -4,6 +4,7 @@ Built with: 39c0d3591e0326874b7263a621ce09ecd64f0eb2 (0.4)
 * Update web page
 * Talk about info and debug logging.
 
+* Note and err should not print all of the input.
 * Would be more efficient to use char_range_at instead of converting the text to [char]
 	- is this true given that we want to add EOT? could rely on the embedded null char
 	- getting the col might be a little icky because that requires going backwards

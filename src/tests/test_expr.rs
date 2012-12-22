@@ -1,7 +1,7 @@
 // Test a grammar capable of evaluating simple mathematical expressions.
 use c99_parsers::*;
 use parsers::*;
-use test_helpers::*;
+use tests::test_helpers::*;
 
 fn expr_parser() -> Parser<int>
 {
