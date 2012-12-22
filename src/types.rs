@@ -1,6 +1,6 @@
 //! Types used by all parse functions.
 
-// TODO: should be able to get rid of all the owned bounds once
+// TODO: should be able to get rid of all the Durable bounds once
 // https://github.com/mozilla/rust/issues/2992 is fixed
 
 /// Type for parse functions.
