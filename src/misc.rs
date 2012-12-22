@@ -1,6 +1,8 @@
 //! Various utility functions. 
 //!
 //! Clients should not need to use these.
+use core::str::CharRange;
+
 pub const EOT: char = '\u0003';
 
 pub pure fn at_connect(v: &[@~str], sep: &str) -> ~str
@@ -24,7 +26,7 @@ pub fn chars_with_eot(s: &str) -> @[char]
 		let len = str::len(s);
 		while i < len
 		{
-			let {ch, next} = str::char_range_at(s, i);
+			let CharRange {ch, next} = str::char_range_at(s, i);
 			assert next > i;
 			push(ch);
 			i = next;

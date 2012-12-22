@@ -90,7 +90,7 @@ fn check_str_array_failed(inText: &str, parser: Parser<@~[@~str]>, expected: &st
 }
 
 // ---- Private Functions -----------------------------------------------------
-fn check_ok<T: Copy Owned cmp::Eq>(result: &Status<T>, expected: &T) -> bool
+fn check_ok<T: Copy Durable cmp::Eq>(result: &Status<T>, expected: &T) -> bool
 {
 	match *result
 	{
@@ -117,7 +117,7 @@ fn check_ok_strs(result: &Status<@~str>, expected: &str) -> bool
 	{
 		result::Ok(ref pass) =>
 		{
-			if *pass.value != expected.to_unique()
+			if *pass.value != expected.to_owned()
 			{
 				io::stderr().write_line(fmt!("Expected %? but found %?", expected, pass.value));
 				return false;
@@ -153,25 +153,25 @@ fn check_ok_str_arrays(result: &Status<@~[@~str]>, expected: @~[@~str]) -> bool
 	}
 }
 
-fn check_failed<T: Copy Owned>(result: &Status<T>, expected: &str, line: int) -> bool
+fn check_failed<T: Copy Durable>(result: &Status<T>, expected: &str, line: int) -> bool
 {
 	match *result
 	{
 		result::Ok(ref pass) =>
 		{
-			io::stderr().write_line(fmt!("Expected error '%s' but found %?", expected.to_unique(), pass.value));
+			io::stderr().write_line(fmt!("Expected error '%s' but found %?", expected.to_owned(), pass.value));
 			return false;
 		}
 		result::Err(ref failure) =>
 		{
-			if !str::eq(failure.mesg, &expected.to_unique())
+			if !str::eq(failure.mesg, &expected.to_owned())
 			{
-				io::stderr().write_line(fmt!("Expected error '%s' but found error '%s'", expected.to_unique(), *failure.mesg));
+				io::stderr().write_line(fmt!("Expected error '%s' but found error '%s'", expected.to_owned(), *failure.mesg));
 				return false;
 			}
 			if failure.err_state.line != line
 			{
-				io::stderr().write_line(fmt!("Expected error '%s' on line %d but line is %d", expected.to_unique(), line, failure.err_state.line));
+				io::stderr().write_line(fmt!("Expected error '%s' on line %d but line is %d", expected.to_owned(), line, failure.err_state.line));
 				return false;
 			}
 			return true;

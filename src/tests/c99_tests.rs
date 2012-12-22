@@ -1,5 +1,5 @@
 use c99_parsers::*;
-use test_helpers::*;
+use tests::test_helpers::*;
 
 #[test]
 fn test_identifier()
