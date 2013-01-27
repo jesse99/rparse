@@ -5,6 +5,9 @@
 // are painful (see https://github.com/mozilla/rust/issues/3352).
 use core::str::CharRange;
 
+use misc::*;
+use types::*;
+
 /// Return type of parse function.
 pub type ParseStatus<T: Copy Durable> = result::Result<T, ParseFailed>;
 
@@ -469,7 +472,7 @@ pub fn or_v<T: Copy Durable>(parsers: @~[Parser<T>]) -> Parser<T>
 {
 	// A recursive algorithm would be a lot simpler, but it's not clear how that could
 	// produce good error messages.
-	assert vec::is_not_empty(*parsers);
+	assert !vec::is_empty(*parsers);
 	
 	|input: State|
 	{
@@ -507,7 +510,7 @@ pub fn or_v<T: Copy Durable>(parsers: @~[Parser<T>]) -> Parser<T>
 		}
 		else
 		{
-			let errs = do vec::filter(errors) |s| {str::is_not_empty(**s)};
+			let errs = do vec::filter(errors) |s| {!str::is_empty(**s)};
 			let mesg = at_connect(errs, ~" or ");
 			result::Err(Failed {old_state: input, err_state: State {index: max_index, ..input}, mesg: @mesg})
 		}
@@ -784,15 +787,15 @@ pub fn chain_suffix<T: Copy Durable, U: Copy Durable>(parser: Parser<T>, op: Par
 #[doc(hidden)]
 pub fn or_mesg(mesg1: @~str, mesg2: @~str) -> @~str
 {
-	if str::is_not_empty(*mesg1) && str::is_not_empty(*mesg2)
+	if !str::is_empty(*mesg1) && !str::is_empty(*mesg2)
 	{
 		@(*mesg1 + " or " + *mesg2)
 	}
-	else if str::is_not_empty(*mesg1)
+	else if !str::is_empty(*mesg1)
 	{
 		mesg1
 	}
-	else if str::is_not_empty(*mesg2)
+	else if !str::is_empty(*mesg2)
 	{
 		mesg2
 	}
@@ -923,7 +926,7 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 				{
 					result::Ok(ref pass2) =>
 					{
-						if vec::is_not_empty(*pass2.value)
+						if !vec::is_empty(*pass2.value)
 						{
 							// e1 and [(op1 e2), (op2 e3)]
 							let e1 = pass.value;
