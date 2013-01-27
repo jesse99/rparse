@@ -19,7 +19,7 @@ pub pure fn at_connect(v: &[@~str], sep: &str) -> ~str
 /// Converts a string to an array of char and appends an EOT character.
 pub fn chars_with_eot(s: &str) -> @[char]
 {
-	do core::at_vec::build_sized(s.len() + 1)
+	do at_vec::build_sized(s.len() + 1)
 	|push|
 	{
 		let mut i = 0u;

@@ -3,6 +3,10 @@
 
 // See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1539.pdf
 
+use misc::*;
+use parsers::*;
+use types::*;
+
 /// identifier := [a-zA-Z_] [a-zA-Z0-9_]*
 /// 
 /// Note that match1_0 can be used to easily implement custom identifier parsers.
@@ -96,9 +100,9 @@ pub fn float_number() -> Parser<f64>
 	
 	do number.thene()
 		|text| {
-                        do str::as_c_str(*text)
-                        |ptr| {
-				ret(libc::strtod(ptr, ptr::null()) as f64)
+			do str::as_c_str(*text) |ptr|
+			{
+				unsafe { ret(libc::strtod(ptr, ptr::null()) as f64) }
 			}
 		}
 }
