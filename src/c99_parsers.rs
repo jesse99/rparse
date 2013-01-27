@@ -100,9 +100,9 @@ pub fn float_number() -> Parser<f64>
 	
 	do number.thene()
 		|text| {
-                        do str::as_c_str(*text)
-                        |ptr| {
-				ret(libc::strtod(ptr, ptr::null()) as f64)
+			do str::as_c_str(*text) |ptr|
+			{
+				unsafe { ret(libc::strtod(ptr, ptr::null()) as f64) }
 			}
 		}
 }
