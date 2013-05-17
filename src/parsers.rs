@@ -5,6 +5,9 @@
 // are painful (see https://github.com/mozilla/rust/issues/3352).
 use core::str::CharRange;
 
+use misc::*;
+use types::*;
+
 /// Return type of parse function.
 pub type ParseStatus<T: Copy Durable> = result::Result<T, ParseFailed>;
 
@@ -57,15 +60,15 @@ pub fn anycp(predicate: fn@ (char) -> bool) -> Parser<char>
 pub trait CharParsers
 {
 	/// Attempts to match any character in self. If matched the char is returned.
-	fn anyc() -> Parser<char>;
+	fn anyc(&self) -> Parser<char>;
 	
 	/// Attempts to match no character in self. If matched the char is returned.
-	fn noc() -> Parser<char>;
+	fn noc(&self) -> Parser<char>;
 }
 
 pub impl &str : CharParsers
 {
-	fn anyc() -> Parser<char>
+	fn anyc(&self) -> Parser<char>
 	{
 		// Note that we're handing this string off to a closure so we can't get rid of this copy
 		// even if we make the impl on ~str.
@@ -90,7 +93,7 @@ pub impl &str : CharParsers
 		}
 	}
 	
-	fn noc() -> Parser<char>
+	fn noc(&self) -> Parser<char>
 	{
 		let s = self.to_owned();
 		
@@ -342,21 +345,21 @@ pub fn seq5_ret_str<T0: Copy Durable, T1: Copy Durable, T2: Copy Durable, T3: Co
 pub trait StringParsers
 {
 	/// Returns the input that matches self. Also see liti and litv.
-	fn lit() -> Parser<@~str>;
+	fn lit(&self) -> Parser<@~str>;
 	
 	/// Returns the input that matches lower-cased self. Also see lit and litv.
-	fn liti() -> Parser<@~str>;
+	fn liti(&self) -> Parser<@~str>;
 	
 	/// s0 := e [ \t\r\n]*
-	fn s0() -> Parser<@~str>;
+	fn s0(&self) -> Parser<@~str>;
 	
 	/// s1 := e [ \t\r\n]+
-	fn s1() -> Parser<@~str>;
+	fn s1(&self) -> Parser<@~str>;
 }
 
 pub impl &str : StringParsers
 {
-	fn lit() -> Parser<@~str>
+	fn lit(&self) -> Parser<@~str>
 	{
 		let s = self.to_owned();
 		
@@ -390,7 +393,7 @@ pub impl &str : StringParsers
 		}
 	}
 	
-	fn liti() -> Parser<@~str>
+	fn liti(&self) -> Parser<@~str>
 	{
 		let s = str::to_lower(self);
 		
@@ -424,12 +427,12 @@ pub impl &str : StringParsers
 		}
 	}
 	
-	fn s0() -> Parser<@~str>
+	fn s0(&self) -> Parser<@~str>
 	{
 		self.lit().s0()
 	}
 	
-	fn s1() -> Parser<@~str>
+	fn s1(&self) -> Parser<@~str>
 	{
 		self.lit().s1()
 	}
@@ -469,7 +472,7 @@ pub fn or_v<T: Copy Durable>(parsers: @~[Parser<T>]) -> Parser<T>
 {
 	// A recursive algorithm would be a lot simpler, but it's not clear how that could
 	// produce good error messages.
-	assert vec::is_not_empty(*parsers);
+	assert !vec::is_empty(*parsers);
 	
 	|input: State|
 	{
@@ -507,7 +510,7 @@ pub fn or_v<T: Copy Durable>(parsers: @~[Parser<T>]) -> Parser<T>
 		}
 		else
 		{
-			let errs = do vec::filter(errors) |s| {str::is_not_empty(**s)};
+			let errs = do vec::filter(errors) |s| {!str::is_empty(**s)};
 			let mesg = at_connect(errs, ~" or ");
 			result::Err(Failed {old_state: input, err_state: State {index: max_index, ..input}, mesg: @mesg})
 		}
@@ -784,15 +787,15 @@ pub fn chain_suffix<T: Copy Durable, U: Copy Durable>(parser: Parser<T>, op: Par
 #[doc(hidden)]
 pub fn or_mesg(mesg1: @~str, mesg2: @~str) -> @~str
 {
-	if str::is_not_empty(*mesg1) && str::is_not_empty(*mesg2)
+	if !str::is_empty(*mesg1) && !str::is_empty(*mesg2)
 	{
 		@(*mesg1 + " or " + *mesg2)
 	}
-	else if str::is_not_empty(*mesg1)
+	else if !str::is_empty(*mesg1)
 	{
 		mesg1
 	}
-	else if str::is_not_empty(*mesg2)
+	else if !str::is_empty(*mesg2)
 	{
 		mesg2
 	}
@@ -806,7 +809,7 @@ pub fn or_mesg(mesg1: @~str, mesg2: @~str) -> @~str
 pub trait GenericParsers
 {
 	/// Returns value if input matches s. Also see lit.
-	fn litv<T: Copy Durable>(value: T) -> Parser<T>;
+	fn litv<T: Copy Durable>(&self, value: T) -> Parser<T>;
 }
 
 /// Parse methods used to compose parsers.
@@ -817,83 +820,83 @@ pub trait Combinators<T: Copy Durable>
 	/// chainl1 := e (op e)*
 	/// 
 	/// Left associative binary operator. eval is called for each parsed op.
-	fn chainl1<U: Copy Durable>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
+	fn chainl1<U: Copy Durable>(&self, op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
 	
 	/// chainr1 := e (op e)*
 	/// 
 	/// Right associative binary operator. eval is called for each parsed op.
-	fn chainr1<U: Copy Durable>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
+	fn chainr1<U: Copy Durable>(&self, op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>;
 	
 	/// Like note except that the mesg is also used for error reporting.
 	/// 
 	/// If label is not empty then it is used if the previous parser completely failed to parse or if its error
 	/// message was empty. Otherwise it suppresses errors from the parser (in favor of a later err function).
 	/// Non-empty labels should look like \"expression\" or \"statement\".
-	fn err(label: &str) -> Parser<T>;
+	fn err(&self, label: &str) -> Parser<T>;
 	
 	/// Parses the text and fails if all the text was not consumed. Leading space is allowed.
 	/// 
 	/// This is typically used in conjunction with the parse method. Note that space has to have the
 	/// same type as parser which is backwards from how it is normally used.
-	fn everything<U: Copy Durable>(space: Parser<U>) -> Parser<T>;
+	fn everything<U: Copy Durable>(&self, space: Parser<U>) -> Parser<T>;
 	
 	/// list := e (sep e)*
 	/// 
 	/// Values for each parsed e are returned.
-	fn list<U: Copy Durable>(sep: Parser<U>) -> Parser<@~[T]>;
+	fn list<U: Copy Durable>(&self, sep: Parser<U>) -> Parser<@~[T]>;
 	
 	/// Logs the result of the previous parser.
 	/// 
 	/// If it was successful then the log is at INFO level. Otherwise it is at DEBUG level.
 	/// Also see err method.
-	fn note(mesg: &str) -> Parser<T>;
+	fn note(&self, mesg: &str) -> Parser<T>;
 	
 	/// optional := e?
-	fn optional() -> Parser<Option<T>>;
+	fn optional(&self) -> Parser<Option<T>>;
 	
 	/// Returns a parser which first tries parser1, and if that fails, parser2.
-	fn or(parser2: Parser<T>) -> Parser<T>;
+	fn or(&self, parser2: Parser<T>) -> Parser<T>;
 	
 	/// Uses parser to parse text. Also see everything method.
-	fn parse(file: @~str, text: &str) -> ParseStatus<T>;
+	fn parse(&self, file: @~str, text: &str) -> ParseStatus<T>;
 	
 	/// Succeeds if parser matches input n to m times (inclusive).
-	fn r(n: uint, m: uint) -> Parser<@~[T]>;
+	fn r(&self, n: uint, m: uint) -> Parser<@~[T]>;
 	
 	/// r0 := e*
 	/// 
 	/// Values for each parsed e are returned.
-	fn r0() -> Parser<@~[T]>;
+	fn r0(&self) -> Parser<@~[T]>;
 	
 	/// r1 := e+
 	/// 
 	/// Values for each parsed e are returned.
-	fn r1() -> Parser<@~[T]>;
+	fn r1(&self) -> Parser<@~[T]>;
 	
 	/// s0 := e [ \t\r\n]*
-	fn s0() -> Parser<T>;
+	fn s0(&self) -> Parser<T>;
 	
 	/// s1 := e [ \t\r\n]+
-	fn s1() -> Parser<T>;
+	fn s1(&self) -> Parser<T>;
 	
 	/// If parser1 is successful is successful then parser2 is called (and the value from parser1
 	/// is ignored). If parser1 fails parser2 is not called.
-	fn then<U: Copy Durable>(parser2: Parser<U>) -> Parser<U>;
+	fn then<U: Copy Durable>(&self, parser2: Parser<U>) -> Parser<U>;
 	
 	/// If parser is successful then the function returned by eval is called
 	/// with parser's result. If parser fails eval is not called.
 	/// 
 	/// Often used to translate parsed values: `p().thene({|pvalue| return(2*pvalue)})`
-	fn thene<U: Copy Durable>(eval: fn@ (T) -> Parser<U>) -> Parser<U>;
+	fn thene<U: Copy Durable>(&self, eval: fn@ (T) -> Parser<U>) -> Parser<U>;
 }
 
 pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 {
-	fn chainl1<U: Copy Durable>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
+	fn chainl1<U: Copy Durable>(&self, op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
 	{
 		|input: State|
 		{
-			do result::chain(self(input))
+			do result::chain((*self)(input))
 			|pass|
 			{
 				match chain_suffix(self, op)(pass.new_state)
@@ -912,18 +915,18 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn chainr1<U: Copy Durable>(op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
+	fn chainr1<U: Copy Durable>(&self, op: Parser<U>, eval: fn@ (T, U, T) -> T) -> Parser<T>
 	{
 		|input: State|
 		{
-			do result::chain(self(input))
+			do result::chain((*self)(input))
 			|pass|
 			{
 				match chain_suffix(self, op)(pass.new_state)
 				{
 					result::Ok(ref pass2) =>
 					{
-						if vec::is_not_empty(*pass2.value)
+						if !vec::is_empty(*pass2.value)
 						{
 							// e1 and [(op1 e2), (op2 e3)]
 							let e1 = pass.value;
@@ -956,7 +959,7 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn err(label: &str) -> Parser<T>
+	fn err(&self, label: &str) -> Parser<T>
 	{
 		let label = label.to_owned();
 		
@@ -984,18 +987,18 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn everything<U: Copy Durable>(space: Parser<U>) -> Parser<T>
+	fn everything<U: Copy Durable>(&self, space: Parser<U>) -> Parser<T>
 	{
 		seq3_ret1(space, self, eot())
 	}
 	
-	fn list<U: Copy Durable>(sep: Parser<U>) -> Parser<@~[T]>
+	fn list<U: Copy Durable>(&self, sep: Parser<U>) -> Parser<@~[T]>
 	{
 		let term = sep.then(self).r0();
 		
 		|input: State|
 		{
-			do result::chain(self(input))
+			do result::chain((*self)(input))
 			|pass|
 			{
 				match term(pass.new_state)
@@ -1013,13 +1016,13 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn note(mesg: &str) -> Parser<T>
+	fn note(&self, mesg: &str) -> Parser<T>
 	{
 		let mesg = mesg.to_owned();
 		
 		|input: State|
 		{
-			match self(input)
+			match (*self)(input)
 			{
 				result::Ok(ref pass) =>
 				{
@@ -1059,11 +1062,11 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn optional() -> Parser<Option<T>>
+	fn optional(&self) -> Parser<Option<T>>
 	{
 		|input: State|
 		{
-			match self(input)
+			match (*self)(input)
 			{
 				result::Ok(ref pass) =>
 				{
@@ -1077,11 +1080,11 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn or(parser2: Parser<T>) -> Parser<T>
+	fn or(&self, parser2: Parser<T>) -> Parser<T>
 	{
 		|input: State|
 		{
-			do result::chain_err(self(input))
+			do result::chain_err((*self)(input))
 			|failure1|
 			{
 				do result::chain_err(parser2(input))
@@ -1104,11 +1107,11 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn parse(file: @~str, text: &str) -> ParseStatus<T>
+	fn parse(&self, file: @~str, text: &str) -> ParseStatus<T>
 	{
 		let chars = chars_with_eot(text);
 		let input = State {file: file, text: chars, index: 0u, line: 1};
-		match self(input)
+		match (*self)(input)
 		{
 			result::Ok(ref pass) =>
 			{
@@ -1122,7 +1125,7 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn r(n: uint, m: uint) -> Parser<@~[T]>
+	fn r(&self, n: uint, m: uint) -> Parser<@~[T]>
 	{
 		|input: State|
 		{
@@ -1130,7 +1133,7 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 			let mut values = ~[];
 			loop
 			{
-				match self(output)
+				match (*self)(output)
 				{
 					result::Ok(ref pass) =>
 					{
@@ -1157,23 +1160,23 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn r0() -> Parser<@~[T]>
+	fn r0(&self) -> Parser<@~[T]>
 	{
 		self.r(0u, uint::max_value)
 	}
 	
-	fn r1() -> Parser<@~[T]>
+	fn r1(&self) -> Parser<@~[T]>
 	{
 		self.r(1u, uint::max_value)
 	}
 	
-	fn s0() -> Parser<T>
+	fn s0(&self) -> Parser<T>
 	{
 		// It would be simpler to write this with scan0, but scan0 is relatively inefficient
 		// and s0 is typically called a lot.
 		|input: State|
 		{
-			do result::chain(self(input))
+			do result::chain((*self)(input))
 			|pass|
 			{
 				let mut i = pass.new_state.index;
@@ -1205,7 +1208,7 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn s1() -> Parser<T>
+	fn s1(&self) -> Parser<T>
 	{
 		|input: State|
 		{
@@ -1224,11 +1227,11 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn then<U: Copy Durable>(parser2: Parser<U>) -> Parser<U>
+	fn then<U: Copy Durable>(&self, parser2: Parser<U>) -> Parser<U>
 	{
 		|input: State|
 		{
-			do result::chain(self(input))
+			do result::chain((*self)(input))
 			|pass|
 			{
 				do result::chain_err(parser2(pass.new_state))
@@ -1237,11 +1240,11 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 		}
 	}
 	
-	fn thene<U: Copy Durable>(eval: fn@ (T) -> Parser<U>) -> Parser<U>
+	fn thene<U: Copy Durable>(&self, eval: fn@ (T) -> Parser<U>) -> Parser<U>
 	{
 		|input: State|
 		{
-			do result::chain(self(input))
+			do result::chain((*self)(input))
 			|pass|
 			{
 				do result::chain_err(eval(pass.value)(pass.new_state))
@@ -1253,7 +1256,7 @@ pub impl<T: Copy Durable> Parser<T> : Combinators<T>
 
 impl &str : GenericParsers
 {
-	fn litv<T: Copy Durable>(value: T) -> Parser<T>
+	fn litv<T: Copy Durable>(&self, value: T) -> Parser<T>
 	{
 		let s = self.to_owned();
 		
